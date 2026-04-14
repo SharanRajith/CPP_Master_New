@@ -158,7 +158,7 @@ export async function checkPistonAvailability() {
 
   // Check public Piston
   try {
-    const res = await fetch('https://emkc.org/api/v2/piston/runtimes', {
+    const res = await fetch('https://cpp-master-backend-ha5y.onrender.com/api/v2/piston/runtimes', {
       signal: AbortSignal.timeout(5000),
     });
     return res.ok;
