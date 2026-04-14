@@ -1,0 +1,22 @@
+version: "3"
+
+services:
+  piston-api:
+    image: ghcr.io/engineer-man/piston
+    container_name: piston-api
+    restart: unless-stopped
+    ports:
+      - "2000:2000"
+    environment:
+      # nosys disables cgroup resource isolation — required for Windows/Docker Desktop
+      - PISTON_DISABLE_SYSCALL_FILTER=true
+      - PISTON_RUN_TIMEOUT=10000
+      - PISTON_COMPILE_TIMEOUT=15000
+    tmpfs:
+      - /piston/jobs
+    volumes:
+      - piston-packages:/piston/packages
+    privileged: false
+
+volumes:
+  piston-packages:
