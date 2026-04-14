@@ -4,7 +4,7 @@
 // In dev mode (Vite sets MODE), hit local compile server first.
 // In production (Vercel), fall through to public Piston API.
 const LOCAL_PISTON_URL  = 'http://localhost:2000/api/v2/piston/execute';
-const PUBLIC_PISTON_URL = 'https://emkc.org/api/v2/piston/execute';
+const PUBLIC_PISTON_URL = 'https://cpp-master-backend-ha5y.onrender.com/api/v2/piston/execute';
 const JDOODLE_URL       = '/api/jdoodle/v1/execute';
 
 const IS_DEV = import.meta.env.DEV;
