@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: cpp-compile-server
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    envVars:
+      - key: PORT
+        value: 2000
+    healthCheckPath: /
