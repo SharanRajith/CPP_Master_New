@@ -107,6 +107,24 @@ export function useProgress(user) {
     });
   }, [_update]);
 
+  /** Spend 5 XP to unlock the next hint for a lesson (idempotent if already unlocked) */
+  const unlockHint = useCallback((lessonId, hintIdx) => {
+    const COST = 5;
+    _update(prev => {
+      const already = (prev.unlockedHints?.[lessonId] || []).includes(hintIdx);
+      if (already) return prev;
+      if (prev.xp < COST) return prev; // not enough XP
+      return {
+        ...prev,
+        xp: prev.xp - COST,
+        unlockedHints: {
+          ...(prev.unlockedHints || {}),
+          [lessonId]: [...(prev.unlockedHints?.[lessonId] || []), hintIdx],
+        },
+      };
+    });
+  }, [_update]);
+
   /** Record quiz completion and award XP (first attempt only) */
   const completeQuiz = useCallback((moduleId, score) => {
     _update(prev => {
@@ -152,6 +170,7 @@ export function useProgress(user) {
     completeLesson,
     completeLeetCode,
     completeQuiz,
+    unlockHint,
     isLessonUnlocked,
     isLessonCompleted,
     resetProgress,
@@ -167,6 +186,7 @@ function getDefaultProgress() {
     completedLessons:  {},
     completedLeetCode: {},
     completedQuizzes:  {},
+    unlockedHints:     {},  // lessonId → [0, 1, 2, ...]
     xp:                0,
     level:             1,
     streak:            0,

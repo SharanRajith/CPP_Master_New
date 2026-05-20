@@ -3,7 +3,7 @@ import { CheckCircle2, XCircle, AlertCircle, Terminal, ChevronDown, ChevronUp, L
 import { motion, AnimatePresence } from 'framer-motion';
 import { explainError } from '../../utils/errorExplainer';
 
-export default function TestResults({ result, isCompiling, hints, hintIndex, onShowHint, attempts }) {
+export default function TestResults({ result, isCompiling, hints, hintIndex, onShowHint, attempts, xp = 0 }) {
   const [expandedTest, setExpandedTest] = React.useState(null);
 
   if (isCompiling) {
@@ -160,14 +160,9 @@ export default function TestResults({ result, isCompiling, hints, hintIndex, onS
                 <Lightbulb size={13} />
                 Hints
               </div>
-              {hintIndex < hints.length - 1 && (
-                <button
-                  onClick={onShowHint}
-                  className="text-xs px-2.5 py-1 rounded-md border border-yellow-600/50 text-yellow-400 hover:bg-yellow-900/30 transition-colors"
-                >
-                  {hintIndex < 0 ? 'Show hint' : 'Next hint'}
-                </button>
-              )}
+              <span className="text-[10px] text-yellow-600/70 font-medium">
+                {xp} XP available
+              </span>
             </div>
 
             <AnimatePresence>
@@ -176,7 +171,7 @@ export default function TestResults({ result, isCompiling, hints, hintIndex, onS
                   key={hintIndex}
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="flex flex-col gap-1.5"
+                  className="flex flex-col gap-1.5 mb-2"
                 >
                   {hints.slice(0, hintIndex + 1).map((h, i) => (
                     <div key={i} className="flex gap-2 text-xs text-yellow-200/80">
@@ -188,8 +183,27 @@ export default function TestResults({ result, isCompiling, hints, hintIndex, onS
               )}
             </AnimatePresence>
 
-            {hintIndex < 0 && (
-              <p className="text-xs text-yellow-400/60">Click "Show hint" for a nudge in the right direction.</p>
+            {hintIndex < hints.length - 1 && (() => {
+              const canAfford = xp >= 5;
+              return (
+                <button
+                  onClick={canAfford ? onShowHint : undefined}
+                  disabled={!canAfford}
+                  className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-md border transition-colors ${
+                    canAfford
+                      ? 'border-yellow-600/50 text-yellow-400 hover:bg-yellow-900/30 cursor-pointer'
+                      : 'border-dark-600 text-dark-500 cursor-not-allowed opacity-60'
+                  }`}
+                >
+                  <Lightbulb size={11} />
+                  {hintIndex < 0 ? 'Unlock hint' : 'Unlock next hint'}
+                  <span className="ml-1 font-bold text-[10px] opacity-75">· 5 XP</span>
+                </button>
+              );
+            })()}
+
+            {hintIndex < 0 && xp < 5 && (
+              <p className="text-xs text-dark-500 mt-1">Need at least 5 XP to unlock a hint.</p>
             )}
           </div>
         )}

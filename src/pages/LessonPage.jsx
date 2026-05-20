@@ -106,7 +106,7 @@ function LessonHeaderStrip({ lesson, isCompleted, prevLesson, nextLesson, naviga
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-export default function LessonPage({ progress, completeLesson, isLessonCompleted, isMobile, isPremium, isLessonUnlocked }) {
+export default function LessonPage({ progress, completeLesson, unlockHint, isLessonCompleted, isMobile, isPremium, isLessonUnlocked }) {
   const { lessonId } = useParams();
   const navigate     = useNavigate();
   const allLessons   = getAllLessons();
@@ -120,7 +120,8 @@ export default function LessonPage({ progress, completeLesson, isLessonCompleted
   const [mobileTab, setMobileTab]     = useState('lesson');
   const [stdin, setStdin]             = useState('');
   const [showStdin, setShowStdin]     = useState(false);
-  const [hintIndex, setHintIndex]           = useState(-1);
+  // hintIndex derived from persisted progress so unlocked hints survive page reload
+  const hintIndex = ((progress.unlockedHints?.[lessonId]) || []).length - 1;
   const [editorSettings, setEditorSettings] = useState(() => readEditorSettings());
   const [moduleComplete, setModuleComplete] = useState(null); // moduleId when celebration fires
 
@@ -139,7 +140,6 @@ export default function LessonPage({ progress, completeLesson, isLessonCompleted
     setLoading(true);
     setLesson(null);
     setMobileTab('lesson');
-    setHintIndex(-1);
     const meta = allLessons.find(l => l.id === lessonId);
     if (!meta) { setLoading(false); return; }
     meta.file()
@@ -202,8 +202,11 @@ export default function LessonPage({ progress, completeLesson, isLessonCompleted
     setCode(lesson.starterCode || '');
   }, [lesson, lessonId]);
   const handleShowHint = useCallback(() => {
-    setHintIndex(i => Math.min(i + 1, (lesson?.hints?.length ?? 1) - 1));
-  }, [lesson]);
+    const nextIdx = hintIndex + 1;
+    if (lesson?.hints && nextIdx < lesson.hints.length) {
+      unlockHint(lessonId, nextIdx);
+    }
+  }, [hintIndex, lesson, lessonId, unlockHint]);
 
   // ── Premium gate ───────────────────────────────────────────────────────────
   const lessonModule = lesson
@@ -288,6 +291,7 @@ export default function LessonPage({ progress, completeLesson, isLessonCompleted
           hintIndex={hintIndex}
           onShowHint={handleShowHint}
           attempts={attempts}
+          xp={progress.xp}
         />
         <SolutionReveal
           modelAnswer={lesson.modelAnswer}
