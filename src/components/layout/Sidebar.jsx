@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { ChevronDown, ChevronRight, Lock, CheckCircle2, Circle, BookOpen } from 'lucide-react';
+import { ChevronDown, ChevronRight, Lock, CheckCircle2, Circle, BookOpen, Crown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CURRICULUM, getAllLessons, getPreviousLessonId } from '../../data/curriculum';
 
-export default function Sidebar({ progress, currentLessonId }) {
+export default function Sidebar({ progress, currentLessonId, isPremium }) {
   const [expandedModules, setExpandedModules] = useState({ 'module-1': true });
   const allLessons = getAllLessons();
 
@@ -57,7 +57,9 @@ export default function Sidebar({ progress, currentLessonId }) {
                     <span className="text-sm font-medium text-white truncate">{module.title}</span>
                     {isAllDone
                       ? <CheckCircle2 size={14} className="shrink-0" style={{ color: module.color }} />
-                      : null
+                      : module.isPremium && !isPremium
+                        ? <Crown size={13} className="shrink-0 text-yellow-400" />
+                        : null
                     }
                   </div>
                   <div className="flex items-center gap-2 mt-1">

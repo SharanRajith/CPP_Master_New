@@ -124,6 +124,7 @@ export const CURRICULUM = [
     level: 'Advanced',
     color: '#4ade80',
     icon: '🌳',
+    isPremium: true,
     lessons: [
       { id: 'm7-l1',  title: 'Binary Tree & Traversals',              file: () => import('./lessons/module7/lesson1.js') },
       { id: 'm7-l2',  title: 'Binary Search Tree',                    file: () => import('./lessons/module7/lesson2.js') },
@@ -142,6 +143,7 @@ export const CURRICULUM = [
     level: 'Advanced',
     color: '#2dd4bf',
     icon: '⛰️',
+    isPremium: true,
     lessons: [
       { id: 'm8-l1',  title: 'Min-Heap & Max-Heap',                   file: () => import('./lessons/module8/lesson1.js') },
       { id: 'm8-l2',  title: 'Heap Sort',                             file: () => import('./lessons/module8/lesson2.js') },
@@ -157,6 +159,7 @@ export const CURRICULUM = [
     level: 'Advanced',
     color: '#818cf8',
     icon: '🕸️',
+    isPremium: true,
     lessons: [
       { id: 'm9-l1',  title: 'Graph Representation',                  file: () => import('./lessons/module9/lesson1.js') },
       { id: 'm9-l2',  title: 'BFS (Iterative)',                       file: () => import('./lessons/module9/lesson2.js') },
@@ -177,6 +180,7 @@ export const CURRICULUM = [
     level: 'Advanced',
     color: '#c084fc',
     icon: '🧠',
+    isPremium: true,
     lessons: [
       { id: 'm10-l1', title: 'Intro to DP (Memoization vs Tabulation)', file: () => import('./lessons/module10/lesson1.js') },
       { id: 'm10-l2', title: '1D DP: Climbing Stairs & Min Cost',     file: () => import('./lessons/module10/lesson2.js') },
@@ -198,6 +202,7 @@ export const CURRICULUM = [
     level: 'Expert',
     color: '#fb7185',
     icon: '🚀',
+    isPremium: true,
     lessons: [
       { id: 'm11-l1', title: 'Bit Manipulation Tricks',               file: () => import('./lessons/module11/lesson1.js') },
       { id: 'm11-l2', title: 'Bit Manipulation: Single Number',       file: () => import('./lessons/module11/lesson2.js') },
@@ -217,6 +222,7 @@ export const CURRICULUM = [
     level: 'Interview Ready',
     color: '#fbbf24',
     icon: '🎯',
+    isPremium: true,
     lessons: [
       { id: 'm12-l1', title: 'Two Pointers (Valid Palindrome)',       file: () => import('./lessons/module12/lesson1.js') },
       { id: 'm12-l2', title: 'Fast & Slow (Cycle Detection)',         file: () => import('./lessons/module12/lesson2.js') },
@@ -234,6 +240,7 @@ export const CURRICULUM = [
     level: 'FAANG Final Round',
     color: '#0ea5e9',
     icon: '🏢',
+    isPremium: true,
     lessons: [
       { id: 'm13-l1',  title: 'Google: LRU Cache',                          file: () => import('./lessons/module13/lesson1.js') },
       { id: 'm13-l2',  title: 'Meta: Min Remove to Make Valid Parentheses', file: () => import('./lessons/module13/lesson2.js') },

@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Settings, LogOut, Flame, Trophy, Home, Menu, X, ChevronRight, Zap, Medal } from 'lucide-react';
+import { Settings, LogOut, Flame, Trophy, Home, Menu, X, ChevronRight, Zap, Medal, Shield } from 'lucide-react';
 import { LEVELS } from '../../hooks/useProgress';
 
-export default function Navbar({ xp, level, streak, currentUser, onOpenSettings, onLogout, onToggleSidebar }) {
+export default function Navbar({ xp, level, streak, currentUser, isAdmin, onOpenSettings, onLogout, onToggleSidebar }) {
   const location      = useLocation();
   const isLessonRoute = location.pathname.startsWith('/lesson/');
   const levelInfo     = LEVELS[level - 1] || LEVELS[0];
@@ -96,6 +96,11 @@ export default function Navbar({ xp, level, streak, currentUser, onOpenSettings,
         <Link id="nav-leaderboard" to="/leaderboard" className="p-2 rounded-lg text-dark-300 hover:text-white hover:bg-dark-700 transition-all" title="Leaderboard">
           <Medal size={17} />
         </Link>
+        {isAdmin && (
+          <Link id="nav-admin" to="/admin" className="p-2 rounded-lg text-indigo-400 hover:text-indigo-300 hover:bg-indigo-900/30 transition-all" title="Admin Panel">
+            <Shield size={17} />
+          </Link>
+        )}
         <button id="nav-settings" onClick={onOpenSettings} className="p-2 rounded-lg text-dark-300 hover:text-white hover:bg-dark-700 transition-all" title="Settings">
           <Settings size={17} />
         </button>

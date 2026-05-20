@@ -11,14 +11,16 @@ import HomePage        from './pages/HomePage';
 import LessonPage      from './pages/LessonPage';
 import DashboardPage   from './pages/DashboardPage';
 import LeaderboardPage from './pages/LeaderboardPage';
+import AdminPage       from './pages/AdminPage';
 import LoginPage       from './pages/LoginPage';
 
 import { useProgress } from './hooks/useProgress';
+import { isAdminEmail } from './config/admins';
 import { useParams }   from 'react-router-dom';
 import { PanelGroup, Panel, PanelResizeHandle } from 'react-resizable-panels';
 
-// ─── Layout wrapper ──────────────────────────────────────────────────────────
-function AppShell({ progress, completeLesson, isLessonCompleted, isLessonUnlocked, resetProgress, onLogout, currentUser }) {
+// ─── Layout wrapper ───────────────────────────────────────────────────────────
+function AppShell({ progress, completeLesson, isLessonCompleted, isLessonUnlocked, resetProgress, onLogout, currentUser, isAdmin, isPremium }) {
   const [showSettings, setShowSettings] = useState(false);
   const [sidebarOpen, setSidebarOpen]   = useState(false);
 
@@ -29,6 +31,7 @@ function AppShell({ progress, completeLesson, isLessonCompleted, isLessonUnlocke
         level={progress.level}
         streak={progress.streak}
         currentUser={currentUser}
+        isAdmin={isAdmin}
         onOpenSettings={() => setShowSettings(true)}
         onLogout={onLogout}
         onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
@@ -46,12 +49,14 @@ function AppShell({ progress, completeLesson, isLessonCompleted, isLessonUnlocke
                 isLessonUnlocked={isLessonUnlocked}
                 sidebarOpen={sidebarOpen}
                 setSidebarOpen={setSidebarOpen}
+                isPremium={isPremium}
               />
             }
           />
-          <Route path="/dashboard" element={<DashboardPage progress={progress} resetProgress={resetProgress} />} />
-          <Route path="/leaderboard" element={<LeaderboardPage currentUser={currentUser} />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="/dashboard"    element={<DashboardPage progress={progress} resetProgress={resetProgress} />} />
+          <Route path="/leaderboard"  element={<LeaderboardPage currentUser={currentUser} />} />
+          <Route path="/admin"        element={<AdminPage currentUser={currentUser} />} />
+          <Route path="*"             element={<Navigate to="/" replace />} />
         </Routes>
       </div>
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
@@ -60,7 +65,7 @@ function AppShell({ progress, completeLesson, isLessonCompleted, isLessonUnlocke
 }
 
 // ─── Lesson Shell (responsive) ────────────────────────────────────────────────
-function LessonShell({ progress, completeLesson, isLessonCompleted, isLessonUnlocked, sidebarOpen, setSidebarOpen }) {
+function LessonShell({ progress, completeLesson, isLessonCompleted, isLessonUnlocked, sidebarOpen, setSidebarOpen, isPremium }) {
   const { lessonId } = useParams();
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
@@ -77,14 +82,11 @@ function LessonShell({ progress, completeLesson, isLessonCompleted, isLessonUnlo
   if (isMobile) {
     return (
       <div className="flex flex-1 w-full relative overflow-hidden">
-        {/* Mobile Sidebar overlay */}
         {sidebarOpen && (
-          <div
-            className="absolute inset-0 z-40 flex"
-            style={{ background: 'rgba(10,10,15,0.85)', backdropFilter: 'blur(6px)' }}
-          >
+          <div className="absolute inset-0 z-40 flex"
+            style={{ background: 'rgba(10,10,15,0.85)', backdropFilter: 'blur(6px)' }}>
             <div className="w-[85vw] max-w-xs h-full bg-dark-800 shadow-2xl border-r border-dark-600 flex flex-col">
-              <Sidebar progress={progress} currentLessonId={lessonId} />
+              <Sidebar progress={progress} currentLessonId={lessonId} isPremium={isPremium} />
             </div>
             <div className="flex-1" onClick={() => setSidebarOpen(false)} />
           </div>
@@ -96,6 +98,7 @@ function LessonShell({ progress, completeLesson, isLessonCompleted, isLessonUnlo
             isLessonCompleted={isLessonCompleted}
             isLessonUnlocked={isLessonUnlocked}
             isMobile={true}
+            isPremium={isPremium}
           />
         </div>
       </div>
@@ -105,7 +108,7 @@ function LessonShell({ progress, completeLesson, isLessonCompleted, isLessonUnlo
   return (
     <PanelGroup direction="horizontal" className="flex-1">
       <Panel defaultSize={20} minSize={15} maxSize={40}>
-        <Sidebar progress={progress} currentLessonId={lessonId} />
+        <Sidebar progress={progress} currentLessonId={lessonId} isPremium={isPremium} />
       </Panel>
       <PanelResizeHandle className="w-1.5 bg-dark-600 hover:bg-brand-500 transition-colors cursor-col-resize shrink-0 data-[resize-handle-state=drag]:bg-brand-400" />
       <Panel className="flex flex-col min-w-0">
@@ -115,15 +118,16 @@ function LessonShell({ progress, completeLesson, isLessonCompleted, isLessonUnlo
           isLessonCompleted={isLessonCompleted}
           isLessonUnlocked={isLessonUnlocked}
           isMobile={false}
+          isPremium={isPremium}
         />
       </Panel>
     </PanelGroup>
   );
 }
 
-// ─── Root App — Firebase Auth Observer ────────────────────────────────────────
+// ─── Root App ─────────────────────────────────────────────────────────────────
 export default function App() {
-  const [currentUser, setCurrentUser] = useState(undefined); // undefined = loading
+  const [currentUser, setCurrentUser] = useState(undefined);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (firebaseUser) => {
@@ -141,7 +145,6 @@ export default function App() {
     return () => unsub();
   }, []);
 
-  // Splash while Firebase determines auth state
   if (currentUser === undefined) {
     return (
       <div className="min-h-screen bg-[#0A0F1C] flex items-center justify-center">
@@ -155,18 +158,16 @@ export default function App() {
     );
   }
 
-  const handleLogout = async () => {
-    await signOut(auth);
-    // onAuthStateChanged will fire → sets currentUser to null automatically
-  };
-
   if (!currentUser) return <LoginPage />;
 
-  return <AuthenticatedApp currentUser={currentUser} onLogout={handleLogout} />;
+  return <AuthenticatedApp currentUser={currentUser} onLogout={async () => signOut(auth)} />;
 }
 
 function AuthenticatedApp({ currentUser, onLogout }) {
   const { progress, completeLesson, completeLeetCode, isLessonUnlocked, isLessonCompleted, resetProgress } = useProgress(currentUser);
+
+  const isAdmin   = isAdminEmail(currentUser?.email);
+  const isPremium = isAdmin || !!progress?.isPremium;
 
   return (
     <BrowserRouter>
@@ -178,6 +179,8 @@ function AuthenticatedApp({ currentUser, onLogout }) {
         resetProgress={resetProgress}
         onLogout={onLogout}
         currentUser={currentUser}
+        isAdmin={isAdmin}
+        isPremium={isPremium}
       />
     </BrowserRouter>
   );

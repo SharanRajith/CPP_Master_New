@@ -11,6 +11,8 @@ import CompilerToolbar from '../components/ide/CompilerToolbar';
 import TestResults     from '../components/ide/TestResults';
 import LessonContent   from '../components/lesson/LessonContent';
 import SettingsModal   from '../components/settings/SettingsModal';
+import PremiumGate     from '../components/PremiumGate';
+import { CURRICULUM }  from '../data/curriculum';
 
 import { useCompiler }  from '../hooks/useCompiler';
 import { getAllLessons } from '../data/curriculum';
@@ -101,7 +103,7 @@ function LessonHeaderStrip({ lesson, isCompleted, prevLesson, nextLesson, naviga
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-export default function LessonPage({ progress, completeLesson, isLessonCompleted, isMobile }) {
+export default function LessonPage({ progress, completeLesson, isLessonCompleted, isMobile, isPremium }) {
   const { lessonId } = useParams();
   const navigate     = useNavigate();
   const allLessons   = getAllLessons();
@@ -175,6 +177,14 @@ export default function LessonPage({ progress, completeLesson, isLessonCompleted
 
   const handleRun      = useCallback(() => runCode(code, stdin),                  [code, stdin, runCode]);
   const handleRunTests = useCallback(() => { if (lesson?.testCases) runTests(code, lesson.testCases); }, [code, lesson, runTests]);
+
+  // ── Premium gate ───────────────────────────────────────────────────────────
+  const lessonModule = lesson
+    ? CURRICULUM.find(m => m.lessons.some(l => l.id === lessonId))
+    : null;
+  if (lesson && lessonModule?.isPremium && !isPremium) {
+    return <PremiumGate lessonTitle={lesson.title} moduleTitle={lessonModule.title} />;
+  }
 
   // ── Loading ────────────────────────────────────────────────────────────────
   if (loading) {
