@@ -142,7 +142,7 @@ export async function compileCode(code, stdin = '') {
 }
 
 /**
- * Check which compiler is available.
+ * Check which compiler is available (fast, 4s timeout).
  * Returns: 'piston-local' | 'piston' | 'jdoodle' | 'offline'
  */
 export async function checkPistonAvailability() {
@@ -152,14 +152,29 @@ export async function checkPistonAvailability() {
       const res = await fetch('http://localhost:2000/api/v2/piston/runtimes', {
         signal: AbortSignal.timeout(2000),
       });
-      if (res.ok) return true; // returns true => status shows 'piston'
+      if (res.ok) return true;
     } catch {}
   }
 
-  // Check public Piston
+  // Check public backend with a short timeout — just to see if it's already awake
   try {
     const res = await fetch('https://cpp-master.onrender.com/api/v2/piston/runtimes', {
-      signal: AbortSignal.timeout(5000),
+      signal: AbortSignal.timeout(4000),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Long-poll warm-up for Render's free tier cold start (up to 90s).
+ * Call this in the background when checkPistonAvailability returns false.
+ */
+export async function warmUpBackend() {
+  try {
+    const res = await fetch('https://cpp-master.onrender.com/api/v2/piston/runtimes', {
+      signal: AbortSignal.timeout(90000),
     });
     return res.ok;
   } catch {

@@ -3,10 +3,11 @@ import { Play, Loader2, Wifi, WifiOff, AlertTriangle } from 'lucide-react';
 
 const STATUS_CONFIG = {
   'piston-local': { icon: '⚡', label: 'Local (Unlimited)', color: 'text-green-400' },
-  piston:         { icon: '🟢', label: 'Piston (Live)',      color: 'text-success' },
+  piston:         { icon: '🟢', label: 'Compiler Ready',    color: 'text-green-400' },
   jdoodle:        { icon: '🟡', label: 'JDoodle (Fallback)', color: 'text-warning' },
   offline:        { icon: '🔴', label: 'Offline',            color: 'text-danger' },
   checking:       { icon: '⚪', label: 'Checking...',         color: 'text-dark-300' },
+  warming:        { icon: null, label: 'Waking up...',        color: 'text-yellow-400' },
 };
 
 export default function CompilerToolbar({
@@ -51,9 +52,19 @@ export default function CompilerToolbar({
       {/* Right: Compiler status + settings */}
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-1.5 text-xs">
-          <span>{status.icon}</span>
+          {compilerStatus === 'warming' ? (
+            <Loader2 size={11} className="animate-spin text-yellow-400" />
+          ) : (
+            <span>{status.icon}</span>
+          )}
           <span className={status.color + ' font-medium'}>{status.label}</span>
         </div>
+
+        {compilerStatus === 'warming' && (
+          <span className="text-xs text-yellow-400/80 bg-yellow-900/20 px-2 py-0.5 rounded border border-yellow-800/40">
+            First run may take ~30s
+          </span>
+        )}
 
         {compilerStatus === 'offline' && (
           <span className="text-xs text-danger bg-red-900/20 px-2 py-0.5 rounded">
