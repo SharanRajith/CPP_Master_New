@@ -1,7 +1,6 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Play, Trophy, Flame, BookOpen, ArrowRight, Star, Zap, Code2, ChevronRight, CalendarDays, CheckCircle2, Swords, Crown, Lock, Mail } from 'lucide-react';
+import { Play, Trophy, Flame, BookOpen, ArrowRight, Star, Zap, Code2, ChevronRight, CalendarDays, CheckCircle2, Swords, Crown, Mail } from 'lucide-react';
 import { CURRICULUM, getAllLessons } from '../data/curriculum';
 import { LEVELS } from '../hooks/useProgress';
 
@@ -313,43 +312,39 @@ export default function HomePage({ progress }) {
       </div>
 
       {/* Premium Upgrade Section */}
-      <div className="px-4 sm:px-8 pb-12">
+      <div className="px-4 sm:px-8 pb-14">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="rounded-3xl overflow-hidden"
-          style={{ border: '1px solid rgba(251,191,36,0.25)' }}
         >
-          {/* Header */}
-          <div
-            className="px-6 sm:px-10 py-8 text-center relative overflow-hidden"
-            style={{ background: 'linear-gradient(135deg, #1a1200 0%, #0f0a00 50%, #1a0f00 100%)' }}
-          >
-            <div className="absolute inset-0 opacity-10"
-              style={{ background: 'radial-gradient(ellipse at 50% 0%, #f59e0b, transparent 70%)' }} />
-            <div className="relative z-10">
-              <div className="inline-flex items-center gap-2 bg-yellow-900/30 border border-yellow-700/40 px-4 py-1.5 rounded-full text-xs font-bold text-yellow-400 mb-4 tracking-wide uppercase">
-                <Crown size={13} /> Premium Plan
-              </div>
-              <h2 className="text-2xl sm:text-3xl font-black text-white mb-2">
-                Go from Good to <span style={{ color: '#f59e0b' }}>FAANG-Ready</span>
-              </h2>
-              <p className="text-dark-300 text-sm max-w-lg mx-auto">
-                Unlock 7 advanced modules covering the exact algorithms and patterns asked at Google, Meta, Amazon, Microsoft &amp; Apple interviews.
-              </p>
+          {/* Section label */}
+          <div className="text-center mb-6">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold tracking-widest uppercase mb-3"
+              style={{ background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.25)', color: '#f59e0b' }}>
+              <Crown size={12} /> Upgrade to Premium
             </div>
+            <h2 className="text-2xl sm:text-3xl font-black text-white mb-2">
+              Go from Good to <span style={{ background: 'linear-gradient(90deg,#f59e0b,#f97316)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>FAANG‑Ready</span>
+            </h2>
+            <p className="text-dark-400 text-sm max-w-md mx-auto">
+              Unlock 7 advanced modules with the exact algorithms asked at top tech companies.
+            </p>
           </div>
 
-          {/* Free vs Premium comparison */}
-          <div
-            className="grid grid-cols-1 sm:grid-cols-2 gap-0 sm:divide-x divide-dark-700"
-            style={{ background: 'rgba(10,10,15,0.97)' }}
-          >
-            {/* Free */}
-            <div className="p-6 sm:p-8">
-              <p className="text-xs font-bold text-dark-400 uppercase tracking-wider mb-4">Free — Always included</p>
-              <ul className="space-y-2.5">
+          {/* Cards grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+
+            {/* Free card */}
+            <div className="rounded-2xl p-6" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <div className="flex items-center justify-between mb-5">
+                <div>
+                  <p className="text-base font-black text-white">Free</p>
+                  <p className="text-xs text-dark-400 mt-0.5">Always included</p>
+                </div>
+                <span className="text-2xl font-black text-white">$0</span>
+              </div>
+              <ul className="space-y-3">
                 {[
                   'C++ Fundamentals (14 lessons)',
                   'Object-Oriented Programming',
@@ -360,18 +355,45 @@ export default function HomePage({ progress }) {
                   'In-browser C++ compiler',
                   'Streak tracking & XP system',
                 ].map((item, i) => (
-                  <li key={i} className="flex items-center gap-2.5 text-sm text-dark-300">
-                    <CheckCircle2 size={14} className="text-emerald-500 shrink-0" />
+                  <li key={i} className="flex items-center gap-2.5 text-sm text-dark-200">
+                    <CheckCircle2 size={14} className="text-emerald-400 shrink-0" />
                     {item}
                   </li>
                 ))}
               </ul>
+              <div className="mt-6 py-2.5 rounded-xl text-center text-sm font-semibold text-dark-400 border border-dark-600">
+                Current Plan
+              </div>
             </div>
 
-            {/* Premium */}
-            <div className="p-6 sm:p-8" style={{ background: 'rgba(251,191,36,0.03)' }}>
-              <p className="text-xs font-bold text-yellow-600 uppercase tracking-wider mb-4">Premium — Everything above, plus</p>
-              <ul className="space-y-2.5">
+            {/* Premium card */}
+            <div className="rounded-2xl p-6 relative overflow-hidden"
+              style={{
+                background: 'linear-gradient(145deg, rgba(30,20,0,0.9) 0%, rgba(15,10,0,0.95) 100%)',
+                border: '1px solid rgba(245,158,11,0.4)',
+                boxShadow: '0 0 40px rgba(245,158,11,0.08)',
+              }}>
+              {/* Glow */}
+              <div className="absolute top-0 right-0 w-48 h-48 pointer-events-none"
+                style={{ background: 'radial-gradient(circle at 80% 20%, rgba(245,158,11,0.12), transparent 65%)' }} />
+
+              {/* Popular badge */}
+              <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold"
+                style={{ background: 'linear-gradient(135deg,#f59e0b,#f97316)', color: 'white' }}>
+                ⭐ Most Popular
+              </div>
+
+              <div className="flex items-center justify-between mb-5 relative">
+                <div>
+                  <div className="flex items-center gap-1.5 mb-0.5">
+                    <Crown size={15} className="text-yellow-400" />
+                    <p className="text-base font-black text-white">Premium</p>
+                  </div>
+                  <p className="text-xs text-yellow-600 mt-0.5">Everything in Free, plus:</p>
+                </div>
+              </div>
+
+              <ul className="space-y-3 relative">
                 {[
                   { text: 'Linked Lists, Stacks & Queues' },
                   { text: 'Trees, Heaps & Priority Queues' },
@@ -379,39 +401,30 @@ export default function HomePage({ progress }) {
                   { text: 'Dynamic Programming (1D → Bitmask)' },
                   { text: 'Advanced Algorithms & Segment Trees' },
                   { text: 'Interview Patterns & System Design DSA' },
-                  { text: 'FAANG Problem Bank — 15 curated problems', highlight: true },
-                  { text: 'Completion certificate', highlight: true },
+                  { text: 'FAANG Problem Bank — 15 curated problems', star: true },
+                  { text: 'Official completion certificate', star: true },
                 ].map((item, i) => (
                   <li key={i} className="flex items-center gap-2.5 text-sm">
-                    <Crown size={13} className="text-yellow-400 shrink-0" />
-                    <span className={item.highlight ? 'text-yellow-300 font-semibold' : 'text-dark-200'}>
+                    <Crown size={12} className="shrink-0" style={{ color: item.star ? '#f97316' : '#f59e0b' }} />
+                    <span style={{ color: item.star ? '#fcd34d' : '#e5e7eb', fontWeight: item.star ? 600 : 400 }}>
                       {item.text}
                     </span>
                   </li>
                 ))}
               </ul>
-            </div>
-          </div>
 
-          {/* CTA footer */}
-          <div
-            className="px-6 sm:px-10 py-6 flex flex-col sm:flex-row items-center justify-between gap-4"
-            style={{ background: 'rgba(251,191,36,0.05)', borderTop: '1px solid rgba(251,191,36,0.15)' }}
-          >
-            <div>
-              <p className="font-bold text-white text-sm">Ready to level up?</p>
-              <p className="text-xs text-dark-400 mt-0.5">Email us and get access within 24 hours.</p>
+              <a
+                href="mailto:sharanrajithk@gmail.com?subject=CppMaster Premium Access Request"
+                className="mt-6 flex items-center justify-center gap-2 w-full py-3 rounded-xl font-bold text-sm text-white transition-all hover:opacity-90 active:scale-[0.98] relative"
+                style={{
+                  background: 'linear-gradient(135deg, #f59e0b, #f97316)',
+                  boxShadow: '0 4px 20px rgba(245,158,11,0.35)',
+                }}
+              >
+                <Mail size={14} /> Request Premium Access
+              </a>
+              <p className="text-center text-xs text-yellow-900 mt-2">Get access within 24 hours</p>
             </div>
-            <a
-              href="mailto:sharanrajithk@gmail.com?subject=CppMaster Premium Access Request"
-              className="shrink-0 flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm text-white transition-all hover:opacity-90 active:scale-95"
-              style={{
-                background: 'linear-gradient(135deg, #f59e0b, #f97316)',
-                boxShadow: '0 4px 24px rgba(245,158,11,0.3)',
-              }}
-            >
-              <Mail size={15} /> Request Premium Access
-            </a>
           </div>
         </motion.div>
       </div>
