@@ -24,7 +24,7 @@ import { useParams }   from 'react-router-dom';
 import { PanelGroup, Panel, PanelResizeHandle } from 'react-resizable-panels';
 
 // ─── Layout wrapper ───────────────────────────────────────────────────────────
-function AppShell({ progress, completeLesson, isLessonCompleted, isLessonUnlocked, resetProgress, onLogout, currentUser, isAdmin, isPremium }) { // isLessonUnlocked passed to SearchModal
+function AppShell({ progress, completeLesson, completeQuiz, isLessonCompleted, isLessonUnlocked, resetProgress, onLogout, currentUser, isAdmin, isPremium }) { // isLessonUnlocked passed to SearchModal
   const [showSettings,   setShowSettings]   = useState(false);
   const [sidebarOpen,    setSidebarOpen]    = useState(false);
   const [showPremium,    setShowPremium]    = useState(false);
@@ -74,7 +74,7 @@ function AppShell({ progress, completeLesson, isLessonCompleted, isLessonUnlocke
               />
             }
           />
-          <Route path="/dashboard"    element={<DashboardPage progress={progress} resetProgress={resetProgress} currentUser={currentUser} />} />
+          <Route path="/dashboard"    element={<DashboardPage progress={progress} resetProgress={resetProgress} completeQuiz={completeQuiz} currentUser={currentUser} />} />
           <Route path="/leaderboard"  element={<LeaderboardPage currentUser={currentUser} />} />
           <Route path="/admin"        element={<AdminPage currentUser={currentUser} />} />
           <Route path="*"             element={<Navigate to="/" replace />} />
@@ -203,7 +203,7 @@ const BACKEND_URL = 'https://cpp-master.onrender.com/';
 const PING_INTERVAL = 10 * 60 * 1000; // 10 minutes
 
 function AuthenticatedApp({ currentUser, onLogout }) {
-  const { progress, completeLesson, isLessonUnlocked, isLessonCompleted, resetProgress } = useProgress(currentUser);
+  const { progress, completeLesson, completeQuiz, isLessonUnlocked, isLessonCompleted, resetProgress } = useProgress(currentUser);
 
   const isAdmin   = isAdminEmail(currentUser?.email);
   const isPremium = isAdmin || !!progress?.isPremium;
@@ -221,6 +221,7 @@ function AuthenticatedApp({ currentUser, onLogout }) {
       <AppShell
         progress={progress}
         completeLesson={completeLesson}
+        completeQuiz={completeQuiz}
         isLessonCompleted={isLessonCompleted}
         isLessonUnlocked={isLessonUnlocked}
         resetProgress={resetProgress}

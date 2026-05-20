@@ -107,6 +107,26 @@ export function useProgress(user) {
     });
   }, [_update]);
 
+  /** Record quiz completion and award XP (first attempt only) */
+  const completeQuiz = useCallback((moduleId, score) => {
+    _update(prev => {
+      const existing = (prev.completedQuizzes || {})[moduleId];
+      const xpReward = score * 10;
+      const newXP    = existing ? prev.xp : prev.xp + xpReward;
+      const newLevel  = calculateLevel(newXP);
+      const bestScore = existing ? Math.max(existing.score, score) : score;
+      return {
+        ...prev,
+        xp: newXP,
+        level: newLevel,
+        completedQuizzes: {
+          ...(prev.completedQuizzes || {}),
+          [moduleId]: { score: bestScore, xp: existing ? existing.xp : xpReward },
+        },
+      };
+    });
+  }, [_update]);
+
   /** Check if a lesson is unlocked (first lesson always unlocked) */
   const isLessonUnlocked = useCallback((lessonId, prevLessonId) => {
     if (!prevLessonId) return true; // First lesson in first module
@@ -131,6 +151,7 @@ export function useProgress(user) {
     progress,
     completeLesson,
     completeLeetCode,
+    completeQuiz,
     isLessonUnlocked,
     isLessonCompleted,
     resetProgress,
@@ -145,6 +166,7 @@ function getDefaultProgress() {
   return {
     completedLessons:  {},
     completedLeetCode: {},
+    completedQuizzes:  {},
     xp:                0,
     level:             1,
     streak:            0,

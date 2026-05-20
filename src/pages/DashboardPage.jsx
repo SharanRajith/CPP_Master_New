@@ -1,12 +1,14 @@
 import React, { useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Trophy, Flame, Zap, BookOpen, Target, RefreshCw, ChevronRight, BarChart3, Award, Download, Lock, Activity, Share2 } from 'lucide-react';
+import { Trophy, Flame, Zap, BookOpen, Target, RefreshCw, ChevronRight, BarChart3, Award, Download, Lock, Activity, Share2, Brain } from 'lucide-react';
 import { downloadShareCard } from '../utils/shareCard';
 import { LEVELS } from '../hooks/useProgress';
 import { CURRICULUM, getAllLessons } from '../data/curriculum';
 import { ACHIEVEMENTS, getEarnedAchievements } from '../config/achievements';
 import { downloadCertificate } from '../utils/certificate';
+import QuizModal from '../components/QuizModal';
+import { QUIZZES } from '../data/quizzes';
 
 // ─── Activity Calendar (90 days) ─────────────────────────────────────────────
 function ActivityCalendar({ activityLog = {} }) {
@@ -202,8 +204,9 @@ function XPBarChart({ activityLog = {} }) {
   );
 }
 
-export default function DashboardPage({ progress, resetProgress, currentUser }) {
+export default function DashboardPage({ progress, resetProgress, completeQuiz, currentUser }) {
   const navigate   = useNavigate();
+  const [activeQuiz, setActiveQuiz] = useState(null); // { moduleId, moduleName, moduleColor, moduleIcon, questions }
   const allLessons = getAllLessons();
   const levelInfo  = LEVELS[progress.level - 1] || LEVELS[0];
   const nextLevel  = LEVELS[progress.level] || null;
@@ -391,21 +394,32 @@ export default function DashboardPage({ progress, resetProgress, currentUser }) 
             const firstUncompleted = module.lessons.find(l => !progress.completedLessons[l.id]);
             const isAllDone = completed === total;
 
+            const quizKey   = module.id; // e.g. 'module-1'
+            const questions = QUIZZES[quizKey];
+            const quizDone  = !!(progress.completedQuizzes || {})[quizKey];
+
             return (
               <motion.div
                 key={module.id}
                 initial={{ opacity: 0, x: -16 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.15 + i * 0.04 }}
-                className="flex items-center gap-3 rounded-xl p-4 cursor-pointer transition-all group active:scale-[0.99]"
+                className="flex items-center gap-3 rounded-xl p-4 transition-all group"
                 style={{
                   background: 'rgba(17,17,24,0.8)',
                   border: isAllDone ? `1px solid ${module.color}40` : '1px solid rgba(255,255,255,0.05)',
                 }}
-                onClick={() => navigate(`/lesson/${firstUncompleted?.id || module.lessons[0].id}`)}
               >
-                <span className="text-xl shrink-0">{module.icon}</span>
-                <div className="flex-1 min-w-0">
+                <span
+                  className="text-xl shrink-0 cursor-pointer"
+                  onClick={() => navigate(`/lesson/${firstUncompleted?.id || module.lessons[0].id}`)}
+                >
+                  {module.icon}
+                </span>
+                <div
+                  className="flex-1 min-w-0 cursor-pointer"
+                  onClick={() => navigate(`/lesson/${firstUncompleted?.id || module.lessons[0].id}`)}
+                >
                   <div className="flex items-center justify-between mb-1.5">
                     <span className="font-semibold text-white text-sm truncate">{module.title}</span>
                     <span className="text-xs shrink-0 ml-2 font-bold" style={{ color: module.color }}>
@@ -422,10 +436,27 @@ export default function DashboardPage({ progress, resetProgress, currentUser }) 
                     />
                   </div>
                 </div>
-                <ChevronRight
-                  size={15}
-                  className="shrink-0 text-dark-500 group-hover:text-dark-300 group-hover:translate-x-0.5 transition-all"
-                />
+                {isAllDone && questions ? (
+                  <button
+                    onClick={e => { e.stopPropagation(); setActiveQuiz({ moduleId: quizKey, moduleName: module.title, moduleColor: module.color, moduleIcon: module.icon, questions }); }}
+                    className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all hover:opacity-90 active:scale-95"
+                    style={{
+                      background: quizDone ? 'rgba(52,211,153,0.1)' : 'rgba(99,102,241,0.15)',
+                      border:     quizDone ? '1px solid rgba(52,211,153,0.3)' : '1px solid rgba(99,102,241,0.3)',
+                      color:      quizDone ? '#34d399' : '#a5b4fc',
+                    }}
+                    title={quizDone ? `Quiz done — best: ${(progress.completedQuizzes || {})[quizKey]?.score}/5` : 'Take the module quiz'}
+                  >
+                    <Brain size={12} />
+                    {quizDone ? 'Retake' : 'Quiz'}
+                  </button>
+                ) : (
+                  <ChevronRight
+                    size={15}
+                    className="shrink-0 text-dark-500 group-hover:text-dark-300 group-hover:translate-x-0.5 transition-all cursor-pointer"
+                    onClick={() => navigate(`/lesson/${firstUncompleted?.id || module.lessons[0].id}`)}
+                  />
+                )}
               </motion.div>
             );
           })}
@@ -514,6 +545,20 @@ export default function DashboardPage({ progress, resetProgress, currentUser }) 
           </button>
         </div>
       </div>
+
+      {/* Quiz Modal */}
+      <AnimatePresence>
+        {activeQuiz && (
+          <QuizModal
+            {...activeQuiz}
+            alreadyDone={!!(progress.completedQuizzes || {})[activeQuiz.moduleId]}
+            onClose={() => setActiveQuiz(null)}
+            onComplete={(score) => {
+              completeQuiz(activeQuiz.moduleId, score);
+            }}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
