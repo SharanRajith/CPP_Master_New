@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Settings, LogOut, Flame, Trophy, Home, Menu, ChevronRight, Zap, Medal, Shield, Crown } from 'lucide-react';
 import { LEVELS } from '../../hooks/useProgress';
 
-export default function Navbar({ xp, level, streak, currentUser, isAdmin, isPremium, onOpenSettings, onLogout, onToggleSidebar }) {
+export default function Navbar({ xp, level, streak, currentUser, isAdmin, isPremium, onOpenSettings, onOpenPremium, onLogout, onToggleSidebar }) {
   const location      = useLocation();
   const isLessonRoute = location.pathname.startsWith('/lesson/');
   const levelInfo     = LEVELS[level - 1] || LEVELS[0];
@@ -84,6 +84,17 @@ export default function Navbar({ xp, level, streak, currentUser, isAdmin, isPrem
           </div>
         </div>
       </div>
+
+      {/* Upgrade button — only for free users */}
+      {!isPremium && (
+        <button
+          onClick={onOpenPremium}
+          className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all hover:opacity-90 active:scale-95 shrink-0"
+          style={{ background: 'linear-gradient(135deg,#f59e0b,#f97316)', color: 'white' }}
+        >
+          <Crown size={11} /> Upgrade
+        </button>
+      )}
 
       {/* Nav icons */}
       <div className="flex items-center gap-0.5">

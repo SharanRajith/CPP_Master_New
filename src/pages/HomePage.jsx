@@ -1,8 +1,6 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Play, Trophy, Flame, BookOpen, ArrowRight, Star, Zap, Code2, ChevronRight, CalendarDays, CheckCircle2, Swords, Crown } from 'lucide-react';
-import PremiumModal from '../components/PremiumModal';
 import { CURRICULUM, getAllLessons } from '../data/curriculum';
 import { LEVELS } from '../hooks/useProgress';
 
@@ -160,9 +158,8 @@ function ModuleCard({ module, progress, onStart }) {
   );
 }
 
-export default function HomePage({ progress }) {
+export default function HomePage({ progress, onOpenPremium }) {
   const navigate = useNavigate();
-  const [showPremium, setShowPremium] = useState(false);
   const allLessons = getAllLessons();
   const totalCompleted = Object.keys(progress.completedLessons).length;
   const levelInfo      = LEVELS[progress.level - 1] || LEVELS[0];
@@ -320,7 +317,7 @@ export default function HomePage({ progress }) {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          onClick={() => setShowPremium(true)}
+          onClick={onOpenPremium}
           className="w-full rounded-2xl px-5 py-4 flex items-center gap-4 group transition-all hover:scale-[1.01] active:scale-[0.99]"
           style={{
             background: 'linear-gradient(135deg, rgba(30,18,0,0.9), rgba(15,9,0,0.95))',
@@ -350,11 +347,6 @@ export default function HomePage({ progress }) {
           </div>
         </motion.button>
       </div>
-
-      {/* Premium modal */}
-      <AnimatePresence>
-        {showPremium && <PremiumModal onClose={() => setShowPremium(false)} />}
-      </AnimatePresence>
 
     </div></div>
   );

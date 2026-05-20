@@ -6,6 +6,8 @@ import { auth } from './lib/firebase';
 import Navbar        from './components/layout/Navbar';
 import Sidebar       from './components/layout/Sidebar';
 import SettingsModal from './components/settings/SettingsModal';
+import PremiumModal  from './components/PremiumModal';
+import { AnimatePresence } from 'framer-motion';
 
 import HomePage        from './pages/HomePage';
 import LessonPage      from './pages/LessonPage';
@@ -23,6 +25,7 @@ import { PanelGroup, Panel, PanelResizeHandle } from 'react-resizable-panels';
 function AppShell({ progress, completeLesson, isLessonCompleted, isLessonUnlocked, resetProgress, onLogout, currentUser, isAdmin, isPremium }) {
   const [showSettings, setShowSettings] = useState(false);
   const [sidebarOpen, setSidebarOpen]   = useState(false);
+  const [showPremium, setShowPremium]   = useState(false);
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
@@ -34,12 +37,13 @@ function AppShell({ progress, completeLesson, isLessonCompleted, isLessonUnlocke
         isAdmin={isAdmin}
         isPremium={isPremium}
         onOpenSettings={() => setShowSettings(true)}
+        onOpenPremium={() => setShowPremium(true)}
         onLogout={onLogout}
         onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
       />
       <div className="flex flex-1 overflow-hidden relative">
         <Routes>
-          <Route path="/" element={<HomePage progress={progress} />} />
+          <Route path="/" element={<HomePage progress={progress} onOpenPremium={() => setShowPremium(true)} />} />
           <Route
             path="/lesson/:lessonId"
             element={
@@ -61,6 +65,9 @@ function AppShell({ progress, completeLesson, isLessonCompleted, isLessonUnlocke
         </Routes>
       </div>
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
+      <AnimatePresence>
+        {showPremium && <PremiumModal onClose={() => setShowPremium(false)} />}
+      </AnimatePresence>
     </div>
   );
 }
