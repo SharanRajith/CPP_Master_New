@@ -100,8 +100,8 @@ export default function SettingsModal({ onClose, onEditorSettingsChange }) {
                 }`}
               >
                 <span
-                  className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${
-                    settings.wordWrap ? 'translate-x-6' : 'translate-x-1'
+                  className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${
+                    settings.wordWrap ? 'translate-x-5' : 'translate-x-0'
                   }`}
                 />
               </button>
