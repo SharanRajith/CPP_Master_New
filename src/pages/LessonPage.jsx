@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronLeft, ChevronRight, Star, Zap,
-  BookOpen, Code2, FlaskConical, CheckCircle2,
+  BookOpen, Code2, FlaskConical, CheckCircle2, Terminal,
 } from 'lucide-react';
 
 import CodeEditor      from '../components/ide/CodeEditor';
@@ -113,6 +113,8 @@ export default function LessonPage({ progress, completeLesson, isLessonCompleted
   const [showXPToast, setShowXPToast] = useState(false);
   const [xpEarned, setXpEarned]       = useState(0);
   const [mobileTab, setMobileTab]     = useState('lesson');
+  const [stdin, setStdin]             = useState('');
+  const [showStdin, setShowStdin]     = useState(false);
 
   const {
     isCompiling, compilerResult, compilerStatus,
@@ -171,7 +173,7 @@ export default function LessonPage({ progress, completeLesson, isLessonCompleted
     }
   }, [compilerResult, isMobile]);
 
-  const handleRun      = useCallback(() => runCode(code),                         [code, runCode]);
+  const handleRun      = useCallback(() => runCode(code, stdin),                  [code, stdin, runCode]);
   const handleRunTests = useCallback(() => { if (lesson?.testCases) runTests(code, lesson.testCases); }, [code, lesson, runTests]);
 
   // ── Loading ────────────────────────────────────────────────────────────────
@@ -202,9 +204,29 @@ export default function LessonPage({ progress, completeLesson, isLessonCompleted
         onRunTests={handleRunTests}
         onOpenSettings={() => setShowSettings(true)}
         hasTestCases={lesson.testCases?.length > 0}
+        showStdin={showStdin}
+        onToggleStdin={() => setShowStdin(s => !s)}
       />
-      <div className="flex-1 min-h-0 bg-[#0d1326] relative">
-        <CodeEditor value={code} onChange={val => setCode(val || '')} height="100%" />
+      <div className="flex-1 min-h-0 bg-[#0d1326] relative flex flex-col overflow-hidden">
+        <div className="flex-1 min-h-0">
+          <CodeEditor value={code} onChange={val => setCode(val || '')} height="100%" />
+        </div>
+        {showStdin && (
+          <div className="shrink-0 border-t border-dark-600 bg-dark-900">
+            <div className="px-3 py-1.5 flex items-center gap-2 border-b border-dark-700">
+              <Terminal size={11} className="text-indigo-400" />
+              <span className="text-xs text-dark-400 font-medium uppercase tracking-wide">Program Input (stdin)</span>
+            </div>
+            <textarea
+              value={stdin}
+              onChange={e => setStdin(e.target.value)}
+              placeholder="Type input here (one value per line)…"
+              spellCheck={false}
+              className="w-full bg-transparent text-sm text-dark-100 font-mono px-3 py-2 resize-none outline-none placeholder:text-dark-600"
+              rows={3}
+            />
+          </div>
+        )}
       </div>
     </>
   );

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Play, Loader2, Wifi, WifiOff, AlertTriangle } from 'lucide-react';
+import { Play, Loader2, Terminal } from 'lucide-react';
 
 const STATUS_CONFIG = {
   'piston-local': { icon: '⚡', label: 'Local (Unlimited)', color: 'text-green-400' },
@@ -17,6 +17,8 @@ export default function CompilerToolbar({
   onRunTests,
   onOpenSettings,
   hasTestCases,
+  showStdin,
+  onToggleStdin,
 }) {
   const status = STATUS_CONFIG[compilerStatus] || STATUS_CONFIG.checking;
 
@@ -47,6 +49,19 @@ export default function CompilerToolbar({
             ✅ Run Tests
           </button>
         )}
+
+        <button
+          onClick={onToggleStdin}
+          title="Toggle stdin input"
+          className={`flex items-center gap-1.5 text-sm py-1.5 px-3 rounded-lg border transition-all ${
+            showStdin
+              ? 'border-indigo-500 text-indigo-400 bg-indigo-900/20'
+              : 'border-dark-500 text-dark-400 hover:text-dark-200 hover:border-dark-400'
+          }`}
+        >
+          <Terminal size={13} />
+          Input
+        </button>
       </div>
 
       {/* Right: Compiler status + settings */}
