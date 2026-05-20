@@ -116,6 +116,10 @@ export const CURRICULUM = [
       { id: 'm6-l6',  title: 'Queue using Stacks',                    file: () => import('./lessons/module6/lesson6.js') },
       { id: 'm6-l7',  title: 'Min Stack',                             file: () => import('./lessons/module6/lesson7.js') },
       { id: 'm6-l8',  title: 'Circular Queue',                        file: () => import('./lessons/module6/lesson8.js') },
+      { id: 'm6-l9',  title: 'Largest Rectangle in Histogram',        file: () => import('./lessons/module6/lesson9.js') },
+      { id: 'm6-l10', title: 'Daily Temperatures',                    file: () => import('./lessons/module6/lesson10.js') },
+      { id: 'm6-l11', title: 'Evaluate Reverse Polish Notation',      file: () => import('./lessons/module6/lesson11.js') },
+      { id: 'm6-l12', title: 'Decode String',                         file: () => import('./lessons/module6/lesson12.js') },
     ],
   },
   {
@@ -151,6 +155,10 @@ export const CURRICULUM = [
       { id: 'm8-l4',  title: 'Merge K Sorted Lists',                  file: () => import('./lessons/module8/lesson4.js') },
       { id: 'm8-l5',  title: 'Sliding Window Maximum',                file: () => import('./lessons/module8/lesson5.js') },
       { id: 'm8-l6',  title: 'Top K Frequent Elements',               file: () => import('./lessons/module8/lesson6.js') },
+      { id: 'm8-l7',  title: 'Find Median from Data Stream',          file: () => import('./lessons/module8/lesson7.js') },
+      { id: 'm8-l8',  title: 'K Closest Points to Origin',            file: () => import('./lessons/module8/lesson8.js') },
+      { id: 'm8-l9',  title: 'Task Scheduler',                        file: () => import('./lessons/module8/lesson9.js') },
+      { id: 'm8-l10', title: 'Reorganize String',                     file: () => import('./lessons/module8/lesson10.js') },
     ],
   },
   {
