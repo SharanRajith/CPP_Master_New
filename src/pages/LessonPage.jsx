@@ -9,9 +9,11 @@ import {
 import CodeEditor      from '../components/ide/CodeEditor';
 import CompilerToolbar from '../components/ide/CompilerToolbar';
 import TestResults     from '../components/ide/TestResults';
+import SolutionReveal  from '../components/ide/SolutionReveal';
 import LessonContent   from '../components/lesson/LessonContent';
 import SettingsModal   from '../components/settings/SettingsModal';
 import PremiumGate     from '../components/PremiumGate';
+import { readEditorSettings } from '../hooks/useEditorSettings';
 import { CURRICULUM }  from '../data/curriculum';
 
 import { useCompiler }  from '../hooks/useCompiler';
@@ -117,6 +119,8 @@ export default function LessonPage({ progress, completeLesson, isLessonCompleted
   const [mobileTab, setMobileTab]     = useState('lesson');
   const [stdin, setStdin]             = useState('');
   const [showStdin, setShowStdin]     = useState(false);
+  const [hintIndex, setHintIndex]     = useState(-1);
+  const [editorSettings, setEditorSettings] = useState(() => readEditorSettings());
 
   const {
     isCompiling, compilerResult, compilerStatus,
@@ -133,6 +137,7 @@ export default function LessonPage({ progress, completeLesson, isLessonCompleted
     setLoading(true);
     setLesson(null);
     setMobileTab('lesson');
+    setHintIndex(-1);
     const meta = allLessons.find(l => l.id === lessonId);
     if (!meta) { setLoading(false); return; }
     meta.file()
@@ -177,6 +182,14 @@ export default function LessonPage({ progress, completeLesson, isLessonCompleted
 
   const handleRun      = useCallback(() => runCode(code, stdin),                  [code, stdin, runCode]);
   const handleRunTests = useCallback(() => { if (lesson?.testCases) runTests(code, lesson.testCases); }, [code, lesson, runTests]);
+  const handleReset    = useCallback(() => {
+    if (!lesson) return;
+    localStorage.removeItem(`cpp_code_${lessonId}`);
+    setCode(lesson.starterCode || '');
+  }, [lesson, lessonId]);
+  const handleShowHint = useCallback(() => {
+    setHintIndex(i => Math.min(i + 1, (lesson?.hints?.length ?? 1) - 1));
+  }, [lesson]);
 
   // ── Premium gate ───────────────────────────────────────────────────────────
   const lessonModule = lesson
@@ -212,6 +225,7 @@ export default function LessonPage({ progress, completeLesson, isLessonCompleted
         compilerStatus={compilerStatus}
         onRun={handleRun}
         onRunTests={handleRunTests}
+        onReset={handleReset}
         onOpenSettings={() => setShowSettings(true)}
         hasTestCases={lesson.testCases?.length > 0}
         showStdin={showStdin}
@@ -219,7 +233,7 @@ export default function LessonPage({ progress, completeLesson, isLessonCompleted
       />
       <div className="flex-1 min-h-0 bg-[#0d1326] relative flex flex-col overflow-hidden">
         <div className="flex-1 min-h-0">
-          <CodeEditor value={code} onChange={val => setCode(val || '')} height="100%" />
+          <CodeEditor value={code} onChange={val => setCode(val || '')} height="100%" onRun={handleRun} settings={editorSettings} />
         </div>
         {showStdin && (
           <div className="shrink-0 border-t border-dark-600 bg-dark-900">
@@ -253,7 +267,19 @@ export default function LessonPage({ progress, completeLesson, isLessonCompleted
         )}
       </div>
       <div className="flex-1 overflow-y-auto overscroll-contain">
-        <TestResults result={compilerResult} isCompiling={isCompiling} />
+        <TestResults
+          result={compilerResult}
+          isCompiling={isCompiling}
+          hints={lesson.hints}
+          hintIndex={hintIndex}
+          onShowHint={handleShowHint}
+          attempts={attempts}
+        />
+        <SolutionReveal
+          modelAnswer={lesson.modelAnswer}
+          isCompleted={isCompleted}
+          attempts={attempts}
+        />
       </div>
     </>
   );
@@ -413,7 +439,7 @@ export default function LessonPage({ progress, completeLesson, isLessonCompleted
           </motion.div>
         )}
 
-        {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
+        {showSettings && <SettingsModal onClose={() => setShowSettings(false)} onEditorSettingsChange={setEditorSettings} />}
       </div>
     );
   }
@@ -449,7 +475,7 @@ export default function LessonPage({ progress, completeLesson, isLessonCompleted
         </Panel>
       </PanelGroup>
 
-      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
+      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} onEditorSettingsChange={setEditorSettings} />}
     </div>
   );
 }

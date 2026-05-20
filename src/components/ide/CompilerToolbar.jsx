@@ -1,10 +1,9 @@
 import React from 'react';
-import { Play, Loader2, Terminal } from 'lucide-react';
+import { Play, Loader2, Terminal, RotateCcw } from 'lucide-react';
 
 const STATUS_CONFIG = {
   'piston-local': { icon: '⚡', label: 'Local (Unlimited)', color: 'text-green-400' },
   piston:         { icon: '🟢', label: 'Compiler Ready',    color: 'text-green-400' },
-  jdoodle:        { icon: '🟡', label: 'JDoodle (Fallback)', color: 'text-warning' },
   offline:        { icon: '🔴', label: 'Offline',            color: 'text-danger' },
   checking:       { icon: '⚪', label: 'Checking...',         color: 'text-dark-300' },
   warming:        { icon: null, label: 'Waking up...',        color: 'text-yellow-400' },
@@ -15,6 +14,7 @@ export default function CompilerToolbar({
   compilerStatus,
   onRun,
   onRunTests,
+  onReset,
   onOpenSettings,
   hasTestCases,
   showStdin,
@@ -61,6 +61,15 @@ export default function CompilerToolbar({
         >
           <Terminal size={13} />
           Input
+        </button>
+
+        <button
+          onClick={onReset}
+          title="Reset to starter code"
+          className="flex items-center gap-1.5 text-sm py-1.5 px-3 rounded-lg border border-dark-500 text-dark-400 hover:text-red-400 hover:border-red-700/60 transition-all"
+        >
+          <RotateCcw size={13} />
+          Reset
         </button>
       </div>
 

@@ -1,17 +1,20 @@
-import React, { useState } from 'react';
-import { X, Settings, Save } from 'lucide-react';
+import { useState } from 'react';
+import { X, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { readEditorSettings, writeEditorSettings } from '../../hooks/useEditorSettings';
 
-export default function SettingsModal({ onClose }) {
-  const [clientId, setClientId]         = useState(() => localStorage.getItem('jdoodle_client_id') || '');
-  const [clientSecret, setClientSecret] = useState(() => localStorage.getItem('jdoodle_client_secret') || '');
-  const [saved, setSaved]               = useState(false);
+const FONT_SIZES = [12, 14, 16, 18];
+const TAB_SIZES  = [2, 4];
 
-  function handleSave() {
-    localStorage.setItem('jdoodle_client_id',     clientId.trim());
-    localStorage.setItem('jdoodle_client_secret', clientSecret.trim());
-    setSaved(true);
-    setTimeout(() => { setSaved(false); onClose(); }, 1200);
+export default function SettingsModal({ onClose, onEditorSettingsChange }) {
+  const [settings, setSettings] = useState(() => readEditorSettings());
+
+  function update(patch) {
+    setSettings(prev => {
+      const next = writeEditorSettings(patch, prev);
+      onEditorSettingsChange?.(next);
+      return next;
+    });
   }
 
   return (
@@ -25,85 +28,87 @@ export default function SettingsModal({ onClose }) {
         onClick={onClose}
       >
         <motion.div
-          className="glass rounded-2xl p-8 w-full max-w-md mx-4 relative"
+          className="glass rounded-2xl w-full max-w-sm mx-4 relative overflow-hidden"
           style={{ border: '1px solid rgba(99,102,241,0.3)' }}
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
           onClick={e => e.stopPropagation()}
         >
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 text-dark-300 hover:text-white transition-colors"
-          >
-            <X size={20} />
-          </button>
-
-          <div className="flex items-center gap-3 mb-6">
+          {/* Header */}
+          <div className="flex items-center gap-3 px-6 pt-6 pb-5">
             <div className="p-2 rounded-lg bg-brand-900">
-              <Settings size={20} className="text-brand-400" />
+              <Settings size={18} className="text-brand-400" />
             </div>
-            <div>
-              <h2 className="text-lg font-bold text-white">Compiler Settings</h2>
-              <p className="text-sm text-dark-300">JDoodle API (fallback compiler)</p>
-            </div>
+            <h2 className="text-lg font-bold text-white flex-1">Editor Settings</h2>
+            <button onClick={onClose} className="text-dark-300 hover:text-white transition-colors">
+              <X size={20} />
+            </button>
           </div>
 
-          <div className="bg-dark-700 rounded-lg p-4 mb-6 text-sm">
-            <p className="text-warning font-semibold mb-1">🟡 JDoodle Fallback Required</p>
-            <p className="text-dark-300">
-              The primary Piston API is unavailable. Enter your free JDoodle credentials below.
-              Get them at{' '}
-              <a
-                href="https://jdoodle.com"
-                target="_blank"
-                rel="noreferrer"
-                className="text-brand-400 underline"
+          <div className="px-6 pb-6 space-y-5">
+            {/* Font size */}
+            <div>
+              <label className="block text-sm font-medium text-dark-300 mb-2">Font Size</label>
+              <div className="flex gap-2">
+                {FONT_SIZES.map(sz => (
+                  <button
+                    key={sz}
+                    onClick={() => update({ fontSize: sz })}
+                    className={`flex-1 py-2 rounded-lg text-sm font-semibold border transition-all ${
+                      settings.fontSize === sz
+                        ? 'bg-brand-600/20 border-brand-500 text-white'
+                        : 'border-dark-500 text-dark-300 hover:border-dark-400 hover:text-white'
+                    }`}
+                  >
+                    {sz}px
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Tab size */}
+            <div>
+              <label className="block text-sm font-medium text-dark-300 mb-2">Tab Size</label>
+              <div className="flex gap-2">
+                {TAB_SIZES.map(ts => (
+                  <button
+                    key={ts}
+                    onClick={() => update({ tabSize: ts })}
+                    className={`flex-1 py-2 rounded-lg text-sm font-semibold border transition-all ${
+                      settings.tabSize === ts
+                        ? 'bg-brand-600/20 border-brand-500 text-white'
+                        : 'border-dark-500 text-dark-300 hover:border-dark-400 hover:text-white'
+                    }`}
+                  >
+                    {ts} spaces
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Word wrap */}
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-dark-300">Word Wrap</p>
+                <p className="text-xs text-dark-500 mt-0.5">Wrap long lines in the editor</p>
+              </div>
+              <button
+                onClick={() => update({ wordWrap: !settings.wordWrap })}
+                className={`relative w-11 h-6 rounded-full transition-colors ${
+                  settings.wordWrap ? 'bg-brand-600' : 'bg-dark-600'
+                }`}
               >
-                jdoodle.com
-              </a>
-              {' '}(free: 200 compilations/day).
-            </p>
-          </div>
-
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-dark-300 mb-1.5">
-                Client ID
-              </label>
-              <input
-                type="text"
-                value={clientId}
-                onChange={e => setClientId(e.target.value)}
-                placeholder="Your JDoodle Client ID"
-                className="w-full bg-dark-700 border border-dark-500 rounded-lg px-4 py-2.5 text-white placeholder-dark-300 focus:outline-none focus:border-brand-500 transition-colors font-mono text-sm"
-              />
+                <span
+                  className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${
+                    settings.wordWrap ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-dark-300 mb-1.5">
-                Client Secret
-              </label>
-              <input
-                type="password"
-                value={clientSecret}
-                onChange={e => setClientSecret(e.target.value)}
-                placeholder="Your JDoodle Client Secret"
-                className="w-full bg-dark-700 border border-dark-500 rounded-lg px-4 py-2.5 text-white placeholder-dark-300 focus:outline-none focus:border-brand-500 transition-colors font-mono text-sm"
-              />
-            </div>
+
+            <p className="text-xs text-dark-500">Changes apply instantly.</p>
           </div>
-
-          <button
-            onClick={handleSave}
-            className="btn-primary w-full mt-6 justify-center"
-          >
-            <Save size={16} />
-            {saved ? '✅ Saved!' : 'Save Credentials'}
-          </button>
-
-          <p className="text-xs text-dark-300 mt-3 text-center">
-            Credentials stored locally in your browser only
-          </p>
         </motion.div>
       </motion.div>
     </AnimatePresence>

@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Trophy, Flame, Zap, BookOpen, Target, RefreshCw, ChevronRight, BarChart3 } from 'lucide-react';
+import { Trophy, Flame, Zap, BookOpen, Target, RefreshCw, ChevronRight, BarChart3, Award, Download, Lock } from 'lucide-react';
 import { LEVELS } from '../hooks/useProgress';
 import { CURRICULUM, getAllLessons } from '../data/curriculum';
+import { ACHIEVEMENTS, getEarnedAchievements } from '../config/achievements';
+import { downloadCertificate } from '../utils/certificate';
 
-export default function DashboardPage({ progress, resetProgress }) {
+export default function DashboardPage({ progress, resetProgress, currentUser }) {
   const navigate   = useNavigate();
   const allLessons = getAllLessons();
   const levelInfo  = LEVELS[progress.level - 1] || LEVELS[0];
@@ -14,7 +16,11 @@ export default function DashboardPage({ progress, resetProgress }) {
     ? ((progress.xp - levelInfo.minXP) / (nextLevel.minXP - levelInfo.minXP)) * 100
     : 100;
 
-  const totalCompleted = Object.keys(progress.completedLessons).length;
+  const totalCompleted  = Object.keys(progress.completedLessons).length;
+  const totalLessons    = allLessons.length;
+  const allDone         = totalCompleted >= totalLessons;
+  const earnedBadges    = getEarnedAchievements(progress, totalLessons);
+  const earnedIds       = new Set(earnedBadges.map(a => a.id));
 
   const stats = [
     { icon: <Flame   size={18} className="text-orange-400" />,  label: 'Day Streak',    value: `${progress.streak}d`,  bg: 'rgba(251,146,60,0.1)',  border: 'rgba(251,146,60,0.2)' },
@@ -39,6 +45,37 @@ export default function DashboardPage({ progress, resetProgress }) {
           </div>
           <p className="text-sm text-dark-400">Track your C++ mastery progress.</p>
         </motion.div>
+
+        {/* Certificate banner — shown when all lessons complete */}
+        {allDone && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.02 }}
+            className="mb-5 rounded-2xl p-5 flex items-center gap-4"
+            style={{
+              background: 'linear-gradient(135deg, rgba(99,102,241,0.18) 0%, rgba(124,58,237,0.12) 100%)',
+              border: '1px solid rgba(99,102,241,0.4)',
+            }}
+          >
+            <div className="text-4xl shrink-0">🏆</div>
+            <div className="flex-1 min-w-0">
+              <p className="font-bold text-white text-base">You've completed CppMaster!</p>
+              <p className="text-sm text-indigo-300/80">Download your official certificate of completion.</p>
+            </div>
+            <button
+              onClick={() => {
+                const name = currentUser?.displayName || 'C++ Developer';
+                const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                downloadCertificate(name, totalLessons, date);
+              }}
+              className="shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm text-white transition-all hover:opacity-90 active:scale-95"
+              style={{ background: 'linear-gradient(135deg,#6366f1,#7c3aed)' }}
+            >
+              <Download size={15} /> Download Certificate
+            </button>
+          </motion.div>
+        )}
 
         {/* Level hero card */}
         <motion.div
@@ -160,6 +197,45 @@ export default function DashboardPage({ progress, resetProgress }) {
                   size={15}
                   className="shrink-0 text-dark-500 group-hover:text-dark-300 group-hover:translate-x-0.5 transition-all"
                 />
+              </motion.div>
+            );
+          })}
+        </div>
+
+        {/* Achievements */}
+        <h2 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
+          <Award size={16} className="text-yellow-400" /> Achievements
+          <span className="ml-auto text-xs font-normal text-dark-400">{earnedBadges.length}/{ACHIEVEMENTS.length} earned</span>
+        </h2>
+        <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 mb-7">
+          {ACHIEVEMENTS.map((ach, i) => {
+            const earned = earnedIds.has(ach.id);
+            return (
+              <motion.div
+                key={ach.id}
+                initial={{ opacity: 0, scale: 0.85 }}
+                animate={{ opacity: earned ? 1 : 0.4, scale: 1 }}
+                transition={{ delay: 0.1 + i * 0.04 }}
+                title={ach.desc}
+                className="rounded-xl p-3 flex flex-col items-center gap-1.5 text-center relative overflow-hidden"
+                style={{
+                  background: earned
+                    ? 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(124,58,237,0.08))'
+                    : 'rgba(255,255,255,0.02)',
+                  border: earned
+                    ? '1px solid rgba(99,102,241,0.35)'
+                    : '1px solid rgba(255,255,255,0.06)',
+                }}
+              >
+                {earned && (
+                  <div
+                    className="absolute inset-0 opacity-10"
+                    style={{ background: 'radial-gradient(circle at 50% 0%, #6366f1, transparent 70%)' }}
+                  />
+                )}
+                <span className="text-2xl relative">{earned ? ach.icon : <Lock size={18} className="text-dark-500" />}</span>
+                <span className="text-xs font-semibold text-white leading-tight relative">{ach.name}</span>
+                <span className="text-[10px] text-dark-400 leading-tight relative">{ach.desc}</span>
               </motion.div>
             );
           })}

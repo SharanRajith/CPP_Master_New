@@ -24,7 +24,14 @@ const MONACO_OPTIONS = {
   cursorSmoothCaretAnimation: 'on',
 };
 
-export default function CodeEditor({ value, onChange, height = '100%' }) {
+export default function CodeEditor({ value, onChange, height = '100%', onRun, settings }) {
+  const mergedOptions = {
+    ...MONACO_OPTIONS,
+    fontSize:  settings?.fontSize  ?? 14,
+    tabSize:   settings?.tabSize   ?? 4,
+    wordWrap:  (settings?.wordWrap ?? true) ? 'on' : 'off',
+  };
+
   return (
     <div style={{ height, minHeight: 200, background: '#0d0d14' }}>
       <Editor
@@ -33,9 +40,8 @@ export default function CodeEditor({ value, onChange, height = '100%' }) {
         value={value}
         onChange={onChange}
         theme="vs-dark"
-        options={MONACO_OPTIONS}
+        options={mergedOptions}
         beforeMount={monaco => {
-          // Custom dark theme matching our design
           monaco.editor.defineTheme('cpp-dark', {
             base: 'vs-dark',
             inherit: true,
@@ -64,6 +70,14 @@ export default function CodeEditor({ value, onChange, height = '100%' }) {
         }}
         onMount={(editor, monaco) => {
           monaco.editor.setTheme('cpp-dark');
+          if (onRun) {
+            editor.addAction({
+              id: 'run-code',
+              label: 'Run Code',
+              keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
+              run: () => onRun(),
+            });
+          }
         }}
       />
     </div>

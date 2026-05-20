@@ -1,9 +1,100 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Play, Trophy, Flame, BookOpen, ArrowRight, Star, Zap, Code2, ChevronRight } from 'lucide-react';
+import { Play, Trophy, Flame, BookOpen, ArrowRight, Star, Zap, Code2, ChevronRight, CalendarDays, CheckCircle2, Swords } from 'lucide-react';
 import { CURRICULUM, getAllLessons } from '../data/curriculum';
 import { LEVELS } from '../hooks/useProgress';
+
+// ─── Daily Challenge ──────────────────────────────────────────────────────────
+const DIFFICULTY = {
+  'm13-l1': 'Easy', 'm13-l2': 'Easy', 'm13-l3': 'Medium', 'm13-l4': 'Medium',
+  'm13-l5': 'Medium', 'm13-l6': 'Medium', 'm13-l7': 'Hard', 'm13-l8': 'Hard',
+  'm13-l9': 'Hard', 'm13-l10': 'Hard', 'm13-l11': 'Hard', 'm13-l12': 'Hard',
+  'm13-l13': 'Hard', 'm13-l14': 'Hard', 'm13-l15': 'Hard',
+};
+const DIFF_COLOR = { Easy: '#34d399', Medium: '#f59e0b', Hard: '#f87171' };
+
+function getDailyChallenge() {
+  const allLessons = getAllLessons();
+  const faang = allLessons.filter(l => l.id.startsWith('m13-'));
+  if (!faang.length) return null;
+  const dayIndex = Math.floor(Date.now() / 86_400_000);
+  return faang[dayIndex % faang.length];
+}
+
+function DailyChallenge({ progress }) {
+  const navigate   = useNavigate();
+  const challenge  = getDailyChallenge();
+  if (!challenge) return null;
+
+  const solved     = !!progress.completedLessons[challenge.id];
+  const diff       = DIFFICULTY[challenge.id] || 'Medium';
+  const diffColor  = DIFF_COLOR[diff];
+  const today      = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.12 }}
+      className="mx-4 sm:mx-8 mt-5 rounded-2xl overflow-hidden"
+      style={{ border: '1px solid rgba(251,146,60,0.3)' }}
+    >
+      {/* Header strip */}
+      <div
+        className="flex items-center gap-2 px-4 py-2"
+        style={{ background: 'linear-gradient(90deg, rgba(251,146,60,0.15), rgba(239,68,68,0.08))' }}
+      >
+        <Swords size={13} className="text-orange-400" />
+        <span className="text-xs font-bold text-orange-300 tracking-wide uppercase">Daily Challenge</span>
+        <span className="ml-auto flex items-center gap-1 text-xs text-dark-400">
+          <CalendarDays size={11} /> {today}
+        </span>
+      </div>
+
+      {/* Body */}
+      <div
+        className="flex items-center gap-4 px-4 py-3 cursor-pointer group"
+        style={{ background: 'rgba(251,146,60,0.04)' }}
+        onClick={() => navigate(`/lesson/${challenge.id}`)}
+      >
+        <div
+          className="w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0"
+          style={{ background: 'rgba(251,146,60,0.12)', border: '1px solid rgba(251,146,60,0.25)' }}
+        >
+          {solved ? '✅' : '⚔️'}
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-0.5">
+            <span
+              className="text-[10px] font-bold px-1.5 py-0.5 rounded"
+              style={{ background: `${diffColor}18`, color: diffColor, border: `1px solid ${diffColor}30` }}
+            >
+              {diff}
+            </span>
+            {solved && (
+              <span className="text-[10px] font-bold text-emerald-400 flex items-center gap-0.5">
+                <CheckCircle2 size={10} /> Solved
+              </span>
+            )}
+          </div>
+          <p className="text-sm font-bold text-white truncate">{challenge.title}</p>
+        </div>
+
+        <div
+          className="shrink-0 flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg transition-all group-hover:opacity-90"
+          style={solved
+            ? { background: 'rgba(52,211,153,0.1)', color: '#34d399', border: '1px solid rgba(52,211,153,0.2)' }
+            : { background: 'linear-gradient(135deg,#f97316,#ef4444)', color: 'white' }
+          }
+        >
+          {solved ? 'Review' : 'Solve'} <ChevronRight size={12} />
+        </div>
+      </div>
+    </motion.div>
+  );
+}
 
 function ModuleCard({ module, progress, onStart }) {
   const total     = module.lessons.length;
@@ -199,6 +290,9 @@ export default function HomePage({ progress }) {
           </motion.div>
         );
       })()}
+
+      {/* Daily Challenge */}
+      <DailyChallenge progress={progress} />
 
       {/* Curriculum Grid */}
       <div className="px-4 sm:px-8 py-8">

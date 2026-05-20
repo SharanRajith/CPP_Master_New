@@ -53,7 +53,7 @@ function AppShell({ progress, completeLesson, isLessonCompleted, isLessonUnlocke
               />
             }
           />
-          <Route path="/dashboard"    element={<DashboardPage progress={progress} resetProgress={resetProgress} />} />
+          <Route path="/dashboard"    element={<DashboardPage progress={progress} resetProgress={resetProgress} currentUser={currentUser} />} />
           <Route path="/leaderboard"  element={<LeaderboardPage currentUser={currentUser} />} />
           <Route path="/admin"        element={<AdminPage currentUser={currentUser} />} />
           <Route path="*"             element={<Navigate to="/" replace />} />

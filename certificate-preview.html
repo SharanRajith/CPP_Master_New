@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Certificate Preview</title>
+  <style>
+    body { margin: 0; background: #111; display: flex; flex-direction: column; align-items: center; padding: 24px; gap: 16px; font-family: sans-serif; }
+    canvas { border-radius: 12px; box-shadow: 0 0 60px rgba(99,102,241,0.3); max-width: 100%; }
+    button { padding: 10px 28px; background: linear-gradient(135deg,#6366f1,#7c3aed); color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; }
+    button:hover { opacity: 0.88; }
+    label { color: #9ca3af; font-size: 14px; display: flex; gap: 8px; align-items: center; }
+    input { padding: 6px 12px; background: #1f2937; border: 1px solid #374151; border-radius: 6px; color: white; font-size: 14px; width: 240px; }
+  </style>
+</head>
+<body>
+  <label>
+    Your name:
+    <input id="nameInput" value="Sharan Rajith" oninput="draw()" />
+  </label>
+  <canvas id="cert"></canvas>
+  <button onclick="dlCert()">Download PNG</button>
+
+<script>
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function drawCornerOrnament(ctx, x, y, color, flipX, flipY) {
+  const sx = flipX ? -1 : 1;
+  const sy = flipY ? -1 : 1;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(sx, sy);
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(0, 24); ctx.lineTo(0, 0); ctx.lineTo(24, 0); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0, 14); ctx.lineTo(0, 0); ctx.lineTo(14, 0); ctx.stroke();
+  ctx.restore();
+}
+
+function drawStars(ctx, cx, cy, radius, count, color) {
+  ctx.fillStyle = color;
+  for (let i = 0; i < count; i++) {
+    const angle = (i / count) * Math.PI * 2;
+    ctx.beginPath();
+    ctx.arc(cx + Math.cos(angle) * radius, cy + Math.sin(angle) * radius, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function draw() {
+  const W = 1400, H = 900;
+  const canvas = document.getElementById('cert');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  const userName = document.getElementById('nameInput').value || 'Your Name';
+  const totalLessons = 120;
+  const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+  // Background
+  const bg = ctx.createLinearGradient(0, 0, W, H);
+  bg.addColorStop(0, '#08080f'); bg.addColorStop(0.5, '#0d0d1a'); bg.addColorStop(1, '#09090e');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  // Grid
+  ctx.strokeStyle = 'rgba(99,102,241,0.04)'; ctx.lineWidth = 1;
+  for (let x = 0; x < W; x += 50) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+  for (let y = 0; y < H; y += 50) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+
+  // Outer glow border
+  ctx.shadowColor = '#6366f1'; ctx.shadowBlur = 25;
+  ctx.strokeStyle = '#6366f1'; ctx.lineWidth = 3;
+  roundRect(ctx, 35, 35, W-70, H-70, 16); ctx.stroke();
+  ctx.shadowBlur = 0;
+
+  // Inner border
+  ctx.strokeStyle = 'rgba(99,102,241,0.25)'; ctx.lineWidth = 1;
+  roundRect(ctx, 52, 52, W-104, H-104, 10); ctx.stroke();
+
+  // Corner ornaments
+  drawCornerOrnament(ctx, 70, 70, '#6366f1', false, false);
+  drawCornerOrnament(ctx, W-70, 70, '#6366f1', true, false);
+  drawCornerOrnament(ctx, 70, H-70, '#6366f1', false, true);
+  drawCornerOrnament(ctx, W-70, H-70, '#6366f1', true, true);
+
+  // Logo circle
+  const cx = W/2;
+  const logoGrad = ctx.createRadialGradient(cx, 175, 0, cx, 175, 58);
+  logoGrad.addColorStop(0, '#818cf8'); logoGrad.addColorStop(1, '#4338ca');
+  ctx.fillStyle = logoGrad;
+  ctx.shadowColor = '#6366f1'; ctx.shadowBlur = 20;
+  ctx.beginPath(); ctx.arc(cx, 175, 58, 0, Math.PI*2); ctx.fill();
+  ctx.shadowBlur = 0;
+
+  ctx.fillStyle = '#ffffff'; ctx.font = 'bold 38px Georgia, serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('C+', cx, 176);
+
+  drawStars(ctx, cx, 175, 82, 8, 'rgba(99,102,241,0.4)');
+
+  // "CERTIFICATE OF COMPLETION"
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillStyle = '#a5b4fc'; ctx.font = 'bold 20px Arial, sans-serif';
+  ctx.fillText('CERTIFICATE OF COMPLETION', cx, 285);
+
+  // Divider
+  ctx.strokeStyle = 'rgba(99,102,241,0.5)'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(cx-280, 308); ctx.lineTo(cx-24, 308); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx+24, 308); ctx.lineTo(cx+280, 308); ctx.stroke();
+  ctx.fillStyle = '#6366f1';
+  ctx.beginPath(); ctx.arc(cx, 308, 4, 0, Math.PI*2); ctx.fill();
+
+  // "This is to certify that"
+  ctx.fillStyle = '#6b7280'; ctx.font = 'italic 22px Georgia, serif';
+  ctx.fillText('This is to certify that', cx, 365);
+
+  // Name
+  ctx.fillStyle = '#f1f5f9'; ctx.font = 'bold 68px Georgia, serif';
+  ctx.fillText(userName, cx, 460);
+
+  // Name underline
+  const nameW = ctx.measureText(userName).width;
+  const uGrad = ctx.createLinearGradient(cx - nameW/2, 0, cx + nameW/2, 0);
+  uGrad.addColorStop(0, 'transparent'); uGrad.addColorStop(0.3, '#6366f1');
+  uGrad.addColorStop(0.7, '#6366f1'); uGrad.addColorStop(1, 'transparent');
+  ctx.fillStyle = uGrad;
+  ctx.fillRect(cx - nameW/2, 472, nameW, 2);
+
+  // "has successfully mastered"
+  ctx.fillStyle = '#9ca3af'; ctx.font = '23px Georgia, serif';
+  ctx.fillText('has successfully mastered', cx, 530);
+
+  // Course title gradient
+  const tGrad = ctx.createLinearGradient(cx-320, 0, cx+320, 0);
+  tGrad.addColorStop(0, '#818cf8'); tGrad.addColorStop(0.5, '#a5b4fc'); tGrad.addColorStop(1, '#818cf8');
+  ctx.fillStyle = tGrad; ctx.font = 'bold 36px Arial, sans-serif';
+  ctx.fillText('C++ Data Structures & Algorithms', cx, 586);
+
+  ctx.fillStyle = '#6b7280'; ctx.font = '20px Arial, sans-serif';
+  ctx.fillText('completing all ' + totalLessons + ' lessons in the CppMaster curriculum', cx, 630);
+
+  // Dashed separator
+  ctx.strokeStyle = 'rgba(99,102,241,0.2)'; ctx.lineWidth = 1;
+  ctx.setLineDash([6, 6]);
+  ctx.beginPath(); ctx.moveTo(140, 710); ctx.lineTo(W-140, 710); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Date
+  ctx.fillStyle = '#374151'; ctx.font = '14px Arial, sans-serif'; ctx.textAlign = 'left';
+  ctx.fillText('DATE OF COMPLETION', 160, 750);
+  ctx.fillStyle = '#6b7280'; ctx.font = '18px Georgia, serif';
+  ctx.fillText(dateStr, 160, 776);
+
+  // Issued by
+  ctx.textAlign = 'right';
+  ctx.fillStyle = '#374151'; ctx.font = '14px Arial, sans-serif';
+  ctx.fillText('ISSUED BY', W-160, 750);
+  ctx.fillStyle = '#6b7280'; ctx.font = '18px Georgia, serif';
+  ctx.fillText('CppMaster', W-160, 776);
+
+  // Bottom branding
+  ctx.textAlign = 'center'; ctx.fillStyle = '#1f2937'; ctx.font = '14px Arial, sans-serif';
+  ctx.fillText('cpp-master-new.vercel.app', cx, 845);
+}
+
+function dlCert() {
+  draw();
+  const canvas = document.getElementById('cert');
+  const link = document.createElement('a');
+  link.download = 'CppMaster-Certificate.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+draw();
+</script>
+</body>
+</html>

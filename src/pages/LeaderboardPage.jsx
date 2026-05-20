@@ -31,8 +31,17 @@ export default function LeaderboardPage({ currentUser }) {
   const [error, setError]     = useState(null);
 
   useEffect(() => {
+    // Try ordered query first; fall back to full fetch + client sort if index/rules block it
     getDocs(query(collection(db, 'users'), orderBy('xp', 'desc'), limit(20)))
       .then(snap => setEntries(snap.docs.map(d => ({ uid: d.id, ...d.data() }))))
+      .catch(() =>
+        getDocs(collection(db, 'users'))
+          .then(snap => {
+            const all = snap.docs.map(d => ({ uid: d.id, ...d.data() }));
+            all.sort((a, b) => (b.xp ?? 0) - (a.xp ?? 0));
+            setEntries(all.slice(0, 20));
+          })
+      )
       .catch(err => setError(err.message))
       .finally(() => setLoading(false));
   }, []);
@@ -59,9 +68,14 @@ export default function LeaderboardPage({ currentUser }) {
         )}
 
         {error && (
-          <p className="text-center text-red-400 text-sm py-8">
-            Could not load leaderboard. Make sure Firestore rules allow authenticated reads.
-          </p>
+          <div className="text-center py-8 space-y-3">
+            <p className="text-red-400 text-sm font-semibold">Could not load leaderboard</p>
+            <p className="text-dark-400 text-xs max-w-sm mx-auto">
+              Go to <span className="text-brand-400">Firebase Console → Firestore → Rules</span> and
+              make sure you have published: <code className="text-green-400">allow read: if request.auth != null;</code>
+            </p>
+            <p className="text-dark-600 text-xs font-mono">{error}</p>
+          </div>
         )}
 
         {/* Entries */}

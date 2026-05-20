@@ -11,25 +11,16 @@ export function useCompiler() {
   const [compilerStatus, setCompilerStatus]     = useState('checking'); // 'piston-local'|'piston'|'jdoodle'|'offline'|'checking'
   const [showSettings, setShowSettings]         = useState(false);
 
-  // Check which compiler is available on mount; warm up Render if it's sleeping
+  // Check which compiler is available on mount; warm up Render if sleeping
   useEffect(() => {
-    fetch('http://localhost:2000/api/v2/piston/runtimes', {
-      signal: AbortSignal.timeout(2000),
-    })
-      .then(r => { if (r.ok) setCompilerStatus('piston-local'); else throw new Error(); })
-      .catch(() => {
-        checkPistonAvailability().then(ok => {
-          if (ok) {
-            setCompilerStatus('piston');
-          } else {
-            // Backend is sleeping — show warming state and ping until it wakes
-            setCompilerStatus('warming');
-            warmUpBackend().then(awake => {
-              setCompilerStatus(awake ? 'piston' : 'jdoodle');
-            });
-          }
-        });
-      });
+    checkPistonAvailability().then(status => {
+      if (status === 'piston-local' || status === 'piston') {
+        setCompilerStatus(status);
+      } else {
+        setCompilerStatus('warming');
+        warmUpBackend().then(awake => setCompilerStatus(awake ? 'piston' : 'offline'));
+      }
+    });
   }, []);
 
   /** Run code and show raw output */
@@ -40,7 +31,6 @@ export function useCompiler() {
       const result = await compileCode(code, stdin);
       setCompilerStatus(result.compilerStatus);
       setCompilerResult({ type: 'run', ...result });
-      if (result.needsCredentials) setShowSettings(true);
     } finally {
       setIsCompiling(false);
     }
