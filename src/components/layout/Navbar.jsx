@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Settings, LogOut, Flame, Trophy, Home, Menu, ChevronRight, Zap, Medal, Shield, Crown } from 'lucide-react';
+import { Settings, LogOut, Flame, Trophy, Home, Menu, ChevronRight, Zap, Medal, Shield, Crown, Search } from 'lucide-react';
 import { LEVELS } from '../../hooks/useProgress';
 
-export default function Navbar({ xp, level, streak, currentUser, isAdmin, isPremium, onOpenSettings, onOpenPremium, onLogout, onToggleSidebar }) {
+export default function Navbar({ xp, level, streak, currentUser, isAdmin, isPremium, onOpenSettings, onOpenPremium, onOpenSearch, onLogout, onToggleSidebar }) {
   const location      = useLocation();
   const isLessonRoute = location.pathname.startsWith('/lesson/');
   const levelInfo     = LEVELS[level - 1] || LEVELS[0];
@@ -98,6 +98,16 @@ export default function Navbar({ xp, level, streak, currentUser, isAdmin, isPrem
 
       {/* Nav icons */}
       <div className="flex items-center gap-0.5">
+        <button
+          onClick={onOpenSearch}
+          className="p-2 rounded-lg text-dark-300 hover:text-white hover:bg-dark-700 transition-all relative group"
+          title="Search lessons (Ctrl+K)"
+        >
+          <Search size={17} />
+          <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 hidden group-hover:flex items-center gap-1 bg-dark-700 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap z-50">
+            <kbd className="text-dark-300">Ctrl K</kbd>
+          </span>
+        </button>
         <Link id="nav-home" to="/" className="p-2 rounded-lg text-dark-300 hover:text-white hover:bg-dark-700 transition-all" title="Home">
           <Home size={17} />
         </Link>

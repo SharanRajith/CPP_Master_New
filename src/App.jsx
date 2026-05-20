@@ -8,6 +8,7 @@ import Sidebar       from './components/layout/Sidebar';
 import SettingsModal from './components/settings/SettingsModal';
 import PremiumModal       from './components/PremiumModal';
 import OnboardingModal, { shouldShowOnboarding } from './components/OnboardingModal';
+import SearchModal from './components/SearchModal';
 import { AnimatePresence } from 'framer-motion';
 
 import HomePage        from './pages/HomePage';
@@ -23,11 +24,23 @@ import { useParams }   from 'react-router-dom';
 import { PanelGroup, Panel, PanelResizeHandle } from 'react-resizable-panels';
 
 // ─── Layout wrapper ───────────────────────────────────────────────────────────
-function AppShell({ progress, completeLesson, isLessonCompleted, isLessonUnlocked, resetProgress, onLogout, currentUser, isAdmin, isPremium }) {
+function AppShell({ progress, completeLesson, isLessonCompleted, isLessonUnlocked, resetProgress, onLogout, currentUser, isAdmin, isPremium }) { // isLessonUnlocked passed to SearchModal
   const [showSettings,   setShowSettings]   = useState(false);
   const [sidebarOpen,    setSidebarOpen]    = useState(false);
   const [showPremium,    setShowPremium]    = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(() => shouldShowOnboarding());
+  const [showSearch,     setShowSearch]     = useState(false);
+
+  useEffect(() => {
+    function onKey(e) {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        setShowSearch(v => !v);
+      }
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
@@ -40,6 +53,7 @@ function AppShell({ progress, completeLesson, isLessonCompleted, isLessonUnlocke
         isPremium={isPremium}
         onOpenSettings={() => setShowSettings(true)}
         onOpenPremium={() => setShowPremium(true)}
+        onOpenSearch={() => setShowSearch(true)}
         onLogout={onLogout}
         onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
       />
@@ -72,6 +86,15 @@ function AppShell({ progress, completeLesson, isLessonCompleted, isLessonUnlocke
       </AnimatePresence>
       <AnimatePresence>
         {showOnboarding && <OnboardingModal onClose={() => setShowOnboarding(false)} />}
+      </AnimatePresence>
+      <AnimatePresence>
+        {showSearch && (
+          <SearchModal
+            onClose={() => setShowSearch(false)}
+            progress={progress}
+            isLessonUnlocked={isLessonUnlocked}
+          />
+        )}
       </AnimatePresence>
     </div>
   );
