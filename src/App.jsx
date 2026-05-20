@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth } from './lib/firebase';
@@ -32,6 +32,7 @@ function AppShell({ progress, completeLesson, isLessonCompleted, isLessonUnlocke
         streak={progress.streak}
         currentUser={currentUser}
         isAdmin={isAdmin}
+        isPremium={isPremium}
         onOpenSettings={() => setShowSettings(true)}
         onLogout={onLogout}
         onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
@@ -167,7 +168,7 @@ const BACKEND_URL = 'https://cpp-master.onrender.com/';
 const PING_INTERVAL = 10 * 60 * 1000; // 10 minutes
 
 function AuthenticatedApp({ currentUser, onLogout }) {
-  const { progress, completeLesson, completeLeetCode, isLessonUnlocked, isLessonCompleted, resetProgress } = useProgress(currentUser);
+  const { progress, completeLesson, isLessonUnlocked, isLessonCompleted, resetProgress } = useProgress(currentUser);
 
   const isAdmin   = isAdminEmail(currentUser?.email);
   const isPremium = isAdmin || !!progress?.isPremium;

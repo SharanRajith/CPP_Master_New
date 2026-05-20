@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Settings, LogOut, Flame, Trophy, Home, Menu, X, ChevronRight, Zap, Medal, Shield } from 'lucide-react';
+import { Settings, LogOut, Flame, Trophy, Home, Menu, ChevronRight, Zap, Medal, Shield, Crown } from 'lucide-react';
 import { LEVELS } from '../../hooks/useProgress';
 
-export default function Navbar({ xp, level, streak, currentUser, isAdmin, onOpenSettings, onLogout, onToggleSidebar }) {
+export default function Navbar({ xp, level, streak, currentUser, isAdmin, isPremium, onOpenSettings, onLogout, onToggleSidebar }) {
   const location      = useLocation();
   const isLessonRoute = location.pathname.startsWith('/lesson/');
   const levelInfo     = LEVELS[level - 1] || LEVELS[0];
@@ -117,20 +117,27 @@ export default function Navbar({ xp, level, streak, currentUser, isAdmin, onOpen
           className="flex items-center gap-2 rounded-full px-1.5 py-1 hover:bg-dark-700 transition-all"
           aria-label="User menu"
         >
-          {currentUser?.photoURL ? (
-            <img
-              src={currentUser.photoURL}
-              alt={currentUser.displayName}
-              className="w-7 h-7 rounded-full ring-2 ring-brand-600/50 object-cover"
-            />
-          ) : (
-            <div
-              className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white"
-              style={{ background: 'linear-gradient(135deg, #4f46e5, #7c3aed)' }}
-            >
-              {avatarFallback}
-            </div>
-          )}
+          <div className="relative">
+            {currentUser?.photoURL ? (
+              <img
+                src={currentUser.photoURL}
+                alt={currentUser.displayName}
+                className={`w-7 h-7 rounded-full object-cover ring-2 ${isPremium ? 'ring-yellow-500' : 'ring-brand-600/50'}`}
+              />
+            ) : (
+              <div
+                className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white"
+                style={{ background: 'linear-gradient(135deg, #4f46e5, #7c3aed)' }}
+              >
+                {avatarFallback}
+              </div>
+            )}
+            {isPremium && (
+              <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-yellow-500 flex items-center justify-center shadow">
+                <Crown size={8} className="text-yellow-900" />
+              </span>
+            )}
+          </div>
           <span className="hidden md:block text-sm text-dark-200 font-medium max-w-[6rem] truncate">
             {currentUser?.displayName?.split(' ')[0] || 'User'}
           </span>
@@ -165,7 +172,15 @@ export default function Navbar({ xp, level, streak, currentUser, isAdmin, onOpen
                       </div>
                     )}
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-white truncate">{currentUser?.displayName || 'User'}</p>
+                      <div className="flex items-center gap-1.5">
+                        <p className="text-sm font-semibold text-white truncate">{currentUser?.displayName || 'User'}</p>
+                        {isPremium && (
+                          <span className="shrink-0 flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                            style={{ background: 'rgba(234,179,8,0.15)', color: '#f59e0b', border: '1px solid rgba(234,179,8,0.3)' }}>
+                            <Crown size={8} /> PRO
+                          </span>
+                        )}
+                      </div>
                       <p className="text-xs text-dark-400 truncate">{currentUser?.email}</p>
                     </div>
                   </div>
