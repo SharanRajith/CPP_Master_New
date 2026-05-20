@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Play, Trophy, Flame, BookOpen, ArrowRight, Star, Zap, Code2 } from 'lucide-react';
+import { Play, Trophy, Flame, BookOpen, ArrowRight, Star, Zap, Code2, ChevronRight } from 'lucide-react';
 import { CURRICULUM, getAllLessons } from '../data/curriculum';
 import { LEVELS } from '../hooks/useProgress';
 
@@ -159,6 +159,46 @@ export default function HomePage({ progress }) {
           </motion.div>
         ))}
       </div>
+
+      {/* Continue Learning Card */}
+      {totalCompleted > 0 && firstUncompleted && (() => {
+        const mod = CURRICULUM.find(m => m.lessons.some(l => l.id === firstUncompleted.id));
+        const lessonIdx = mod?.lessons.findIndex(l => l.id === firstUncompleted.id) ?? 0;
+        if (!mod) return null;
+        return (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="mx-4 sm:mx-8 mt-6 rounded-2xl p-4 sm:p-5 flex items-center gap-4 cursor-pointer group"
+            style={{
+              background: `linear-gradient(135deg, ${mod.color}14 0%, rgba(17,17,24,0.9) 100%)`,
+              border: `1px solid ${mod.color}35`,
+            }}
+            onClick={() => navigate(`/lesson/${firstUncompleted.id}`)}
+          >
+            <div
+              className="w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0"
+              style={{ background: `${mod.color}22`, border: `1px solid ${mod.color}40` }}
+            >
+              {mod.icon}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-semibold mb-0.5" style={{ color: mod.color }}>
+                Continue — {mod.title}
+              </p>
+              <p className="text-sm font-bold text-white truncate">
+                Lesson {lessonIdx + 1}: {firstUncompleted.title}
+              </p>
+            </div>
+            <ChevronRight
+              size={18}
+              className="shrink-0 text-dark-400 group-hover:translate-x-1 transition-transform"
+              style={{ color: mod.color }}
+            />
+          </motion.div>
+        );
+      })()}
 
       {/* Curriculum Grid */}
       <div className="px-4 sm:px-8 py-8">
