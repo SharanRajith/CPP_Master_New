@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Play, Trophy, Flame, BookOpen, ArrowRight, Star, Zap, Code2, ChevronRight, CalendarDays, CheckCircle2, Swords, Crown, Mail } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Play, Trophy, Flame, BookOpen, ArrowRight, Star, Zap, Code2, ChevronRight, CalendarDays, CheckCircle2, Swords, Crown } from 'lucide-react';
+import PremiumModal from '../components/PremiumModal';
 import { CURRICULUM, getAllLessons } from '../data/curriculum';
 import { LEVELS } from '../hooks/useProgress';
 
@@ -160,6 +162,7 @@ function ModuleCard({ module, progress, onStart }) {
 
 export default function HomePage({ progress }) {
   const navigate = useNavigate();
+  const [showPremium, setShowPremium] = useState(false);
   const allLessons = getAllLessons();
   const totalCompleted = Object.keys(progress.completedLessons).length;
   const levelInfo      = LEVELS[progress.level - 1] || LEVELS[0];
@@ -311,123 +314,47 @@ export default function HomePage({ progress }) {
         </div>
       </div>
 
-      {/* Premium Upgrade Section */}
-      <div className="px-4 sm:px-8 pb-14">
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
+      {/* Premium banner */}
+      <div className="px-4 sm:px-8 pb-10">
+        <motion.button
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
+          onClick={() => setShowPremium(true)}
+          className="w-full rounded-2xl px-5 py-4 flex items-center gap-4 group transition-all hover:scale-[1.01] active:scale-[0.99]"
+          style={{
+            background: 'linear-gradient(135deg, rgba(30,18,0,0.9), rgba(15,9,0,0.95))',
+            border: '1px solid rgba(245,158,11,0.3)',
+            boxShadow: '0 0 30px rgba(245,158,11,0.06)',
+          }}
         >
-          {/* Section label */}
-          <div className="text-center mb-6">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold tracking-widest uppercase mb-3"
-              style={{ background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.25)', color: '#f59e0b' }}>
-              <Crown size={12} /> Upgrade to Premium
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-black text-white mb-2">
-              Go from Good to <span style={{ background: 'linear-gradient(90deg,#f59e0b,#f97316)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>FAANG‑Ready</span>
-            </h2>
-            <p className="text-dark-400 text-sm max-w-md mx-auto">
-              Unlock 7 advanced modules with the exact algorithms asked at top tech companies.
+          {/* Icon */}
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+            style={{ background: 'linear-gradient(135deg,#f59e0b,#f97316)' }}>
+            <Crown size={18} className="text-white" />
+          </div>
+
+          {/* Text */}
+          <div className="flex-1 text-left min-w-0">
+            <p className="text-sm font-bold text-white">Unlock Premium — Go FAANG-Ready</p>
+            <p className="text-xs text-yellow-700 mt-0.5 truncate">
+              7 advanced modules · FAANG problem bank · completion certificate
             </p>
           </div>
 
-          {/* Cards grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-
-            {/* Free card */}
-            <div className="rounded-2xl p-6" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
-              <div className="flex items-center justify-between mb-5">
-                <div>
-                  <p className="text-base font-black text-white">Free</p>
-                  <p className="text-xs text-dark-400 mt-0.5">Always included</p>
-                </div>
-                <span className="text-2xl font-black text-white">$0</span>
-              </div>
-              <ul className="space-y-3">
-                {[
-                  'C++ Fundamentals (14 lessons)',
-                  'Object-Oriented Programming',
-                  'STL Deep Dive',
-                  'Complexity Analysis',
-                  'Arrays, Strings & Two Pointers',
-                  'Sorting & Searching',
-                  'In-browser C++ compiler',
-                  'Streak tracking & XP system',
-                ].map((item, i) => (
-                  <li key={i} className="flex items-center gap-2.5 text-sm text-dark-200">
-                    <CheckCircle2 size={14} className="text-emerald-400 shrink-0" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-              <div className="mt-6 py-2.5 rounded-xl text-center text-sm font-semibold text-dark-400 border border-dark-600">
-                Current Plan
-              </div>
-            </div>
-
-            {/* Premium card */}
-            <div className="rounded-2xl p-6 relative overflow-hidden"
-              style={{
-                background: 'linear-gradient(145deg, rgba(30,20,0,0.9) 0%, rgba(15,10,0,0.95) 100%)',
-                border: '1px solid rgba(245,158,11,0.4)',
-                boxShadow: '0 0 40px rgba(245,158,11,0.08)',
-              }}>
-              {/* Glow */}
-              <div className="absolute top-0 right-0 w-48 h-48 pointer-events-none"
-                style={{ background: 'radial-gradient(circle at 80% 20%, rgba(245,158,11,0.12), transparent 65%)' }} />
-
-              {/* Popular badge */}
-              <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold"
-                style={{ background: 'linear-gradient(135deg,#f59e0b,#f97316)', color: 'white' }}>
-                ⭐ Most Popular
-              </div>
-
-              <div className="flex items-center justify-between mb-5 relative">
-                <div>
-                  <div className="flex items-center gap-1.5 mb-0.5">
-                    <Crown size={15} className="text-yellow-400" />
-                    <p className="text-base font-black text-white">Premium</p>
-                  </div>
-                  <p className="text-xs text-yellow-600 mt-0.5">Everything in Free, plus:</p>
-                </div>
-              </div>
-
-              <ul className="space-y-3 relative">
-                {[
-                  { text: 'Linked Lists, Stacks & Queues' },
-                  { text: 'Trees, Heaps & Priority Queues' },
-                  { text: 'Graphs — BFS, DFS, Dijkstra, MST' },
-                  { text: 'Dynamic Programming (1D → Bitmask)' },
-                  { text: 'Advanced Algorithms & Segment Trees' },
-                  { text: 'Interview Patterns & System Design DSA' },
-                  { text: 'FAANG Problem Bank — 15 curated problems', star: true },
-                  { text: 'Official completion certificate', star: true },
-                ].map((item, i) => (
-                  <li key={i} className="flex items-center gap-2.5 text-sm">
-                    <Crown size={12} className="shrink-0" style={{ color: item.star ? '#f97316' : '#f59e0b' }} />
-                    <span style={{ color: item.star ? '#fcd34d' : '#e5e7eb', fontWeight: item.star ? 600 : 400 }}>
-                      {item.text}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-
-              <a
-                href="mailto:sharanrajithk@gmail.com?subject=CppMaster Premium Access Request"
-                className="mt-6 flex items-center justify-center gap-2 w-full py-3 rounded-xl font-bold text-sm text-white transition-all hover:opacity-90 active:scale-[0.98] relative"
-                style={{
-                  background: 'linear-gradient(135deg, #f59e0b, #f97316)',
-                  boxShadow: '0 4px 20px rgba(245,158,11,0.35)',
-                }}
-              >
-                <Mail size={14} /> Request Premium Access
-              </a>
-              <p className="text-center text-xs text-yellow-900 mt-2">Get access within 24 hours</p>
-            </div>
+          {/* CTA */}
+          <div className="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white transition-all group-hover:opacity-90"
+            style={{ background: 'linear-gradient(135deg,#f59e0b,#f97316)' }}>
+            See what's included
+            <ChevronRight size={13} />
           </div>
-        </motion.div>
+        </motion.button>
       </div>
+
+      {/* Premium modal */}
+      <AnimatePresence>
+        {showPremium && <PremiumModal onClose={() => setShowPremium(false)} />}
+      </AnimatePresence>
 
     </div></div>
   );
