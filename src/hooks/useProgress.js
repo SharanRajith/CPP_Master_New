@@ -19,12 +19,18 @@ export function useProgress(user) {
         const docRef = doc(db, 'users', user.uid);
         const docSnap = await getDoc(docRef);
         
+        const userMeta = {
+          displayName: user.displayName || 'Anonymous',
+          photoURL:    user.photoURL    || '',
+        };
         if (docSnap.exists()) {
-          setProgress(docSnap.data());
+          // Refresh display info in case Google profile changed
+          await setDoc(docRef, userMeta, { merge: true });
+          setProgress({ ...docSnap.data(), ...userMeta });
         } else {
           // Attempt migration from local legacy data
           const legacyRaw = localStorage.getItem('cpp_dsa_progress');
-          const def = legacyRaw ? JSON.parse(legacyRaw) : getDefaultProgress();
+          const def = { ...(legacyRaw ? JSON.parse(legacyRaw) : getDefaultProgress()), ...userMeta };
           await setDoc(docRef, def);
           setProgress(def);
         }

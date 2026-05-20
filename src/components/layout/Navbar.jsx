@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Settings, LogOut, Flame, Trophy, Home, Menu, X, ChevronRight, Zap } from 'lucide-react';
+import { Settings, LogOut, Flame, Trophy, Home, Menu, X, ChevronRight, Zap, Medal } from 'lucide-react';
 import { LEVELS } from '../../hooks/useProgress';
 
 export default function Navbar({ xp, level, streak, currentUser, onOpenSettings, onLogout, onToggleSidebar }) {
@@ -92,6 +92,9 @@ export default function Navbar({ xp, level, streak, currentUser, onOpenSettings,
         </Link>
         <Link id="nav-dashboard" to="/dashboard" className="p-2 rounded-lg text-dark-300 hover:text-white hover:bg-dark-700 transition-all" title="Dashboard">
           <Trophy size={17} />
+        </Link>
+        <Link id="nav-leaderboard" to="/leaderboard" className="p-2 rounded-lg text-dark-300 hover:text-white hover:bg-dark-700 transition-all" title="Leaderboard">
+          <Medal size={17} />
         </Link>
         <button id="nav-settings" onClick={onOpenSettings} className="p-2 rounded-lg text-dark-300 hover:text-white hover:bg-dark-700 transition-all" title="Settings">
           <Settings size={17} />

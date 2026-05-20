@@ -7,10 +7,11 @@ import Navbar        from './components/layout/Navbar';
 import Sidebar       from './components/layout/Sidebar';
 import SettingsModal from './components/settings/SettingsModal';
 
-import HomePage      from './pages/HomePage';
-import LessonPage    from './pages/LessonPage';
-import DashboardPage from './pages/DashboardPage';
-import LoginPage     from './pages/LoginPage';
+import HomePage        from './pages/HomePage';
+import LessonPage      from './pages/LessonPage';
+import DashboardPage   from './pages/DashboardPage';
+import LeaderboardPage from './pages/LeaderboardPage';
+import LoginPage       from './pages/LoginPage';
 
 import { useProgress } from './hooks/useProgress';
 import { useParams }   from 'react-router-dom';
@@ -49,6 +50,7 @@ function AppShell({ progress, completeLesson, isLessonCompleted, isLessonUnlocke
             }
           />
           <Route path="/dashboard" element={<DashboardPage progress={progress} resetProgress={resetProgress} />} />
+          <Route path="/leaderboard" element={<LeaderboardPage currentUser={currentUser} />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
