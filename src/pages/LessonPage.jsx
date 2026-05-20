@@ -57,7 +57,7 @@ function XPToast({ xp, onDone }) {
 }
 
 // ─── Desktop Header Strip ─────────────────────────────────────────────────────
-function LessonHeaderStrip({ lesson, isCompleted, prevLesson, nextLesson, navigate }) {
+function LessonHeaderStrip({ lesson, isCompleted, prevLesson, nextLesson, navigate, notes, onSaveNote, onDeleteNote }) {
   return (
     <>
       <div className="px-5 py-3 border-b border-dark-600 shrink-0 flex items-center gap-3 bg-dark-900 z-10">
@@ -74,7 +74,7 @@ function LessonHeaderStrip({ lesson, isCompleted, prevLesson, nextLesson, naviga
         </div>
       </div>
 
-      <LessonContent lesson={lesson} attempts={0} />
+      <LessonContent lesson={lesson} attempts={0} notes={notes} onSaveNote={onSaveNote} onDeleteNote={onDeleteNote} />
 
       <div className="flex gap-2 p-3 border-t border-dark-600 shrink-0 bg-dark-900">
         {prevLesson && (
@@ -106,7 +106,7 @@ function LessonHeaderStrip({ lesson, isCompleted, prevLesson, nextLesson, naviga
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-export default function LessonPage({ progress, completeLesson, unlockHint, isLessonCompleted, isMobile, isPremium, isLessonUnlocked }) {
+export default function LessonPage({ progress, completeLesson, unlockHint, saveNote, deleteNote, isLessonCompleted, isMobile, isPremium, isLessonUnlocked }) {
   const { lessonId } = useParams();
   const navigate     = useNavigate();
   const allLessons   = getAllLessons();
@@ -134,6 +134,7 @@ export default function LessonPage({ progress, completeLesson, unlockHint, isLes
   const prevLesson   = currentIndex > 0 ? allLessons[currentIndex - 1] : null;
   const nextLesson   = currentIndex < allLessons.length - 1 ? allLessons[currentIndex + 1] : null;
   const isCompleted  = isLessonCompleted(lessonId);
+  const lessonNotes  = progress.notes?.[lessonId] || [];
 
   // Load lesson data — restore saved code if available
   useEffect(() => {
@@ -395,7 +396,7 @@ export default function LessonPage({ progress, completeLesson, unlockHint, isLes
 
                   {/* Scrollable content */}
                   <div className="flex-1 overflow-y-auto overscroll-contain">
-                    <LessonContent lesson={lesson} attempts={attempts} />
+                    <LessonContent lesson={lesson} attempts={attempts} notes={lessonNotes} onSaveNote={(text) => saveNote(lessonId, text)} onDeleteNote={(id) => deleteNote(lessonId, id)} />
                   </div>
 
                   {/* Prev / Next footer */}
@@ -495,6 +496,9 @@ export default function LessonPage({ progress, completeLesson, unlockHint, isLes
             prevLesson={prevLesson}
             nextLesson={nextLesson}
             navigate={navigate}
+            notes={lessonNotes}
+            onSaveNote={(text) => saveNote(lessonId, text)}
+            onDeleteNote={(id) => deleteNote(lessonId, id)}
           />
         </Panel>
 

@@ -107,6 +107,33 @@ export function useProgress(user) {
     });
   }, [_update]);
 
+  /** Save a personal note on a lesson */
+  const saveNote = useCallback((lessonId, text) => {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    _update(prev => ({
+      ...prev,
+      notes: {
+        ...(prev.notes || {}),
+        [lessonId]: [
+          { id: Date.now().toString(), text: trimmed, ts: Date.now() },
+          ...(prev.notes?.[lessonId] || []),
+        ],
+      },
+    }));
+  }, [_update]);
+
+  /** Delete a note by id */
+  const deleteNote = useCallback((lessonId, noteId) => {
+    _update(prev => ({
+      ...prev,
+      notes: {
+        ...(prev.notes || {}),
+        [lessonId]: (prev.notes?.[lessonId] || []).filter(n => n.id !== noteId),
+      },
+    }));
+  }, [_update]);
+
   /** Spend 5 XP to unlock the next hint for a lesson (idempotent if already unlocked) */
   const unlockHint = useCallback((lessonId, hintIdx) => {
     const COST = 5;
@@ -171,6 +198,8 @@ export function useProgress(user) {
     completeLeetCode,
     completeQuiz,
     unlockHint,
+    saveNote,
+    deleteNote,
     isLessonUnlocked,
     isLessonCompleted,
     resetProgress,
@@ -187,6 +216,7 @@ function getDefaultProgress() {
     completedLeetCode: {},
     completedQuizzes:  {},
     unlockedHints:     {},  // lessonId → [0, 1, 2, ...]
+    notes:             {},  // lessonId → [{ id, text, ts }]
     xp:                0,
     level:             1,
     streak:            0,

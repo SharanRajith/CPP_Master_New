@@ -24,7 +24,7 @@ import { useParams }   from 'react-router-dom';
 import { PanelGroup, Panel, PanelResizeHandle } from 'react-resizable-panels';
 
 // ─── Layout wrapper ───────────────────────────────────────────────────────────
-function AppShell({ progress, completeLesson, completeQuiz, unlockHint, isLessonCompleted, isLessonUnlocked, resetProgress, onLogout, currentUser, isAdmin, isPremium }) { // isLessonUnlocked passed to SearchModal
+function AppShell({ progress, completeLesson, completeQuiz, unlockHint, saveNote, deleteNote, isLessonCompleted, isLessonUnlocked, resetProgress, onLogout, currentUser, isAdmin, isPremium }) { // isLessonUnlocked passed to SearchModal
   const [showSettings,   setShowSettings]   = useState(false);
   const [sidebarOpen,    setSidebarOpen]    = useState(false);
   const [showPremium,    setShowPremium]    = useState(false);
@@ -67,6 +67,8 @@ function AppShell({ progress, completeLesson, completeQuiz, unlockHint, isLesson
                 progress={progress}
                 completeLesson={completeLesson}
                 unlockHint={unlockHint}
+                saveNote={saveNote}
+                deleteNote={deleteNote}
                 isLessonCompleted={isLessonCompleted}
                 isLessonUnlocked={isLessonUnlocked}
                 sidebarOpen={sidebarOpen}
@@ -102,7 +104,7 @@ function AppShell({ progress, completeLesson, completeQuiz, unlockHint, isLesson
 }
 
 // ─── Lesson Shell (responsive) ────────────────────────────────────────────────
-function LessonShell({ progress, completeLesson, unlockHint, isLessonCompleted, isLessonUnlocked, sidebarOpen, setSidebarOpen, isPremium }) {
+function LessonShell({ progress, completeLesson, unlockHint, saveNote, deleteNote, isLessonCompleted, isLessonUnlocked, sidebarOpen, setSidebarOpen, isPremium }) {
   const { lessonId } = useParams();
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
@@ -133,6 +135,8 @@ function LessonShell({ progress, completeLesson, unlockHint, isLessonCompleted, 
             progress={progress}
             completeLesson={completeLesson}
             unlockHint={unlockHint}
+            saveNote={saveNote}
+            deleteNote={deleteNote}
             isLessonCompleted={isLessonCompleted}
             isLessonUnlocked={isLessonUnlocked}
             isMobile={true}
@@ -154,6 +158,8 @@ function LessonShell({ progress, completeLesson, unlockHint, isLessonCompleted, 
           progress={progress}
           completeLesson={completeLesson}
           unlockHint={unlockHint}
+          saveNote={saveNote}
+          deleteNote={deleteNote}
           isLessonCompleted={isLessonCompleted}
           isLessonUnlocked={isLessonUnlocked}
           isMobile={false}
@@ -206,7 +212,7 @@ const BACKEND_URL = 'https://cpp-master.onrender.com/';
 const PING_INTERVAL = 10 * 60 * 1000; // 10 minutes
 
 function AuthenticatedApp({ currentUser, onLogout }) {
-  const { progress, completeLesson, completeQuiz, unlockHint, isLessonUnlocked, isLessonCompleted, resetProgress } = useProgress(currentUser);
+  const { progress, completeLesson, completeQuiz, unlockHint, saveNote, deleteNote, isLessonUnlocked, isLessonCompleted, resetProgress } = useProgress(currentUser);
 
   const isAdmin   = isAdminEmail(currentUser?.email);
   const isPremium = isAdmin || !!progress?.isPremium;
@@ -226,6 +232,8 @@ function AuthenticatedApp({ currentUser, onLogout }) {
         completeLesson={completeLesson}
         completeQuiz={completeQuiz}
         unlockHint={unlockHint}
+        saveNote={saveNote}
+        deleteNote={deleteNote}
         isLessonCompleted={isLessonCompleted}
         isLessonUnlocked={isLessonUnlocked}
         resetProgress={resetProgress}

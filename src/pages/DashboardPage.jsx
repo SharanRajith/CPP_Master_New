@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Trophy, Flame, Zap, BookOpen, Target, RefreshCw, ChevronRight, BarChart3, Award, Download, Lock, Activity, Share2, Brain } from 'lucide-react';
+import { Trophy, Flame, Zap, BookOpen, Target, RefreshCw, ChevronRight, BarChart3, Award, Download, Lock, Activity, Share2, Brain, StickyNote } from 'lucide-react';
 import { downloadShareCard } from '../utils/shareCard';
 import { LEVELS } from '../hooks/useProgress';
 import { CURRICULUM, getAllLessons } from '../data/curriculum';
@@ -529,6 +529,53 @@ export default function DashboardPage({ progress, resetProgress, completeQuiz, c
             );
           })}
         </div>
+
+        {/* My Notes */}
+        {(() => {
+          const allNotes = allLessons
+            .filter(l => (progress.notes?.[l.id] || []).length > 0)
+            .map(l => {
+              const mod = CURRICULUM.find(m => m.lessons.some(ml => ml.id === l.id));
+              return { lesson: l, mod, notes: progress.notes[l.id] };
+            });
+
+          if (allNotes.length === 0) return null;
+
+          return (
+            <>
+              <h2 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
+                <StickyNote size={16} className="text-indigo-400" /> My Notes
+                <span className="ml-auto text-xs font-normal text-dark-400">
+                  {allNotes.reduce((s, e) => s + e.notes.length, 0)} notes across {allNotes.length} lesson{allNotes.length !== 1 ? 's' : ''}
+                </span>
+              </h2>
+              <div className="space-y-2.5 mb-7">
+                {allNotes.map(({ lesson: l, mod, notes }) => (
+                  <motion.div
+                    key={l.id}
+                    initial={{ opacity: 0, x: -12 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="rounded-xl p-4 cursor-pointer transition-all hover:border-indigo-500/30"
+                    style={{ background: 'rgba(17,17,24,0.8)', border: '1px solid rgba(255,255,255,0.05)' }}
+                    onClick={() => navigate(`/lesson/${l.id}`)}
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-base">{mod?.icon}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-white truncate">{l.title}</p>
+                        <p className="text-xs text-dark-500">{mod?.title} · {notes.length} note{notes.length !== 1 ? 's' : ''}</p>
+                      </div>
+                      <ChevronRight size={13} className="text-dark-600 shrink-0" />
+                    </div>
+                    <p className="text-xs text-dark-400 line-clamp-2 leading-relaxed pl-6">
+                      {notes[0].text}
+                    </p>
+                  </motion.div>
+                ))}
+              </div>
+            </>
+          );
+        })()}
 
         {/* Danger zone */}
         <div
