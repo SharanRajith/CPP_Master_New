@@ -124,7 +124,7 @@ export default function LessonPage({ progress, completeLesson, isLessonCompleted
   const nextLesson   = currentIndex < allLessons.length - 1 ? allLessons[currentIndex + 1] : null;
   const isCompleted  = isLessonCompleted(lessonId);
 
-  // Load lesson data
+  // Load lesson data — restore saved code if available
   useEffect(() => {
     setLoading(true);
     setLesson(null);
@@ -135,11 +135,23 @@ export default function LessonPage({ progress, completeLesson, isLessonCompleted
       .then(mod => {
         const l = mod.default;
         setLesson(l);
-        setCode(l.starterCode || '');
+        const saved = localStorage.getItem(`cpp_code_${lessonId}`);
+        setCode(saved ?? (l.starterCode || ''));
         setLoading(false);
       })
       .catch(() => setLoading(false));
   }, [lessonId]);
+
+  // Auto-save code to localStorage (debounced 500ms)
+  const saveTimer = useRef(null);
+  useEffect(() => {
+    if (!lesson) return;
+    clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => {
+      localStorage.setItem(`cpp_code_${lessonId}`, code);
+    }, 500);
+    return () => clearTimeout(saveTimer.current);
+  }, [code, lessonId, lesson]);
 
   // Handle test pass
   useEffect(() => {
