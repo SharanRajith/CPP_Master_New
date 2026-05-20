@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Trophy, Flame, Zap, BookOpen, Target, RefreshCw, ChevronRight, BarChart3, Award, Download, Lock, Activity } from 'lucide-react';
+import { Trophy, Flame, Zap, BookOpen, Target, RefreshCw, ChevronRight, BarChart3, Award, Download, Lock, Activity, Share2 } from 'lucide-react';
+import { downloadShareCard } from '../utils/shareCard';
 import { LEVELS } from '../hooks/useProgress';
 import { CURRICULUM, getAllLessons } from '../data/curriculum';
 import { ACHIEVEMENTS, getEarnedAchievements } from '../config/achievements';
@@ -216,6 +217,25 @@ export default function DashboardPage({ progress, resetProgress, currentUser }) 
   const earnedBadges    = getEarnedAchievements(progress, totalLessons);
   const earnedIds       = new Set(earnedBadges.map(a => a.id));
 
+  const modulesCompleted = CURRICULUM.filter(m =>
+    m.lessons.every(l => progress.completedLessons[l.id])
+  ).length;
+
+  function handleShare() {
+    downloadShareCard({
+      userName:         currentUser?.displayName || 'Coder',
+      photoURL:         currentUser?.photoURL || null,
+      xp:               progress.xp,
+      level:            progress.level,
+      levelTitle:       levelInfo.title,
+      streak:           progress.streak,
+      lessonsCompleted: totalCompleted,
+      totalLessons,
+      modulesCompleted,
+      totalModules:     CURRICULUM.length,
+    });
+  }
+
   const stats = [
     { icon: <Flame   size={18} className="text-orange-400" />,  label: 'Day Streak',    value: `${progress.streak}d`,  bg: 'rgba(251,146,60,0.1)',  border: 'rgba(251,146,60,0.2)' },
     { icon: <Zap     size={18} className="text-yellow-400" />,  label: 'Total XP',      value: progress.xp,            bg: 'rgba(234,179,8,0.1)',   border: 'rgba(234,179,8,0.2)' },
@@ -233,11 +253,22 @@ export default function DashboardPage({ progress, resetProgress, currentUser }) 
           animate={{ opacity: 1, y: 0 }}
           className="mb-6"
         >
-          <div className="flex items-center gap-2 mb-1">
-            <BarChart3 size={20} className="text-indigo-400" />
-            <h1 className="text-2xl sm:text-3xl font-black text-white">My Dashboard</h1>
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <BarChart3 size={20} className="text-indigo-400" />
+                <h1 className="text-2xl sm:text-3xl font-black text-white">My Dashboard</h1>
+              </div>
+              <p className="text-sm text-dark-400">Track your C++ mastery progress.</p>
+            </div>
+            <button
+              onClick={handleShare}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:opacity-90 active:scale-95"
+              style={{ background: 'linear-gradient(135deg,#4f46e5,#7c3aed)', color: 'white', boxShadow: '0 4px 16px rgba(79,70,229,0.3)' }}
+            >
+              <Share2 size={14} /> Share Progress
+            </button>
           </div>
-          <p className="text-sm text-dark-400">Track your C++ mastery progress.</p>
         </motion.div>
 
         {/* Certificate banner — shown when all lessons complete */}
