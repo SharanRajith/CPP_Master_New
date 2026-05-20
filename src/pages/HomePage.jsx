@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Play, Trophy, Flame, BookOpen, ArrowRight, Star, Zap, Code2, ChevronRight, CalendarDays, CheckCircle2, Swords } from 'lucide-react';
+import { Play, Trophy, Flame, BookOpen, ArrowRight, Star, Zap, Code2, ChevronRight, CalendarDays, CheckCircle2, Swords, Crown, Lock, Mail } from 'lucide-react';
 import { CURRICULUM, getAllLessons } from '../data/curriculum';
 import { LEVELS } from '../hooks/useProgress';
 
@@ -163,12 +163,7 @@ export default function HomePage({ progress }) {
   const navigate = useNavigate();
   const allLessons = getAllLessons();
   const totalCompleted = Object.keys(progress.completedLessons).length;
-  const totalLessons   = allLessons.length;
   const levelInfo      = LEVELS[progress.level - 1] || LEVELS[0];
-  const nextLevel      = LEVELS[progress.level] || null;
-  const pct            = nextLevel
-    ? ((progress.xp - levelInfo.minXP) / (nextLevel.minXP - levelInfo.minXP)) * 100
-    : 100;
 
   // Find first uncompleted lesson
   const firstUncompleted = allLessons.find(l => !progress.completedLessons[l.id]);
@@ -316,6 +311,111 @@ export default function HomePage({ progress }) {
           ))}
         </div>
       </div>
+
+      {/* Premium Upgrade Section */}
+      <div className="px-4 sm:px-8 pb-12">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="rounded-3xl overflow-hidden"
+          style={{ border: '1px solid rgba(251,191,36,0.25)' }}
+        >
+          {/* Header */}
+          <div
+            className="px-6 sm:px-10 py-8 text-center relative overflow-hidden"
+            style={{ background: 'linear-gradient(135deg, #1a1200 0%, #0f0a00 50%, #1a0f00 100%)' }}
+          >
+            <div className="absolute inset-0 opacity-10"
+              style={{ background: 'radial-gradient(ellipse at 50% 0%, #f59e0b, transparent 70%)' }} />
+            <div className="relative z-10">
+              <div className="inline-flex items-center gap-2 bg-yellow-900/30 border border-yellow-700/40 px-4 py-1.5 rounded-full text-xs font-bold text-yellow-400 mb-4 tracking-wide uppercase">
+                <Crown size={13} /> Premium Plan
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-black text-white mb-2">
+                Go from Good to <span style={{ color: '#f59e0b' }}>FAANG-Ready</span>
+              </h2>
+              <p className="text-dark-300 text-sm max-w-lg mx-auto">
+                Unlock 7 advanced modules covering the exact algorithms and patterns asked at Google, Meta, Amazon, Microsoft &amp; Apple interviews.
+              </p>
+            </div>
+          </div>
+
+          {/* Free vs Premium comparison */}
+          <div
+            className="grid grid-cols-1 sm:grid-cols-2 gap-0 sm:divide-x divide-dark-700"
+            style={{ background: 'rgba(10,10,15,0.97)' }}
+          >
+            {/* Free */}
+            <div className="p-6 sm:p-8">
+              <p className="text-xs font-bold text-dark-400 uppercase tracking-wider mb-4">Free — Always included</p>
+              <ul className="space-y-2.5">
+                {[
+                  'C++ Fundamentals (14 lessons)',
+                  'Object-Oriented Programming',
+                  'STL Deep Dive',
+                  'Complexity Analysis',
+                  'Arrays, Strings & Two Pointers',
+                  'Sorting & Searching',
+                  'In-browser C++ compiler',
+                  'Streak tracking & XP system',
+                ].map((item, i) => (
+                  <li key={i} className="flex items-center gap-2.5 text-sm text-dark-300">
+                    <CheckCircle2 size={14} className="text-emerald-500 shrink-0" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Premium */}
+            <div className="p-6 sm:p-8" style={{ background: 'rgba(251,191,36,0.03)' }}>
+              <p className="text-xs font-bold text-yellow-600 uppercase tracking-wider mb-4">Premium — Everything above, plus</p>
+              <ul className="space-y-2.5">
+                {[
+                  { text: 'Linked Lists, Stacks & Queues' },
+                  { text: 'Trees, Heaps & Priority Queues' },
+                  { text: 'Graphs — BFS, DFS, Dijkstra, MST' },
+                  { text: 'Dynamic Programming (1D → Bitmask)' },
+                  { text: 'Advanced Algorithms & Segment Trees' },
+                  { text: 'Interview Patterns & System Design DSA' },
+                  { text: 'FAANG Problem Bank — 15 curated problems', highlight: true },
+                  { text: 'Completion certificate', highlight: true },
+                ].map((item, i) => (
+                  <li key={i} className="flex items-center gap-2.5 text-sm">
+                    <Crown size={13} className="text-yellow-400 shrink-0" />
+                    <span className={item.highlight ? 'text-yellow-300 font-semibold' : 'text-dark-200'}>
+                      {item.text}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* CTA footer */}
+          <div
+            className="px-6 sm:px-10 py-6 flex flex-col sm:flex-row items-center justify-between gap-4"
+            style={{ background: 'rgba(251,191,36,0.05)', borderTop: '1px solid rgba(251,191,36,0.15)' }}
+          >
+            <div>
+              <p className="font-bold text-white text-sm">Ready to level up?</p>
+              <p className="text-xs text-dark-400 mt-0.5">Email us and get access within 24 hours.</p>
+            </div>
+            <a
+              href="mailto:sharanrajithk@gmail.com?subject=CppMaster Premium Access Request"
+              className="shrink-0 flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm text-white transition-all hover:opacity-90 active:scale-95"
+              style={{
+                background: 'linear-gradient(135deg, #f59e0b, #f97316)',
+                boxShadow: '0 4px 24px rgba(245,158,11,0.3)',
+              }}
+            >
+              <Mail size={15} /> Request Premium Access
+            </a>
+          </div>
+        </motion.div>
+      </div>
+
     </div></div>
   );
 }
