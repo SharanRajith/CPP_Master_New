@@ -75,6 +75,11 @@ export function useProgress(user) {
       const newXP    = prev.xp + xpReward;
       const newLevel = calculateLevel(newXP);
 
+      // Track daily XP for the activity calendar
+      const isoDate    = new Date().toISOString().slice(0, 10); // "YYYY-MM-DD"
+      const activityLog = { ...(prev.activityLog || {}) };
+      activityLog[isoDate] = (activityLog[isoDate] || 0) + xpReward;
+
       return {
         ...prev,
         completedLessons: { ...prev.completedLessons, [lessonId]: true },
@@ -82,6 +87,7 @@ export function useProgress(user) {
         level: newLevel,
         streak,
         lastActiveDate: today,
+        activityLog,
       };
     });
   }, [_update]);
@@ -137,13 +143,14 @@ export function useProgress(user) {
 
 function getDefaultProgress() {
   return {
-    completedLessons:  {},   
-    completedLeetCode: {},   
+    completedLessons:  {},
+    completedLeetCode: {},
     xp:                0,
     level:             1,
     streak:            0,
     lastActiveDate:    null,
     totalLessons:      0,
+    activityLog:       {},  // "YYYY-MM-DD" → xp earned that day
   };
 }
 

@@ -1,11 +1,205 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Trophy, Flame, Zap, BookOpen, Target, RefreshCw, ChevronRight, BarChart3, Award, Download, Lock } from 'lucide-react';
+import { Trophy, Flame, Zap, BookOpen, Target, RefreshCw, ChevronRight, BarChart3, Award, Download, Lock, Activity } from 'lucide-react';
 import { LEVELS } from '../hooks/useProgress';
 import { CURRICULUM, getAllLessons } from '../data/curriculum';
 import { ACHIEVEMENTS, getEarnedAchievements } from '../config/achievements';
 import { downloadCertificate } from '../utils/certificate';
+
+// ─── Activity Calendar (90 days) ─────────────────────────────────────────────
+function ActivityCalendar({ activityLog = {} }) {
+  const COLS = 15; // 15 weeks
+  const days = useMemo(() => {
+    return Array.from({ length: COLS * 7 }, (_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - (COLS * 7 - 1 - i));
+      const key = d.toISOString().slice(0, 10);
+      return { key, xp: activityLog[key] || 0, date: d };
+    });
+  }, [activityLog]);
+
+  function intensity(xp) {
+    if (xp === 0)  return 0;
+    if (xp < 10)  return 1;
+    if (xp < 20)  return 2;
+    if (xp < 35)  return 3;
+    return 4;
+  }
+
+  const COLORS = [
+    'rgba(255,255,255,0.04)',
+    'rgba(99,102,241,0.25)',
+    'rgba(99,102,241,0.45)',
+    'rgba(99,102,241,0.70)',
+    '#6366f1',
+  ];
+
+  const DAY_LABELS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  // Show only Mon, Wed, Fri
+  const SHOW_DAYS = [1, 3, 5];
+
+  // Month labels — find first cell of each month
+  const monthLabels = useMemo(() => {
+    const seen = new Set();
+    return days.filter((d, i) => {
+      const m = d.date.toLocaleDateString('en-US', { month: 'short' });
+      if (!seen.has(m) && i % 7 === 0) { seen.add(m); return true; }
+      return false;
+    }).map(d => ({
+      label: d.date.toLocaleDateString('en-US', { month: 'short' }),
+      col: Math.floor(days.indexOf(d) / 7),
+    }));
+  }, [days]);
+
+  const totalXP = Object.values(activityLog).reduce((s, v) => s + v, 0);
+  const activeDays = Object.keys(activityLog).length;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.15 }}
+      className="rounded-2xl p-5 mb-5"
+      style={{ background: 'rgba(17,17,24,0.8)', border: '1px solid rgba(255,255,255,0.06)' }}
+    >
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-base font-bold text-white flex items-center gap-2">
+          <Activity size={15} className="text-indigo-400" /> Activity
+        </h2>
+        <div className="flex items-center gap-3 text-xs text-dark-400">
+          <span>{activeDays} active days</span>
+          <span>·</span>
+          <span>{totalXP} XP logged</span>
+        </div>
+      </div>
+
+      <div className="overflow-x-auto">
+        <div style={{ display: 'inline-flex', flexDirection: 'column', gap: 0 }}>
+          {/* Month labels */}
+          <div style={{ display: 'flex', marginLeft: 28, marginBottom: 4 }}>
+            {Array.from({ length: COLS }, (_, col) => {
+              const label = monthLabels.find(m => m.col === col);
+              return (
+                <div key={col} style={{ width: 13, marginRight: 2, fontSize: 9, color: '#6b7280', whiteSpace: 'nowrap' }}>
+                  {label?.label || ''}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Grid */}
+          <div style={{ display: 'flex', gap: 0 }}>
+            {/* Day labels */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginRight: 4, paddingTop: 0 }}>
+              {Array.from({ length: 7 }, (_, row) => (
+                <div key={row} style={{ height: 11, fontSize: 9, color: '#6b7280', display: 'flex', alignItems: 'center' }}>
+                  {SHOW_DAYS.includes(row) ? DAY_LABELS[row].slice(0, 3) : ''}
+                </div>
+              ))}
+            </div>
+
+            {/* Cells */}
+            {Array.from({ length: COLS }, (_, col) => (
+              <div key={col} style={{ display: 'flex', flexDirection: 'column', gap: 2, marginRight: 2 }}>
+                {Array.from({ length: 7 }, (_, row) => {
+                  const cell = days[col * 7 + row];
+                  if (!cell) return <div key={row} style={{ width: 11, height: 11 }} />;
+                  const level = intensity(cell.xp);
+                  return (
+                    <div
+                      key={row}
+                      title={`${cell.key}: ${cell.xp} XP`}
+                      style={{
+                        width: 11, height: 11,
+                        borderRadius: 2,
+                        background: COLORS[level],
+                        cursor: cell.xp > 0 ? 'pointer' : 'default',
+                      }}
+                    />
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Legend */}
+      <div className="flex items-center gap-1.5 mt-3 justify-end">
+        <span className="text-[10px] text-dark-500">Less</span>
+        {COLORS.map((c, i) => (
+          <div key={i} style={{ width: 10, height: 10, borderRadius: 2, background: c }} />
+        ))}
+        <span className="text-[10px] text-dark-500">More</span>
+      </div>
+    </motion.div>
+  );
+}
+
+// ─── Weekly XP Bar Chart (last 14 days) ──────────────────────────────────────
+function XPBarChart({ activityLog = {} }) {
+  const bars = useMemo(() => {
+    return Array.from({ length: 14 }, (_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - (13 - i));
+      const key = d.toISOString().slice(0, 10);
+      return {
+        key,
+        xp: activityLog[key] || 0,
+        label: d.toLocaleDateString('en-US', { weekday: 'short' }),
+        isToday: i === 13,
+      };
+    });
+  }, [activityLog]);
+
+  const maxXP  = Math.max(...bars.map(b => b.xp), 1);
+  const HEIGHT = 64;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.18 }}
+      className="rounded-2xl p-5 mb-5"
+      style={{ background: 'rgba(17,17,24,0.8)', border: '1px solid rgba(255,255,255,0.06)' }}
+    >
+      <h2 className="text-base font-bold text-white flex items-center gap-2 mb-4">
+        <BarChart3 size={15} className="text-indigo-400" /> XP Last 14 Days
+      </h2>
+
+      <div className="flex items-end gap-1.5" style={{ height: HEIGHT + 24 }}>
+        {bars.map((bar, i) => {
+          const h = bar.xp > 0 ? Math.max((bar.xp / maxXP) * HEIGHT, 6) : 2;
+          return (
+            <div key={bar.key} className="flex flex-col items-center flex-1 gap-1" style={{ height: HEIGHT + 24 }}>
+              <div className="flex-1 flex items-end w-full">
+                <motion.div
+                  initial={{ height: 0 }}
+                  animate={{ height: h }}
+                  transition={{ duration: 0.6, delay: i * 0.03, ease: 'easeOut' }}
+                  className="w-full rounded-t-md"
+                  style={{
+                    background: bar.xp > 0
+                      ? bar.isToday
+                        ? 'linear-gradient(180deg,#f59e0b,#f97316)'
+                        : 'linear-gradient(180deg,#6366f1,#4f46e5)'
+                      : 'rgba(255,255,255,0.04)',
+                    minHeight: 2,
+                  }}
+                  title={`${bar.key}: ${bar.xp} XP`}
+                />
+              </div>
+              <span className="text-[9px] text-dark-500 leading-none" style={{ color: bar.isToday ? '#f59e0b' : undefined }}>
+                {bar.label.slice(0, 2)}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </motion.div>
+  );
+}
 
 export default function DashboardPage({ progress, resetProgress, currentUser }) {
   const navigate   = useNavigate();
@@ -149,6 +343,10 @@ export default function DashboardPage({ progress, resetProgress, currentUser }) 
             </motion.div>
           ))}
         </div>
+
+        {/* Activity charts */}
+        <XPBarChart activityLog={progress.activityLog} />
+        <ActivityCalendar activityLog={progress.activityLog} />
 
         {/* Module progress */}
         <h2 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
