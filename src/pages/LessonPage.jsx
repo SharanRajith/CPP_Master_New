@@ -9,10 +9,11 @@ import {
 import CodeEditor      from '../components/ide/CodeEditor';
 import CompilerToolbar from '../components/ide/CompilerToolbar';
 import TestResults     from '../components/ide/TestResults';
-import SolutionReveal  from '../components/ide/SolutionReveal';
-import LessonContent   from '../components/lesson/LessonContent';
-import SettingsModal   from '../components/settings/SettingsModal';
-import PremiumGate     from '../components/PremiumGate';
+import SolutionReveal       from '../components/ide/SolutionReveal';
+import LessonContent        from '../components/lesson/LessonContent';
+import SettingsModal        from '../components/settings/SettingsModal';
+import PremiumGate          from '../components/PremiumGate';
+import ModuleCompleteModal  from '../components/ModuleCompleteModal';
 import { readEditorSettings } from '../hooks/useEditorSettings';
 import { CURRICULUM }  from '../data/curriculum';
 
@@ -105,7 +106,7 @@ function LessonHeaderStrip({ lesson, isCompleted, prevLesson, nextLesson, naviga
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-export default function LessonPage({ progress, completeLesson, isLessonCompleted, isMobile, isPremium }) {
+export default function LessonPage({ progress, completeLesson, isLessonCompleted, isMobile, isPremium, isLessonUnlocked }) {
   const { lessonId } = useParams();
   const navigate     = useNavigate();
   const allLessons   = getAllLessons();
@@ -119,8 +120,9 @@ export default function LessonPage({ progress, completeLesson, isLessonCompleted
   const [mobileTab, setMobileTab]     = useState('lesson');
   const [stdin, setStdin]             = useState('');
   const [showStdin, setShowStdin]     = useState(false);
-  const [hintIndex, setHintIndex]     = useState(-1);
+  const [hintIndex, setHintIndex]           = useState(-1);
   const [editorSettings, setEditorSettings] = useState(() => readEditorSettings());
+  const [moduleComplete, setModuleComplete] = useState(null); // moduleId when celebration fires
 
   const {
     isCompiling, compilerResult, compilerStatus,
@@ -169,6 +171,18 @@ export default function LessonPage({ progress, completeLesson, isLessonCompleted
       completeLesson(lessonId, lesson.xpReward || 10);
       setXpEarned(lesson.xpReward || 10);
       setShowXPToast(true);
+
+      // Check if this was the last lesson in the module
+      const mod = CURRICULUM.find(m => m.lessons.some(l => l.id === lessonId));
+      if (mod) {
+        const othersDone = mod.lessons
+          .filter(l => l.id !== lessonId)
+          .every(l => progress.completedLessons[l.id]);
+        if (othersDone) {
+          // Delay so XP toast shows first
+          setTimeout(() => setModuleComplete(mod.id), 1800);
+        }
+      }
     }
     setAttempts(a => a + 1);
   }, [compilerResult]);
@@ -294,6 +308,15 @@ export default function LessonPage({ progress, completeLesson, isLessonCompleted
         {/* XP Toast */}
         <AnimatePresence>
           {showXPToast && <XPToast xp={xpEarned} onDone={() => setShowXPToast(false)} />}
+        </AnimatePresence>
+        <AnimatePresence>
+          {moduleComplete && (
+            <ModuleCompleteModal
+              moduleId={moduleComplete}
+              completedLessons={progress.completedLessons}
+              onClose={() => setModuleComplete(null)}
+            />
+          )}
         </AnimatePresence>
 
         {/* Tab Bar */}
@@ -449,6 +472,15 @@ export default function LessonPage({ progress, completeLesson, isLessonCompleted
     <div className="flex flex-col flex-1 overflow-hidden">
       <AnimatePresence>
         {showXPToast && <XPToast xp={xpEarned} onDone={() => setShowXPToast(false)} />}
+      </AnimatePresence>
+      <AnimatePresence>
+        {moduleComplete && (
+          <ModuleCompleteModal
+            moduleId={moduleComplete}
+            completedLessons={progress.completedLessons}
+            onClose={() => setModuleComplete(null)}
+          />
+        )}
       </AnimatePresence>
 
       <PanelGroup direction="horizontal" className="flex-1 flex overflow-hidden">
