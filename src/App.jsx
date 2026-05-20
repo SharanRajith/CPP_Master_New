@@ -163,11 +163,22 @@ export default function App() {
   return <AuthenticatedApp currentUser={currentUser} onLogout={async () => signOut(auth)} />;
 }
 
+const BACKEND_URL = 'https://cpp-master.onrender.com/';
+const PING_INTERVAL = 10 * 60 * 1000; // 10 minutes
+
 function AuthenticatedApp({ currentUser, onLogout }) {
   const { progress, completeLesson, completeLeetCode, isLessonUnlocked, isLessonCompleted, resetProgress } = useProgress(currentUser);
 
   const isAdmin   = isAdminEmail(currentUser?.email);
   const isPremium = isAdmin || !!progress?.isPremium;
+
+  // Keep Render backend alive — ping every 10 min so it never sleeps
+  useEffect(() => {
+    const ping = () => fetch(BACKEND_URL, { method: 'GET', mode: 'no-cors' }).catch(() => {});
+    ping(); // immediate ping on login
+    const id = setInterval(ping, PING_INTERVAL);
+    return () => clearInterval(id);
+  }, []);
 
   return (
     <BrowserRouter>
