@@ -47,17 +47,19 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex" style={{ background: '#080b14' }}>
+    <div className="h-screen flex overflow-hidden" style={{ background: '#080b14' }}>
 
       {/* ── Left panel (hidden on mobile) ─────────────────────────────────── */}
-      <div className="hidden lg:flex flex-col flex-1 relative overflow-hidden"
+      <div className="hidden lg:flex flex-col flex-1 relative overflow-y-auto overflow-x-hidden"
         style={{ background: 'linear-gradient(145deg, #0d0b1f 0%, #120a2e 40%, #0a1020 100%)' }}>
 
-        {/* Ambient glows */}
-        <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full pointer-events-none"
-          style={{ background: 'radial-gradient(circle, rgba(79,70,229,0.35) 0%, transparent 70%)' }} />
-        <div className="absolute bottom-0 right-0 w-80 h-80 rounded-full pointer-events-none"
-          style={{ background: 'radial-gradient(circle, rgba(124,58,237,0.2) 0%, transparent 70%)' }} />
+        {/* Ambient glows + grid — fixed so they don't scroll */}
+        <div className="fixed inset-0 pointer-events-none" style={{ zIndex: 0 }}>
+          <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full"
+            style={{ background: 'radial-gradient(circle, rgba(79,70,229,0.35) 0%, transparent 70%)' }} />
+          <div className="absolute bottom-0 right-0 w-80 h-80 rounded-full"
+            style={{ background: 'radial-gradient(circle, rgba(124,58,237,0.2) 0%, transparent 70%)' }} />
+        </div>
 
         {/* Grid overlay */}
         <div className="absolute inset-0 pointer-events-none opacity-[0.04]"
@@ -66,7 +68,7 @@ export default function LoginPage() {
             backgroundSize: '40px 40px',
           }} />
 
-        <div className="relative flex flex-col h-full p-10 xl:p-14">
+        <div className="relative flex flex-col min-h-full p-10 xl:p-14" style={{ zIndex: 1 }}>
           {/* Logo */}
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl flex items-center justify-center font-black text-white text-sm"
@@ -158,7 +160,7 @@ export default function LoginPage() {
       </div>
 
       {/* ── Right panel — login card ───────────────────────────────────────── */}
-      <div className="flex-1 lg:max-w-md flex items-center justify-center p-6 relative"
+      <div className="flex-1 lg:max-w-md flex items-center justify-center p-6 relative overflow-y-auto"
         style={{ background: '#080b14' }}>
 
         {/* Mobile background glow */}
