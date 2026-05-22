@@ -74,6 +74,8 @@ function AppShell({ progress, completeLesson, completeQuiz, unlockHint, saveNote
                 sidebarOpen={sidebarOpen}
                 setSidebarOpen={setSidebarOpen}
                 isPremium={isPremium}
+                currentUser={currentUser}
+                isAdmin={isAdmin}
               />
             }
           />
@@ -104,7 +106,7 @@ function AppShell({ progress, completeLesson, completeQuiz, unlockHint, saveNote
 }
 
 // ─── Lesson Shell (responsive) ────────────────────────────────────────────────
-function LessonShell({ progress, completeLesson, unlockHint, saveNote, deleteNote, isLessonCompleted, isLessonUnlocked, sidebarOpen, setSidebarOpen, isPremium }) {
+function LessonShell({ progress, completeLesson, unlockHint, saveNote, deleteNote, isLessonCompleted, isLessonUnlocked, sidebarOpen, setSidebarOpen, isPremium, currentUser, isAdmin }) {
   const { lessonId } = useParams();
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
