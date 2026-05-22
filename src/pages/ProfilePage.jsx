@@ -8,8 +8,7 @@ import { auth, db, storage } from '../lib/firebase';
 import { CURRICULUM } from '../data/curriculum';
 import { LEVELS } from '../hooks/useProgress';
 import {
-  Flame, Zap, BookOpen, CheckCircle2, Trophy, Target,
-  Copy, Check, Calendar, Clock, Camera, Loader2,
+  CheckCircle2, Copy, Check, Calendar, Clock, Camera, Loader2,
 } from 'lucide-react';
 
 // ─── Track config ──────────────────────────────────────────────────────────────
@@ -33,24 +32,6 @@ function formatLastActive(dateStr) {
   if (diff === 1) return 'Yesterday';
   if (diff < 7)  return `${diff} days ago`;
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
-
-// ─── Stat card ─────────────────────────────────────────────────────────────────
-function StatCard({ icon, label, value, color }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="flex flex-col items-center gap-1.5 p-4 rounded-2xl"
-      style={{ background: `${color}10`, border: `1px solid ${color}25` }}
-    >
-      <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: `${color}20` }}>
-        {React.cloneElement(icon, { size: 17, style: { color } })}
-      </div>
-      <span className="text-xl font-black text-white">{value}</span>
-      <span className="text-[10px] text-dark-400 font-medium uppercase tracking-wide text-center">{label}</span>
-    </motion.div>
-  );
 }
 
 // ─── Module completion grid ────────────────────────────────────────────────────
@@ -194,23 +175,17 @@ export default function ProfilePage({ currentUser, progress: ownProgress, onProf
     );
   }
 
-  const { displayName, photoURL, xp = 0, level = 1, streak = 0,
-          completedLessons = {}, completedQuizzes = {}, completedLeetCode = {},
-          joinedAt, lastActiveDate } = profileData;
+  const { displayName, photoURL, xp = 0, level = 1,
+          completedLessons = {}, joinedAt, lastActiveDate } = profileData;
 
-  const levelInfo       = LEVELS[level - 1] || LEVELS[0];
-  const nextLevel       = LEVELS[level]     || null;
-  const xpInLevel       = nextLevel ? xp - levelInfo.minXP : 0;
-  const xpNeeded        = nextLevel ? nextLevel.minXP - levelInfo.minXP : 1;
-  const pct             = nextLevel ? Math.min((xpInLevel / xpNeeded) * 100, 100) : 100;
-  const totalDone       = Object.keys(completedLessons).length;
-  const totalLessons    = CURRICULUM.reduce((s, m) => s + m.lessons.length, 0);
-  const modulesDone     = CURRICULUM.filter(m => m.lessons.every(l => completedLessons[l.id])).length;
-  const quizCount       = Object.keys(completedQuizzes).length;
-  const leetcodeCount   = Object.keys(completedLeetCode).length;
-  const avatarFallback  = (displayName || 'U').charAt(0).toUpperCase();
-  const joinStr         = formatJoinDate(joinedAt);
-  const lastStr         = formatLastActive(lastActiveDate);
+  const levelInfo      = LEVELS[level - 1] || LEVELS[0];
+  const nextLevel      = LEVELS[level]     || null;
+  const xpInLevel      = nextLevel ? xp - levelInfo.minXP : 0;
+  const xpNeeded       = nextLevel ? nextLevel.minXP - levelInfo.minXP : 1;
+  const pct            = nextLevel ? Math.min((xpInLevel / xpNeeded) * 100, 100) : 100;
+  const avatarFallback = (displayName || 'U').charAt(0).toUpperCase();
+  const joinStr        = formatJoinDate(joinedAt);
+  const lastStr        = formatLastActive(lastActiveDate);
 
   return (
     <div className="flex-1 overflow-y-auto bg-dark-900">
@@ -344,16 +319,6 @@ export default function ProfilePage({ currentUser, progress: ownProgress, onProf
             )}
           </div>
         </motion.div>
-
-        {/* ── Stats grid ── */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
-          <StatCard icon={<Zap />}        label="Total XP"        value={xp.toLocaleString()}     color="#818cf8" />
-          <StatCard icon={<Flame />}      label="Day Streak"      value={streak}                  color="#f97316" />
-          <StatCard icon={<BookOpen />}   label="Lessons Done"    value={`${totalDone}/${totalLessons}`} color="#34d399" />
-          <StatCard icon={<Trophy />}     label="Modules Cleared" value={modulesDone}              color="#fbbf24" />
-          <StatCard icon={<CheckCircle2/>}label="Quizzes Passed"  value={quizCount}               color="#60a5fa" />
-          <StatCard icon={<Target />}     label="LeetCode Done"   value={leetcodeCount}            color="#f472b6" />
-        </div>
 
         {/* ── Module progress ── */}
         <motion.div
