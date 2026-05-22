@@ -8,7 +8,7 @@ import { auth, db, storage } from '../lib/firebase';
 import { CURRICULUM } from '../data/curriculum';
 import { LEVELS } from '../hooks/useProgress';
 import { ACHIEVEMENTS, getEarnedAchievements } from '../config/achievements';
-import { Flame, Zap, BookOpen, Copy, Check, Calendar, Clock, Camera, Loader2 } from 'lucide-react';
+import { Flame, Zap, BookOpen, Copy, Check, Calendar, Clock, Camera, Loader2, Mail, Pencil, X } from 'lucide-react';
 
 function formatJoinDate(ts) {
   if (!ts) return null;
@@ -38,7 +38,13 @@ export default function ProfilePage({ currentUser, progress: ownProgress, onProf
   const [uploading,     setUploading]     = useState(false);
   const [uploadError,   setUploadError]   = useState('');
   const [avatarPreview, setAvatarPreview] = useState(null);
+  const [editingName,   setEditingName]   = useState(false);
+  const [nameValue,     setNameValue]     = useState('');
+  const [nameSaving,    setNameSaving]    = useState(false);
+  const [nameError,     setNameError]     = useState('');
+  const [nameSaved,     setNameSaved]     = useState(false);
   const fileInputRef = useRef(null);
+  const nameInputRef = useRef(null);
 
   useEffect(() => {
     if (isOwn) { setProfileData(ownProgress); return; }
@@ -99,6 +105,33 @@ export default function ProfilePage({ currentUser, progress: ownProgress, onProf
     } finally {
       setUploading(false);
       e.target.value = '';
+    }
+  }
+
+  function startEditName(currentDisplayName) {
+    setNameValue(currentDisplayName || '');
+    setEditingName(true);
+    setNameError('');
+    setTimeout(() => nameInputRef.current?.focus(), 50);
+  }
+
+  async function saveName(currentDisplayName) {
+    const trimmed = nameValue.trim();
+    if (!trimmed) { setNameError('Name cannot be empty.'); return; }
+    if (trimmed === currentDisplayName) { setEditingName(false); return; }
+    setNameSaving(true);
+    setNameError('');
+    try {
+      await updateProfile(auth.currentUser, { displayName: trimmed });
+      await setDoc(doc(db, 'users', currentUser.uid), { displayName: trimmed }, { merge: true });
+      onProfileUpdate?.();
+      setEditingName(false);
+      setNameSaved(true);
+      setTimeout(() => setNameSaved(false), 2000);
+    } catch (e) {
+      setNameError('Failed to save. Try again.');
+    } finally {
+      setNameSaving(false);
     }
   }
 
@@ -309,6 +342,76 @@ export default function ProfilePage({ currentUser, progress: ownProgress, onProf
                   <span>{a.icon}</span> {a.name}
                 </div>
               ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* ── Account Settings (own profile only) ── */}
+        {isOwn && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="rounded-2xl overflow-hidden mb-5"
+            style={{ border: '1px solid rgba(255,255,255,0.07)' }}
+          >
+            <div className="px-5 py-3 border-b border-white/5"
+              style={{ background: 'rgba(255,255,255,0.02)' }}>
+              <p className="text-xs font-bold text-dark-400 uppercase tracking-widest">Account Settings</p>
+            </div>
+
+            {/* Display Name */}
+            <div className="px-5 py-4 flex items-center gap-4 border-b border-white/5"
+              style={{ background: 'rgba(17,17,24,0.6)' }}>
+              <div className="flex-1 min-w-0">
+                <p className="text-[11px] text-dark-500 mb-1 font-medium uppercase tracking-wide">Display Name</p>
+                {editingName ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      ref={nameInputRef}
+                      value={nameValue}
+                      onChange={e => setNameValue(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') saveName(); if (e.key === 'Escape') setEditingName(false); }}
+                      maxLength={40}
+                      className="flex-1 bg-dark-700 text-white text-sm px-3 py-1.5 rounded-lg border border-indigo-500/50 focus:outline-none focus:border-indigo-400"
+                    />
+                    <button onClick={() => saveName(displayName)} disabled={nameSaving}
+                      className="p-1.5 rounded-lg text-indigo-400 hover:bg-indigo-900/30 transition-all disabled:opacity-50">
+                      {nameSaving ? <Loader2 size={15} className="animate-spin" /> : <Check size={15} />}
+                    </button>
+                    <button onClick={() => setEditingName(false)}
+                      className="p-1.5 rounded-lg text-dark-400 hover:bg-dark-700 transition-all">
+                      <X size={15} />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold text-white">
+                      {nameSaved ? <span className="text-green-400">Saved!</span> : (displayName || 'Anonymous')}
+                    </span>
+                  </div>
+                )}
+                {nameError && <p className="text-xs text-red-400 mt-1">{nameError}</p>}
+              </div>
+              {!editingName && (
+                <button onClick={() => startEditName(displayName)}
+                  className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg text-dark-400 hover:text-white hover:bg-dark-700 transition-all shrink-0">
+                  <Pencil size={12} /> Edit
+                </button>
+              )}
+            </div>
+
+            {/* Email */}
+            <div className="px-5 py-4 flex items-center gap-4"
+              style={{ background: 'rgba(17,17,24,0.6)' }}>
+              <div className="flex-1 min-w-0">
+                <p className="text-[11px] text-dark-500 mb-1 font-medium uppercase tracking-wide">Email</p>
+                <div className="flex items-center gap-2">
+                  <Mail size={13} className="text-dark-500 shrink-0" />
+                  <span className="text-sm text-dark-300 truncate">{currentUser?.email}</span>
+                </div>
+              </div>
+              <span className="text-[10px] text-dark-600 shrink-0">via Google</span>
             </div>
           </motion.div>
         )}
