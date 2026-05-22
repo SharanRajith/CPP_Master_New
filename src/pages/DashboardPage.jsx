@@ -388,90 +388,109 @@ export default function DashboardPage({ progress, resetProgress, completeQuiz, c
         </h2>
         <div className="space-y-2.5 mb-7">
           {CURRICULUM.map((module, i) => {
+            const prevModule = CURRICULUM[i - 1];
+            const showDivider =
+              i === 0 ||
+              (module.track === 'embedded' && prevModule?.track !== 'embedded') ||
+              (module.track === 'dbms'     && prevModule?.track !== 'dbms');
+
             const total     = module.lessons.length;
             const completed = module.lessons.filter(l => progress.completedLessons[l.id]).length;
             const mpct      = total > 0 ? (completed / total) * 100 : 0;
             const firstUncompleted = module.lessons.find(l => !progress.completedLessons[l.id]);
             const isAllDone = completed === total;
 
-            const quizKey   = module.id; // e.g. 'module-1'
+            const quizKey   = module.id;
             const questions = QUIZZES[quizKey];
             const quizDone  = !!(progress.completedQuizzes || {})[quizKey];
 
+            const trackLabel = module.track === 'embedded' ? 'Embedded C  ·  ECE / EEE'
+                             : module.track === 'dbms'     ? 'DBMS'
+                             : 'C++  ·  Data Structures';
+            const trackColor = module.track === 'embedded' ? '#67e8f9'
+                             : module.track === 'dbms'     ? '#c4b5fd'
+                             : '#818cf8';
+            const trackBg    = module.track === 'embedded' ? 'rgba(34,211,238,0.06)'
+                             : module.track === 'dbms'     ? 'rgba(167,139,250,0.06)'
+                             : 'rgba(99,102,241,0.06)';
+            const trackBdr   = module.track === 'embedded' ? 'rgba(34,211,238,0.18)'
+                             : module.track === 'dbms'     ? 'rgba(167,139,250,0.18)'
+                             : 'rgba(99,102,241,0.18)';
+
             return (
-              <motion.div
-                key={module.id}
-                initial={{ opacity: 0, x: -16 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.15 + i * 0.04 }}
-                className="flex items-center gap-3 rounded-xl p-4 transition-all group"
-                style={{
-                  background: 'rgba(17,17,24,0.8)',
-                  border: isAllDone ? `1px solid ${module.color}40` : '1px solid rgba(255,255,255,0.05)',
-                }}
-              >
-                <span
-                  className="text-xl shrink-0 cursor-pointer"
-                  onClick={() => navigate(`/lesson/${firstUncompleted?.id || module.lessons[0].id}`)}
-                >
-                  {module.icon}
-                </span>
-                <div
-                  className="flex-1 min-w-0 cursor-pointer"
-                  onClick={() => navigate(`/lesson/${firstUncompleted?.id || module.lessons[0].id}`)}
-                >
-                  <div className="flex items-center justify-between mb-1.5">
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      <span className="font-semibold text-white text-sm truncate">{module.title}</span>
-                      {module.track === 'embedded' && (
-                        <span className="shrink-0 text-[9px] px-1.5 py-0.5 rounded-full font-bold leading-none"
-                          style={{ background: 'rgba(34,211,238,0.12)', color: '#67e8f9', border: '1px solid rgba(34,211,238,0.25)' }}>
-                          Embedded
-                        </span>
-                      )}
-                      {module.track === 'dbms' && (
-                        <span className="shrink-0 text-[9px] px-1.5 py-0.5 rounded-full font-bold leading-none"
-                          style={{ background: 'rgba(167,139,250,0.12)', color: '#c4b5fd', border: '1px solid rgba(167,139,250,0.25)' }}>
-                          DBMS
-                        </span>
-                      )}
-                    </div>
-                    <span className="text-xs shrink-0 ml-2 font-bold" style={{ color: module.color }}>
-                      {completed}/{total}
-                    </span>
-                  </div>
-                  <div className="h-1.5 bg-dark-600/60 rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${mpct}%` }}
-                      transition={{ duration: 0.9, delay: 0.2 + i * 0.05 }}
-                      className="h-full rounded-full"
-                      style={{ background: module.color }}
-                    />
-                  </div>
-                </div>
-                {isAllDone && questions ? (
-                  <button
-                    onClick={e => { e.stopPropagation(); setActiveQuiz({ moduleId: quizKey, moduleName: module.title, moduleColor: module.color, moduleIcon: module.icon, questions }); }}
-                    className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all hover:opacity-90 active:scale-95"
-                    style={{
-                      background: quizDone ? 'rgba(52,211,153,0.1)' : 'rgba(99,102,241,0.15)',
-                      border:     quizDone ? '1px solid rgba(52,211,153,0.3)' : '1px solid rgba(99,102,241,0.3)',
-                      color:      quizDone ? '#34d399' : '#a5b4fc',
-                    }}
-                    title={quizDone ? `Quiz done — best: ${(progress.completedQuizzes || {})[quizKey]?.score}/5` : 'Take the module quiz'}
+              <React.Fragment key={module.id}>
+                {showDivider && (
+                  <div
+                    className="flex items-center gap-3 px-3 py-2 rounded-lg"
+                    style={{ background: trackBg, border: `1px solid ${trackBdr}`, marginBottom: 2 }}
                   >
-                    <Brain size={12} />
-                    {quizDone ? 'Retake' : 'Quiz'}
-                  </button>
-                ) : (
-                  <ChevronRight
-                    size={15}
-                    className="shrink-0 text-dark-500 group-hover:text-dark-300 group-hover:translate-x-0.5 transition-all cursor-pointer"
-                    onClick={() => navigate(`/lesson/${firstUncompleted?.id || module.lessons[0].id}`)}
-                  />
+                    <div className="flex-1 h-px" style={{ background: trackBdr }} />
+                    <span className="text-[10px] font-bold tracking-widest uppercase shrink-0" style={{ color: trackColor }}>
+                      {trackLabel}
+                    </span>
+                    <div className="flex-1 h-px" style={{ background: trackBdr }} />
+                  </div>
                 )}
-              </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, x: -16 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.15 + i * 0.04 }}
+                  className="flex items-center gap-3 rounded-xl p-4 transition-all group"
+                  style={{
+                    background: 'rgba(17,17,24,0.8)',
+                    border: isAllDone ? `1px solid ${module.color}40` : '1px solid rgba(255,255,255,0.05)',
+                  }}
+                >
+                  <span
+                    className="text-xl shrink-0 cursor-pointer"
+                    onClick={() => navigate(`/lesson/${firstUncompleted?.id || module.lessons[0].id}`)}
+                  >
+                    {module.icon}
+                  </span>
+                  <div
+                    className="flex-1 min-w-0 cursor-pointer"
+                    onClick={() => navigate(`/lesson/${firstUncompleted?.id || module.lessons[0].id}`)}
+                  >
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="font-semibold text-white text-sm truncate">{module.title}</span>
+                      <span className="text-xs shrink-0 ml-2 font-bold" style={{ color: module.color }}>
+                        {completed}/{total}
+                      </span>
+                    </div>
+                    <div className="h-1.5 bg-dark-600/60 rounded-full overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${mpct}%` }}
+                        transition={{ duration: 0.9, delay: 0.2 + i * 0.05 }}
+                        className="h-full rounded-full"
+                        style={{ background: module.color }}
+                      />
+                    </div>
+                  </div>
+                  {isAllDone && questions ? (
+                    <button
+                      onClick={e => { e.stopPropagation(); setActiveQuiz({ moduleId: quizKey, moduleName: module.title, moduleColor: module.color, moduleIcon: module.icon, questions }); }}
+                      className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all hover:opacity-90 active:scale-95"
+                      style={{
+                        background: quizDone ? 'rgba(52,211,153,0.1)' : 'rgba(99,102,241,0.15)',
+                        border:     quizDone ? '1px solid rgba(52,211,153,0.3)' : '1px solid rgba(99,102,241,0.3)',
+                        color:      quizDone ? '#34d399' : '#a5b4fc',
+                      }}
+                      title={quizDone ? `Quiz done — best: ${(progress.completedQuizzes || {})[quizKey]?.score}/5` : 'Take the module quiz'}
+                    >
+                      <Brain size={12} />
+                      {quizDone ? 'Retake' : 'Quiz'}
+                    </button>
+                  ) : (
+                    <ChevronRight
+                      size={15}
+                      className="shrink-0 text-dark-500 group-hover:text-dark-300 group-hover:translate-x-0.5 transition-all cursor-pointer"
+                      onClick={() => navigate(`/lesson/${firstUncompleted?.id || module.lessons[0].id}`)}
+                    />
+                  )}
+                </motion.div>
+              </React.Fragment>
             );
           })}
         </div>
