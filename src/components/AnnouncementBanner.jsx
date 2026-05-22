@@ -14,17 +14,16 @@ export default function AnnouncementBanner() {
   const [announcements, setAnnouncements] = useState([]);
   const [dismissed, setDismissed] = useState(() => {
     try { return JSON.parse(localStorage.getItem('cpp_dismissed_announcements') || '[]'); }
-    catch { return []; }
+    catch (e) { return []; }
   });
 
   useEffect(() => {
-    const q = query(
-      collection(db, 'announcements'),
-      where('active', '==', true),
-      orderBy('createdAt', 'desc'),
-    );
+    const q = query(collection(db, 'announcements'), where('active', '==', true));
     return onSnapshot(q, snap => {
-      setAnnouncements(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      const list = snap.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+      setAnnouncements(list);
     }, () => {});
   }, []);
 
