@@ -5,20 +5,17 @@ import {
   ChevronDown, ChevronUp, Lightbulb, Zap, Lock,
 } from 'lucide-react';
 
-// sql.js WASM loaded from CDN — no Vite config needed
-const SQL_JS_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js';
+const WASM_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2';
 
 function loadSqlJs() {
   return new Promise((resolve, reject) => {
-    if (window.initSqlJs) { resolve(window.initSqlJs); return; }
+    const init = () =>
+      window.initSqlJs({ locateFile: f => `${WASM_CDN}/${f}` })
+        .then(resolve).catch(reject);
+    if (window.initSqlJs) { init(); return; }
     const script = document.createElement('script');
-    script.src = SQL_JS_CDN;
-    script.onload = () => {
-      window.initSqlJs({
-        locateFile: file =>
-          `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/${file}`,
-      }).then(resolve).catch(reject);
-    };
+    script.src = `${WASM_CDN}/sql-wasm.js`;
+    script.onload = init;
     script.onerror = reject;
     document.head.appendChild(script);
   });
