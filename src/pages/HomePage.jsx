@@ -290,11 +290,45 @@ export default function HomePage({ progress, onOpenPremium }) {
 
       {/* Curriculum Grid */}
       <div className="px-4 sm:px-8 py-8">
-        <h2 className="text-2xl font-bold text-white mb-2">Curriculum</h2>
-        <p className="text-dark-300 mb-6">12 modules, 100+ lessons. Complete each module to unlock the next.</p>
+        {/* ── C++ & DSA track ───────────────────────────────────────────── */}
+        <div className="flex items-center gap-3 mb-2">
+          <h2 className="text-2xl font-bold text-white">C++ &amp; Data Structures</h2>
+          <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
+            style={{ background: 'rgba(99,102,241,0.15)', color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.25)' }}>
+            CS Track
+          </span>
+        </div>
+        <p className="text-dark-300 mb-6">Core algorithms &amp; data structures — from basics to FAANG interviews.</p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
+          {CURRICULUM.filter(m => !m.track || m.track === 'cs').map((module, i) => (
+            <motion.div
+              key={module.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.05 }}
+            >
+              <ModuleCard
+                module={module}
+                progress={progress}
+                onStart={id => navigate(`/lesson/${id}`)}
+              />
+            </motion.div>
+          ))}
+        </div>
+
+        {/* ── Embedded C track ──────────────────────────────────────────── */}
+        <div className="flex items-center gap-3 mb-2">
+          <h2 className="text-2xl font-bold text-white">Embedded C</h2>
+          <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
+            style={{ background: 'rgba(34,211,238,0.12)', color: '#67e8f9', border: '1px solid rgba(34,211,238,0.25)' }}>
+            ECE / EEE Track
+          </span>
+        </div>
+        <p className="text-dark-300 mb-6">Firmware fundamentals for microcontrollers — free, no extra compiler needed.</p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {CURRICULUM.map((module, i) => (
+          {CURRICULUM.filter(m => m.track === 'embedded').map((module, i) => (
             <motion.div
               key={module.id}
               initial={{ opacity: 0, y: 20 }}

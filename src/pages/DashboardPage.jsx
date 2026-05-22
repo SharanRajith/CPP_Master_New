@@ -421,7 +421,15 @@ export default function DashboardPage({ progress, resetProgress, completeQuiz, c
                   onClick={() => navigate(`/lesson/${firstUncompleted?.id || module.lessons[0].id}`)}
                 >
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="font-semibold text-white text-sm truncate">{module.title}</span>
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span className="font-semibold text-white text-sm truncate">{module.title}</span>
+                      {module.track === 'embedded' && (
+                        <span className="shrink-0 text-[9px] px-1.5 py-0.5 rounded-full font-bold leading-none"
+                          style={{ background: 'rgba(34,211,238,0.12)', color: '#67e8f9', border: '1px solid rgba(34,211,238,0.25)' }}>
+                          Embedded
+                        </span>
+                      )}
+                    </div>
                     <span className="text-xs shrink-0 ml-2 font-bold" style={{ color: module.color }}>
                       {completed}/{total}
                     </span>

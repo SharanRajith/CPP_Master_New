@@ -39,13 +39,26 @@ export default function Sidebar({ progress, currentLessonId, isPremium }) {
 
       {/* Module list */}
       <div className="flex-1 overflow-y-auto">
-        {CURRICULUM.map(module => {
+        {CURRICULUM.map((module, moduleIdx) => {
           const { total, completed, pct } = getModuleProgress(module);
           const isExpanded = expandedModules[module.id];
           const isAllDone  = completed === total;
+          const prevModule = CURRICULUM[moduleIdx - 1];
+          const showTrackDivider = module.track === 'embedded' && (!prevModule || prevModule.track !== 'embedded');
 
           return (
-            <div key={module.id} className="border-b border-dark-700">
+            <React.Fragment key={module.id}>
+              {showTrackDivider && (
+                <div className="flex items-center gap-2 px-4 py-2.5 border-b border-dark-700"
+                  style={{ background: 'rgba(34,211,238,0.05)' }}>
+                  <div className="flex-1 h-px" style={{ background: 'rgba(34,211,238,0.2)' }} />
+                  <span className="text-[10px] font-bold tracking-widest uppercase shrink-0" style={{ color: '#67e8f9' }}>
+                    Embedded C
+                  </span>
+                  <div className="flex-1 h-px" style={{ background: 'rgba(34,211,238,0.2)' }} />
+                </div>
+              )}
+            <div className="border-b border-dark-700">
               {/* Module header */}
               <button
                 onClick={() => toggleModule(module.id)}
@@ -126,6 +139,7 @@ export default function Sidebar({ progress, currentLessonId, isPremium }) {
                 )}
               </AnimatePresence>
             </div>
+            </React.Fragment>
           );
         })}
       </div>
