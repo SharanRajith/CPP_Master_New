@@ -214,7 +214,7 @@ const PING_INTERVAL = 10 * 60 * 1000; // 10 minutes
 function AuthenticatedApp({ currentUser, onLogout }) {
   const { progress, completeLesson, completeQuiz, unlockHint, saveNote, deleteNote, isLessonUnlocked, isLessonCompleted, resetProgress } = useProgress(currentUser);
 
-  const isAdmin   = isAdminEmail(currentUser?.email);
+  const isAdmin   = isAdminEmail(currentUser?.email) || !!progress?.isAdmin;
   const isPremium = isAdmin || !!progress?.isPremium;
 
   // Keep Render backend alive — ping every 10 min so it never sleeps
