@@ -23,7 +23,8 @@ export default function CompilerToolbar({
   const status = STATUS_CONFIG[compilerStatus] || STATUS_CONFIG.checking;
 
   return (
-    <div className="flex items-center justify-between px-4 py-2 bg-dark-800 border-b border-dark-600">
+    <div className="overflow-x-auto scrollbar-thin bg-dark-800 border-b border-dark-600">
+      <div className="flex items-center justify-between px-4 py-2 min-w-max">
       {/* Left: Run buttons */}
       <div className="flex items-center gap-2">
         <button
@@ -103,6 +104,7 @@ export default function CompilerToolbar({
         >
           <span className="text-sm">⚙️</span>
         </button>
+      </div>
       </div>
     </div>
   );
