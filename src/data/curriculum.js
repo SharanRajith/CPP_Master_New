@@ -242,6 +242,38 @@ export const CURRICULUM = [
       { id: 'm12-l8', title: 'Sweep Line (Meeting Rooms II)',         file: () => import('./lessons/module12/lesson8.js') },
     ],
   },
+  // ── Embedded C Track ─────────────────────────────────────────────────────────
+  {
+    id: 'module-14',
+    title: 'Embedded C Fundamentals',
+    level: 'Embedded',
+    color: '#22d3ee',
+    icon: '🔌',
+    lessons: [
+      { id: 'm14-l1', title: 'What is Embedded C?',                      file: () => import('./lessons/module14/lesson1.js') },
+      { id: 'm14-l2', title: 'Fixed-Width Integer Types (stdint.h)',      file: () => import('./lessons/module14/lesson2.js') },
+      { id: 'm14-l3', title: 'Bitwise Operators',                        file: () => import('./lessons/module14/lesson3.js') },
+      { id: 'm14-l4', title: 'Bit Masking — Set, Clear, Toggle, Read',   file: () => import('./lessons/module14/lesson4.js') },
+      { id: 'm14-l5', title: 'volatile & Memory-Mapped I/O',             file: () => import('./lessons/module14/lesson5.js') },
+      { id: 'm14-l6', title: 'Structs, Unions & Bitfields',              file: () => import('./lessons/module14/lesson6.js') },
+      { id: 'm14-l7', title: 'Pointers & Function Pointers in Embedded', file: () => import('./lessons/module14/lesson7.js') },
+    ],
+  },
+  {
+    id: 'module-15',
+    title: 'Embedded Patterns & Protocols',
+    level: 'Embedded',
+    color: '#f97316',
+    icon: '⚙️',
+    lessons: [
+      { id: 'm15-l1', title: 'Finite State Machines',           file: () => import('./lessons/module15/lesson1.js') },
+      { id: 'm15-l2', title: 'Circular (Ring) Buffer',          file: () => import('./lessons/module15/lesson2.js') },
+      { id: 'm15-l3', title: 'UART — Serial Communication',     file: () => import('./lessons/module15/lesson3.js') },
+      { id: 'm15-l4', title: 'Interrupt-Driven Programming',    file: () => import('./lessons/module15/lesson4.js') },
+      { id: 'm15-l5', title: 'Fixed-Point Arithmetic',          file: () => import('./lessons/module15/lesson5.js') },
+      { id: 'm15-l6', title: 'Memory Optimization Techniques',  file: () => import('./lessons/module15/lesson6.js') },
+    ],
+  },
   {
     id: 'module-13',
     title: 'Top Tech Company Problem Bank',

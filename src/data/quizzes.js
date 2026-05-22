@@ -592,4 +592,85 @@ export const QUIZZES = {
       explanation: 'LRU (Least Recently Used) evicts the entry that was accessed furthest in the past, maintained via a doubly linked list ordered by recency.',
     },
   ],
+
+  'module-14': [
+    {
+      q: 'What is the value of `uint8_t x = 255; x++;`?',
+      options: ['256', '255', '0', '-1'],
+      answer: 2,
+      explanation: 'uint8_t holds values 0–255. Adding 1 to 255 wraps around to 0 due to unsigned integer overflow (modulo 256).',
+    },
+    {
+      q: 'Which operation correctly sets bit 4 of a register `reg`?',
+      options: ['reg &= (1 << 4)', 'reg |= (1 << 4)', 'reg ^= (1 << 4)', 'reg -= (1 << 4)'],
+      answer: 1,
+      explanation: 'OR-ing with a mask sets a bit without affecting others. `reg |= (1 << 4)` forces bit 4 to 1 while leaving all other bits unchanged.',
+    },
+    {
+      q: 'Why is `volatile` used with hardware registers?',
+      options: [
+        'To make the variable faster to access',
+        'To store the variable in Flash memory',
+        'To prevent the compiler from optimizing away reads/writes',
+        'To make the variable thread-safe',
+      ],
+      answer: 2,
+      explanation: 'Without volatile, the compiler may cache the value in a register and skip repeated reads, missing hardware-driven changes. volatile forces every access to go to actual memory.',
+    },
+    {
+      q: 'What does `uint8_t a = 0b00001111; uint8_t b = 0b11110000; printf("%d", a & b);` print?',
+      options: ['255', '0', '15', '240'],
+      answer: 1,
+      explanation: 'AND of 0b00001111 and 0b11110000 produces 0b00000000 = 0 because no bit is set in both values simultaneously.',
+    },
+    {
+      q: 'In `struct S { uint8_t a:3; uint8_t b:5; };`, what is sizeof(struct S)?',
+      options: ['8 bytes', '2 bytes', '1 byte', '3 bytes'],
+      answer: 2,
+      explanation: 'The two bitfields total 3+5=8 bits = 1 byte. The compiler packs them into a single uint8_t with no padding needed.',
+    },
+  ],
+
+  'module-15': [
+    {
+      q: 'What is the primary advantage of a circular buffer over a plain array for UART receive?',
+      options: [
+        'It uses dynamic memory allocation',
+        'Pop is O(1) with no data shifting',
+        'It automatically grows when full',
+        'It uses pointers so it is faster',
+      ],
+      answer: 1,
+      explanation: 'A plain array requires O(n) shifting when an element is removed from the front. The circular buffer advances a tail pointer in O(1), reusing the vacated slot without moving data.',
+    },
+    {
+      q: 'In interrupt-driven embedded code, why must shared flags be declared `volatile`?',
+      options: [
+        'To allocate them in faster SRAM',
+        'So the linker places them at a fixed address',
+        'To stop the compiler from caching the value and missing ISR updates',
+        'To make them accessible from other translation units',
+      ],
+      answer: 2,
+      explanation: 'The ISR modifies the flag asynchronously. Without volatile, the main loop compiler may read the flag once and keep it in a CPU register, never seeing the ISR write.',
+    },
+    {
+      q: 'Which FSM transition sequence is correct for a traffic light starting at RED?',
+      options: ['RED→YELLOW→GREEN→RED', 'RED→GREEN→YELLOW→RED', 'GREEN→YELLOW→RED→GREEN', 'RED→GREEN→RED→GREEN'],
+      answer: 1,
+      explanation: 'Standard traffic light sequence: RED (stop) → GREEN (go) → YELLOW (caution) → RED. Each state has a single defined next state.',
+    },
+    {
+      q: 'In Q8 fixed-point format, integer 384 represents which real number?',
+      options: ['384', '3.0', '1.5', '48'],
+      answer: 2,
+      explanation: 'Q8 format uses 8 fractional bits so the scale factor is 2^8 = 256. Real value = 384 / 256 = 1.5.',
+    },
+    {
+      q: 'Which C keyword causes global/static data to be stored in Flash (ROM) rather than RAM on most MCUs?',
+      options: ['static', 'volatile', 'const', 'extern'],
+      answer: 2,
+      explanation: '`const` global/static arrays are placed in Flash by most embedded compilers, preserving precious RAM. `static` controls lifetime and linkage, not storage location.',
+    },
+  ],
 };
