@@ -13,6 +13,7 @@ export default function Sidebar({ progress, currentLessonId, isPremium }) {
   }
 
   function isUnlocked(lesson) {
+    if (progress.completedLessons[lesson.id]) return true;
     const prevId = getPreviousLessonId(lesson.id);
     if (!prevId) return true;
     return !!progress.completedLessons[prevId];

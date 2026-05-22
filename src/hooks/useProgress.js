@@ -193,7 +193,8 @@ export function useProgress(user) {
 
   /** Check if a lesson is unlocked (first lesson always unlocked) */
   const isLessonUnlocked = useCallback((lessonId, prevLessonId) => {
-    if (!prevLessonId) return true; // First lesson in first module
+    if (progress.completedLessons[lessonId]) return true;
+    if (!prevLessonId) return true;
     return !!progress.completedLessons[prevLessonId];
   }, [progress.completedLessons]);
 
