@@ -673,4 +673,170 @@ export const QUIZZES = {
       explanation: '`const` global/static arrays are placed in Flash by most embedded compilers, preserving precious RAM. `static` controls lifetime and linkage, not storage location.',
     },
   ],
+
+  // ── DBMS Track ───────────────────────────────────────────────────────────────
+  'module-16': [
+    {
+      q: 'Which of the following is NOT a property of a primary key?',
+      options: ['Uniquely identifies each row', 'Can contain NULL values', 'Only one per table', 'Values cannot change once set'],
+      answer: 1,
+      explanation: 'A primary key must be NOT NULL and unique. NULL values are not allowed because a NULL primary key would make a row unidentifiable.',
+    },
+    {
+      q: 'In an ER diagram, a diamond shape represents:',
+      options: ['An entity set', 'An attribute', 'A relationship set', 'A weak entity'],
+      answer: 2,
+      explanation: 'Rectangles = entity sets, ellipses = attributes, diamonds = relationship sets, double rectangles = weak entities.',
+    },
+    {
+      q: 'A foreign key constraint ensures:',
+      options: ['The column has unique values', 'The column cannot be NULL', 'Referenced values exist in the parent table', 'The column is a primary key'],
+      answer: 2,
+      explanation: 'A foreign key enforces referential integrity — every value in the foreign key column must exist in the referenced primary key column (or be NULL if permitted).',
+    },
+    {
+      q: 'Which relational algebra operation keeps only specified columns?',
+      options: ['SELECT (σ)', 'PROJECT (π)', 'JOIN (⋈)', 'UNION'],
+      answer: 1,
+      explanation: 'PROJECT (π) returns a vertical subset — only the specified columns. SELECT (σ) returns a horizontal subset — only rows matching a condition.',
+    },
+    {
+      q: 'In a 1:N relationship between Department and Employee, the foreign key is placed in:',
+      options: ['Department table', 'Employee table', 'A new junction table', 'Both tables'],
+      answer: 1,
+      explanation: 'In a 1:N relationship, the foreign key goes on the "many" side. Each Employee has one Department, so dept_id (FK) is stored in the Employee table.',
+    },
+  ],
+
+  'module-17': [
+    {
+      q: 'Which SQL clause filters rows AFTER grouping?',
+      options: ['WHERE', 'HAVING', 'ORDER BY', 'LIMIT'],
+      answer: 1,
+      explanation: 'WHERE filters rows before grouping; HAVING filters after GROUP BY. Use HAVING to filter on aggregate results like `HAVING COUNT(*) > 2`.',
+    },
+    {
+      q: 'What does SELECT DISTINCT do?',
+      options: ['Sorts the result set', 'Removes duplicate rows from the result', 'Selects only NULL rows', 'Limits the number of rows'],
+      answer: 1,
+      explanation: 'DISTINCT eliminates duplicate rows in the result. `SELECT DISTINCT dept FROM students` returns each department name only once.',
+    },
+    {
+      q: 'Which SQL statement modifies existing rows?',
+      options: ['INSERT', 'DELETE', 'UPDATE', 'ALTER'],
+      answer: 2,
+      explanation: 'UPDATE changes values in existing rows. INSERT adds new rows, DELETE removes rows, ALTER modifies table structure.',
+    },
+    {
+      q: 'What is the output of: SELECT COUNT(*) FROM students WHERE gpa > 3.5?  (students: Alice 3.8, Bob 3.2, Carol 3.9, David 2.8, Eve 3.5)',
+      options: ['1', '2', '3', '4'],
+      answer: 1,
+      explanation: 'Only Alice (3.8) and Carol (3.9) have gpa > 3.5. Eve has exactly 3.5 which is NOT greater than 3.5. COUNT = 2.',
+    },
+    {
+      q: 'Which aggregate function returns the largest value in a column?',
+      options: ['COUNT()', 'SUM()', 'AVG()', 'MAX()'],
+      answer: 3,
+      explanation: 'MAX() returns the maximum value. MIN() returns the minimum. COUNT() counts rows, SUM() totals values, AVG() averages them.',
+    },
+  ],
+
+  'module-18': [
+    {
+      q: 'An INNER JOIN returns:',
+      options: ['All rows from the left table', 'All rows from both tables', 'Only rows with matching values in both tables', 'All rows from the right table'],
+      answer: 2,
+      explanation: 'INNER JOIN returns only rows that have matching values in both tables. Rows with no match on either side are excluded.',
+    },
+    {
+      q: 'A LEFT JOIN with WHERE right_table.id IS NULL finds:',
+      options: ['All matched rows', 'Rows in the left table with no match in the right table', 'All right table rows', 'Duplicate rows'],
+      answer: 1,
+      explanation: 'LEFT JOIN + WHERE right.id IS NULL is the standard pattern for finding rows in the left table that have no corresponding row in the right table.',
+    },
+    {
+      q: 'A subquery in the WHERE clause that returns a single value is called a:',
+      options: ['Correlated subquery', 'Scalar subquery', 'Derived table', 'EXISTS subquery'],
+      answer: 1,
+      explanation: 'A scalar subquery returns exactly one row and one column. It can be used anywhere a single value is expected, like `WHERE salary > (SELECT AVG(salary) FROM emp)`.',
+    },
+    {
+      q: 'A VIEW in SQL is:',
+      options: ['A physical copy of table data', 'A virtual table defined by a stored SELECT query', 'An index on a table', 'A stored procedure'],
+      answer: 1,
+      explanation: 'A VIEW is a named SELECT query stored in the database. It behaves like a table when queried but contains no data itself — data comes from the underlying tables.',
+    },
+    {
+      q: 'Which JOIN type would you use to find all students and their grades, including students not enrolled in any course?',
+      options: ['INNER JOIN', 'RIGHT JOIN students', 'LEFT JOIN from students', 'CROSS JOIN'],
+      answer: 2,
+      explanation: 'LEFT JOIN from the students table ensures all students appear in the result. Students not enrolled in any course will show NULL for the grade columns.',
+    },
+  ],
+
+  'module-19': [
+    {
+      q: 'If A → B and B → C, then A → C by:',
+      options: ['Reflexivity', 'Augmentation', 'Transitivity', 'Union rule'],
+      answer: 2,
+      explanation: 'Armstrong\'s transitivity axiom: if A → B and B → C then A → C. This is how transitive dependencies arise and why 3NF eliminates them.',
+    },
+    {
+      q: 'A table is in 2NF if it is in 1NF and:',
+      options: ['Has no repeating groups', 'Has no partial dependencies on the primary key', 'Has no transitive dependencies', 'Every determinant is a candidate key'],
+      answer: 1,
+      explanation: '2NF requires 1NF + no partial dependency. A partial dependency is when a non-key attribute depends on PART of a composite primary key rather than the whole key.',
+    },
+    {
+      q: 'Which normal form eliminates transitive dependencies?',
+      options: ['1NF', '2NF', '3NF', 'BCNF'],
+      answer: 2,
+      explanation: '3NF (Third Normal Form) requires that no non-key attribute transitively depends on the primary key. Every non-key attribute must depend directly on the primary key.',
+    },
+    {
+      q: 'BCNF is violated when:',
+      options: ['A table has repeating groups', 'A non-key attribute depends on part of the PK', 'A determinant is not a candidate key', 'The table has no primary key'],
+      answer: 2,
+      explanation: 'BCNF requires every determinant (left side of an FD) to be a candidate key. If a non-candidate-key determines another attribute, BCNF is violated.',
+    },
+    {
+      q: 'A decomposition is lossless if:',
+      options: ['No FDs are lost', 'The natural join reconstructs the original relation exactly', 'Each table has fewer attributes', 'All tables are in BCNF'],
+      answer: 1,
+      explanation: 'A lossless-join decomposition guarantees that joining the decomposed tables back together produces exactly the original relation — no spurious tuples are introduced.',
+    },
+  ],
+
+  'module-20': [
+    {
+      q: 'Which ACID property ensures that a failed transaction leaves the database unchanged?',
+      options: ['Consistency', 'Isolation', 'Durability', 'Atomicity'],
+      answer: 3,
+      explanation: 'Atomicity guarantees all-or-nothing: either all operations in a transaction commit, or none do. A failure mid-transaction rolls back all partial changes.',
+    },
+    {
+      q: 'Which isolation level prevents dirty reads but still allows non-repeatable reads?',
+      options: ['READ UNCOMMITTED', 'READ COMMITTED', 'REPEATABLE READ', 'SERIALIZABLE'],
+      answer: 1,
+      explanation: 'READ COMMITTED prevents dirty reads (reading uncommitted changes) but allows non-repeatable reads (same query returning different values within one transaction).',
+    },
+    {
+      q: 'Two-Phase Locking (2PL) guarantees:',
+      options: ['Deadlock prevention', 'Serializability of concurrent transactions', 'Maximum throughput', 'Durability after crash'],
+      answer: 1,
+      explanation: '2PL (growing phase: acquire locks; shrinking phase: release locks) guarantees conflict-serializability. However, it does NOT prevent deadlocks on its own.',
+    },
+    {
+      q: 'A B+ tree index is BEST suited for:',
+      options: ['Equality queries only', 'Range queries and ordered scans', 'Bulk insert operations', 'Joins only'],
+      answer: 1,
+      explanation: 'B+ trees store data sorted and link leaf nodes, making them ideal for range queries (BETWEEN, >, <) and ORDER BY operations. Hash indexes are faster for equality but cannot do range queries.',
+    },
+    {
+      q: 'Which of the following is a "phantom read" anomaly?',
+      options: ['Reading uncommitted data from another transaction', 'Getting different values for the same row in one transaction', 'New rows appearing in a repeated query due to another transaction\'s INSERT', 'A committed write being lost'],
+      answer: 2,
+      explanation: 'A phantom read occurs when a transaction re-executes a query and finds new rows that were inserted by another committed transaction since the first execution.',
+    },
+  ],
 };

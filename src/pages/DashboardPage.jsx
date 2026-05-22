@@ -429,6 +429,12 @@ export default function DashboardPage({ progress, resetProgress, completeQuiz, c
                           Embedded
                         </span>
                       )}
+                      {module.track === 'dbms' && (
+                        <span className="shrink-0 text-[9px] px-1.5 py-0.5 rounded-full font-bold leading-none"
+                          style={{ background: 'rgba(167,139,250,0.12)', color: '#c4b5fd', border: '1px solid rgba(167,139,250,0.25)' }}>
+                          DBMS
+                        </span>
+                      )}
                     </div>
                     <span className="text-xs shrink-0 ml-2 font-bold" style={{ color: module.color }}>
                       {completed}/{total}

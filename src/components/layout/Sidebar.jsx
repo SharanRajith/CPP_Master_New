@@ -44,20 +44,29 @@ export default function Sidebar({ progress, currentLessonId, isPremium }) {
           const isExpanded = expandedModules[module.id];
           const isAllDone  = completed === total;
           const prevModule = CURRICULUM[moduleIdx - 1];
-          const showTrackDivider = module.track === 'embedded' && (!prevModule || prevModule.track !== 'embedded');
+          const showTrackDivider =
+            (module.track === 'embedded' && (!prevModule || prevModule.track !== 'embedded')) ||
+            (module.track === 'dbms'     && (!prevModule || prevModule.track !== 'dbms'));
 
           return (
             <React.Fragment key={module.id}>
-              {showTrackDivider && (
-                <div className="flex items-center gap-2 px-4 py-2.5 border-b border-dark-700"
-                  style={{ background: 'rgba(34,211,238,0.05)' }}>
-                  <div className="flex-1 h-px" style={{ background: 'rgba(34,211,238,0.2)' }} />
-                  <span className="text-[10px] font-bold tracking-widest uppercase shrink-0" style={{ color: '#67e8f9' }}>
-                    Embedded C
-                  </span>
-                  <div className="flex-1 h-px" style={{ background: 'rgba(34,211,238,0.2)' }} />
-                </div>
-              )}
+              {showTrackDivider && (() => {
+                const isDbms     = module.track === 'dbms';
+                const divColor   = isDbms ? 'rgba(167,139,250,0.2)' : 'rgba(34,211,238,0.2)';
+                const textColor  = isDbms ? '#c4b5fd' : '#67e8f9';
+                const bgColor    = isDbms ? 'rgba(167,139,250,0.05)' : 'rgba(34,211,238,0.05)';
+                const label      = isDbms ? 'DBMS' : 'Embedded C';
+                return (
+                  <div className="flex items-center gap-2 px-4 py-2.5 border-b border-dark-700"
+                    style={{ background: bgColor }}>
+                    <div className="flex-1 h-px" style={{ background: divColor }} />
+                    <span className="text-[10px] font-bold tracking-widest uppercase shrink-0" style={{ color: textColor }}>
+                      {label}
+                    </span>
+                    <div className="flex-1 h-px" style={{ background: divColor }} />
+                  </div>
+                );
+              })()}
             <div className="border-b border-dark-700">
               {/* Module header */}
               <button

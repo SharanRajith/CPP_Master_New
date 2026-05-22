@@ -327,8 +327,35 @@ export default function HomePage({ progress, onOpenPremium }) {
         </div>
         <p className="text-dark-300 mb-6">Firmware fundamentals for microcontrollers — free, no extra compiler needed.</p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
           {CURRICULUM.filter(m => m.track === 'embedded').map((module, i) => (
+            <motion.div
+              key={module.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.05 }}
+            >
+              <ModuleCard
+                module={module}
+                progress={progress}
+                onStart={id => navigate(`/lesson/${id}`)}
+              />
+            </motion.div>
+          ))}
+        </div>
+
+        {/* ── DBMS track ────────────────────────────────────────────────── */}
+        <div className="flex items-center gap-3 mb-2">
+          <h2 className="text-2xl font-bold text-white">Database Management</h2>
+          <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
+            style={{ background: 'rgba(167,139,250,0.12)', color: '#c4b5fd', border: '1px solid rgba(167,139,250,0.25)' }}>
+            DBMS Track
+          </span>
+        </div>
+        <p className="text-dark-300 mb-6">SQL, normalization, transactions &amp; indexing — runs entirely in your browser.</p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {CURRICULUM.filter(m => m.track === 'dbms').map((module, i) => (
             <motion.div
               key={module.id}
               initial={{ opacity: 0, y: 20 }}

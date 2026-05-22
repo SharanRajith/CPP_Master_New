@@ -10,6 +10,7 @@ import CodeEditor      from '../components/ide/CodeEditor';
 import CompilerToolbar from '../components/ide/CompilerToolbar';
 import TestResults     from '../components/ide/TestResults';
 import SolutionReveal       from '../components/ide/SolutionReveal';
+import SqlEditor            from '../components/ide/SqlEditor';
 import LessonContent        from '../components/lesson/LessonContent';
 import SettingsModal        from '../components/settings/SettingsModal';
 import PremiumGate          from '../components/PremiumGate';
@@ -232,6 +233,100 @@ export default function LessonPage({ progress, completeLesson, unlockHint, saveN
   if (!lesson) {
     return (
       <div className="flex-1 flex items-center justify-center text-dark-400">Lesson not found.</div>
+    );
+  }
+
+  // ── Theory lesson (no code, mark-complete button) ─────────────────────────
+  if (lesson.type === 'theory') {
+    const handleMarkComplete = () => {
+      if (isCompleted) return;
+      completeLesson(lessonId, lesson.xpReward || 10);
+      setXpEarned(lesson.xpReward || 10);
+      setShowXPToast(true);
+      const mod = CURRICULUM.find(m => m.lessons.some(l => l.id === lessonId));
+      if (mod) {
+        const othersDone = mod.lessons.filter(l => l.id !== lessonId).every(l => progress.completedLessons[l.id]);
+        if (othersDone) setTimeout(() => setModuleComplete(mod.id), 1800);
+      }
+    };
+    return (
+      <div className="flex flex-col flex-1 overflow-hidden">
+        <AnimatePresence>{showXPToast && <XPToast xp={xpEarned} onDone={() => setShowXPToast(false)} />}</AnimatePresence>
+        <AnimatePresence>{moduleComplete && <ModuleCompleteModal moduleId={moduleComplete} completedLessons={progress.completedLessons} onClose={() => setModuleComplete(null)} />}</AnimatePresence>
+        <div className="px-5 py-3 border-b border-dark-600 shrink-0 flex items-center gap-3 bg-dark-900">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-0.5">
+              <span className="text-xs text-dark-400 font-medium">Module {lesson.module}</span>
+              {isCompleted && <span className="inline-flex items-center gap-1 text-xs text-emerald-400 bg-emerald-900/20 border border-emerald-700/30 px-1.5 py-0.5 rounded-full"><CheckCircle2 size={10} /> Completed</span>}
+            </div>
+            <h1 className="text-base md:text-lg font-bold text-white truncate">{lesson.title}</h1>
+          </div>
+        </div>
+        <div className="flex-1 overflow-y-auto overscroll-contain">
+          <LessonContent lesson={lesson} attempts={0} notes={lessonNotes} onSaveNote={text => saveNote(lessonId, text)} onDeleteNote={id => deleteNote(lessonId, id)} />
+        </div>
+        <div className="flex gap-2 p-3 border-t border-dark-600 shrink-0 bg-dark-900">
+          {prevLesson && <button onClick={() => navigate(`/lesson/${prevLesson.id}`)} className="flex items-center gap-1.5 text-sm text-dark-300 hover:text-white px-3 py-2 rounded-lg hover:bg-dark-700 transition-all"><ChevronLeft size={14} /> Prev</button>}
+          <div className="flex-1" />
+          {!isCompleted && (
+            <button onClick={handleMarkComplete} className="flex items-center gap-1.5 text-sm px-4 py-2 rounded-lg font-semibold transition-all" style={{ background: 'linear-gradient(135deg,#a78bfa,#7c3aed)', color: 'white' }}>
+              <CheckCircle2 size={14} /> Mark as Read
+            </button>
+          )}
+          {nextLesson && <button onClick={() => navigate(`/lesson/${nextLesson.id}`)} disabled={!isCompleted} className="flex items-center gap-1.5 text-sm px-4 py-2 rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed" style={{ background: isCompleted ? 'linear-gradient(135deg,#4f46e5,#6366f1)' : '', color: isCompleted ? 'white' : '#6b7280', border: isCompleted ? 'none' : '1px solid #3d3d50' }}>Next <ChevronRight size={14} /></button>}
+        </div>
+      </div>
+    );
+  }
+
+  // ── SQL lesson (theory left + SqlEditor right) ─────────────────────────────
+  if (lesson.type === 'sql') {
+    const handleSqlComplete = () => {
+      completeLesson(lessonId, lesson.xpReward || 10);
+      setXpEarned(lesson.xpReward || 10);
+      setShowXPToast(true);
+      const mod = CURRICULUM.find(m => m.lessons.some(l => l.id === lessonId));
+      if (mod) {
+        const othersDone = mod.lessons.filter(l => l.id !== lessonId).every(l => progress.completedLessons[l.id]);
+        if (othersDone) setTimeout(() => setModuleComplete(mod.id), 1800);
+      }
+    };
+    if (isMobile) {
+      return (
+        <div className="flex flex-col flex-1 overflow-hidden bg-dark-900">
+          <AnimatePresence>{showXPToast && <XPToast xp={xpEarned} onDone={() => setShowXPToast(false)} />}</AnimatePresence>
+          <AnimatePresence>{moduleComplete && <ModuleCompleteModal moduleId={moduleComplete} completedLessons={progress.completedLessons} onClose={() => setModuleComplete(null)} />}</AnimatePresence>
+          <div className="flex shrink-0" style={{ background: '#111118', borderBottom: '1px solid #22222f' }}>
+            {[{ id: 'lesson', label: 'Lesson', Icon: BookOpen }, { id: 'editor', label: 'SQL', Icon: Code2 }].map(({ id, label, Icon }) => (
+              <button key={id} onClick={() => setMobileTab(id)} className="flex-1 flex flex-col items-center justify-center gap-1 py-2.5">
+                <Icon size={17} style={{ color: mobileTab === id ? '#818cf8' : '#6b7280' }} />
+                <span className="text-[10px] font-semibold" style={{ color: mobileTab === id ? '#a5b4fc' : '#6b7280' }}>{label}</span>
+              </button>
+            ))}
+          </div>
+          <div className="flex-1 overflow-hidden">
+            {mobileTab === 'lesson'
+              ? <div className="h-full overflow-y-auto"><LessonContent lesson={lesson} attempts={0} notes={lessonNotes} onSaveNote={text => saveNote(lessonId, text)} onDeleteNote={id => deleteNote(lessonId, id)} /></div>
+              : <SqlEditor lesson={lesson} isCompleted={isCompleted} onComplete={handleSqlComplete} hints={lesson.hints} hintIndex={hintIndex} onShowHint={handleShowHint} xp={progress.xp} />
+            }
+          </div>
+        </div>
+      );
+    }
+    return (
+      <div className="flex flex-col flex-1 overflow-hidden">
+        <AnimatePresence>{showXPToast && <XPToast xp={xpEarned} onDone={() => setShowXPToast(false)} />}</AnimatePresence>
+        <AnimatePresence>{moduleComplete && <ModuleCompleteModal moduleId={moduleComplete} completedLessons={progress.completedLessons} onClose={() => setModuleComplete(null)} />}</AnimatePresence>
+        <PanelGroup direction="horizontal" className="flex-1 flex overflow-hidden">
+          <Panel defaultSize={40} minSize={25} className="flex flex-col border-r border-dark-600 overflow-hidden bg-dark-900">
+            <LessonHeaderStrip lesson={lesson} isCompleted={isCompleted} prevLesson={prevLesson} nextLesson={nextLesson} navigate={navigate} notes={lessonNotes} onSaveNote={text => saveNote(lessonId, text)} onDeleteNote={id => deleteNote(lessonId, id)} />
+          </Panel>
+          <PanelResizeHandle className="w-1.5 bg-dark-600 hover:bg-brand-500 transition-colors cursor-col-resize shrink-0" />
+          <Panel defaultSize={60} minSize={30} className="flex flex-col overflow-hidden">
+            <SqlEditor lesson={lesson} isCompleted={isCompleted} onComplete={handleSqlComplete} hints={lesson.hints} hintIndex={hintIndex} onShowHint={handleShowHint} xp={progress.xp} />
+          </Panel>
+        </PanelGroup>
+      </div>
     );
   }
 
