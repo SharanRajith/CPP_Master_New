@@ -244,6 +244,21 @@ export const CURRICULUM = [
   },
   // ── Embedded C Track ─────────────────────────────────────────────────────────
   {
+    id: 'module-c-basics',
+    title: 'C Basics for Embedded',
+    level: 'Embedded',
+    track: 'embedded',
+    color: '#34d399',
+    icon: '🧩',
+    lessons: [
+      { id: 'mcb-l1', title: 'Variables & Data Types in C',       file: () => import('./lessons/moduleCbasics/lesson1.js') },
+      { id: 'mcb-l2', title: 'Conditionals & Loops in C',          file: () => import('./lessons/moduleCbasics/lesson2.js') },
+      { id: 'mcb-l3', title: 'Functions & Scope in C',             file: () => import('./lessons/moduleCbasics/lesson3.js') },
+      { id: 'mcb-l4', title: 'Pointers & Arrays in C',             file: () => import('./lessons/moduleCbasics/lesson4.js') },
+      { id: 'mcb-l5', title: 'Structs & Memory in C',              file: () => import('./lessons/moduleCbasics/lesson5.js') },
+    ],
+  },
+  {
     id: 'module-14',
     title: 'Embedded C Fundamentals',
     level: 'Embedded',
