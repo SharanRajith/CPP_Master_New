@@ -176,15 +176,15 @@ export default function SqlEditor({
   }, [lesson.schema]);
 
   function handleRun() {
-    setIsRunning(true); setError(null); setTestStatus(null);
+    setIsRunning(true); setError(null); setTestStatus(null); setResult(null);
     setTimeout(() => {
       const res = execSQL(code);
       if (!res) return setIsRunning(false);
-      if (!res.ok) { setError(res.error); setResult(null); }
+      if (!res.ok) { setError(res.error); }
       else if (res.results.length > 0) {
-        setResult({ columns: res.results[0].columns, rows: res.results[0].values });
+        setResult({ columns: res.results[0].columns, rows: res.results[0].values, dml: false });
       } else {
-        setResult({ columns: ['Status'], rows: [['OK — statement executed.']] });
+        setResult({ columns: [], rows: [], dml: true });
       }
       setIsRunning(false);
     }, 40);
@@ -261,38 +261,66 @@ export default function SqlEditor({
         </button>
       </div>
 
-      {/* Code area */}
-      <textarea
-        value={code}
-        onChange={e => setCode(e.target.value)}
-        spellCheck={false}
-        className="flex-1 min-h-0 bg-[#0d1117] text-sm font-mono text-gray-200 p-4 outline-none resize-none"
-        style={{ lineHeight: 1.75, tabSize: 2 }}
-        placeholder="-- Write your SQL here"
-        onKeyDown={e => {
-          if (e.key === 'Tab') {
-            e.preventDefault();
-            const s = e.target.selectionStart;
-            const v = code;
-            setCode(v.slice(0, s) + '  ' + v.slice(e.target.selectionEnd));
-            requestAnimationFrame(() => { e.target.selectionStart = e.target.selectionEnd = s + 2; });
-          }
-          if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') handleRun();
-        }}
-      />
+      {/* Code area — top 55% */}
+      <div className="flex flex-col border-b border-dark-500" style={{ flex: '0 0 55%', minHeight: 0 }}>
+        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-dark-800 border-b border-dark-700 shrink-0">
+          <span className="text-[10px] font-bold text-dark-500 uppercase tracking-widest">Write SQL here</span>
+          <span className="text-[10px] text-dark-600 ml-auto">Ctrl+Enter to run</span>
+        </div>
+        <textarea
+          value={code}
+          onChange={e => setCode(e.target.value)}
+          spellCheck={false}
+          className="flex-1 min-h-0 bg-[#0d1117] text-sm font-mono text-gray-200 px-4 py-3 outline-none resize-none"
+          style={{ lineHeight: 1.75, tabSize: 2 }}
+          placeholder="-- Write your SQL here"
+          onKeyDown={e => {
+            if (e.key === 'Tab') {
+              e.preventDefault();
+              const s = e.target.selectionStart;
+              const v = code;
+              setCode(v.slice(0, s) + '  ' + v.slice(e.target.selectionEnd));
+              requestAnimationFrame(() => { e.target.selectionStart = e.target.selectionEnd = s + 2; });
+            }
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') handleRun();
+          }}
+        />
+      </div>
 
-      {/* Results pane */}
-      <div className="shrink-0 max-h-48 overflow-y-auto border-t border-dark-600 bg-dark-800">
-        {error && (
-          <div className="px-4 py-3 text-xs text-red-400 font-mono flex items-start gap-2">
-            <XCircle size={13} className="shrink-0 mt-0.5" />
-            <span>{error}</span>
-          </div>
-        )}
-        {result && !error && <ResultTable columns={result.columns} rows={result.rows} />}
-        {!result && !error && (
-          <p className="text-xs text-dark-600 px-4 py-3">Press <kbd className="text-dark-400">Run</kbd> to execute, <kbd className="text-dark-400">Test</kbd> to validate.</p>
-        )}
+      {/* Results area — bottom 45% */}
+      <div className="flex flex-col" style={{ flex: '0 0 45%', minHeight: 0 }}>
+        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-dark-800 border-b border-dark-700 shrink-0">
+          <span className="text-[10px] font-bold text-dark-500 uppercase tracking-widest">Results</span>
+          {result && !result.dml && result.rows.length > 0 && (
+            <span className="text-[10px] text-dark-600 ml-auto">{result.rows.length} row{result.rows.length !== 1 ? 's' : ''}</span>
+          )}
+        </div>
+        <div className="flex-1 overflow-y-auto">
+          {error && (
+            <div className="px-4 py-3 text-xs text-red-400 font-mono flex items-start gap-2">
+              <XCircle size={13} className="shrink-0 mt-0.5" />
+              <span>{error}</span>
+            </div>
+          )}
+          {result && !error && result.dml && (
+            <div className="flex items-center gap-2 px-4 py-3 text-xs text-emerald-400">
+              <CheckCircle2 size={13} className="shrink-0" />
+              Statement executed successfully — no rows returned.
+            </div>
+          )}
+          {result && !error && !result.dml && result.rows.length > 0 && (
+            <ResultTable columns={result.columns} rows={result.rows} />
+          )}
+          {result && !error && !result.dml && result.rows.length === 0 && (
+            <p className="text-xs text-dark-500 px-4 py-3">Query returned 0 rows.</p>
+          )}
+          {!result && !error && (
+            <p className="text-xs text-dark-600 px-4 py-3">
+              Press <span className="text-dark-400 font-mono">Run</span> to execute your query,&nbsp;
+              <span className="text-dark-400 font-mono">Test</span> to check against expected output.
+            </p>
+          )}
+        </div>
       </div>
 
       {/* Test status banner */}
