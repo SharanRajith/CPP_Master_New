@@ -1,13 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { updateProfile } from 'firebase/auth';
+import { auth, db, storage } from '../lib/firebase';
 import { CURRICULUM } from '../data/curriculum';
 import { LEVELS } from '../hooks/useProgress';
 import {
   Flame, Zap, BookOpen, CheckCircle2, Trophy, Target,
-  Copy, Check, Calendar, Clock,
+  Copy, Check, Calendar, Clock, Camera, Loader2,
 } from 'lucide-react';
 
 // ─── Track config ──────────────────────────────────────────────────────────────
@@ -99,14 +101,18 @@ function ModuleGrid({ completedLessons }) {
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
-export default function ProfilePage({ currentUser, progress: ownProgress }) {
+export default function ProfilePage({ currentUser, progress: ownProgress, onProfileUpdate }) {
   const { uid } = useParams();
   const isOwn   = !uid || uid === currentUser?.uid;
 
-  const [profileData, setProfileData] = useState(isOwn ? ownProgress : null);
-  const [loading,     setLoading]     = useState(!isOwn);
-  const [notFound,    setNotFound]    = useState(false);
-  const [copied,      setCopied]      = useState(false);
+  const [profileData,   setProfileData]   = useState(isOwn ? ownProgress : null);
+  const [loading,       setLoading]       = useState(!isOwn);
+  const [notFound,      setNotFound]      = useState(false);
+  const [copied,        setCopied]        = useState(false);
+  const [uploading,     setUploading]     = useState(false);
+  const [uploadError,   setUploadError]   = useState('');
+  const [avatarPreview, setAvatarPreview] = useState(null);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     if (isOwn) { setProfileData(ownProgress); return; }
@@ -126,6 +132,48 @@ export default function ProfilePage({ currentUser, progress: ownProgress }) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     });
+  }
+
+  async function handleAvatarChange(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { setUploadError('Please select an image file.'); return; }
+    if (file.size > 5 * 1024 * 1024)    { setUploadError('Image must be under 5 MB.');   return; }
+    setUploadError('');
+    setUploading(true);
+
+    // Resize to 256×256 using canvas
+    const resized = await new Promise(resolve => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = canvas.height = 256;
+        const ctx = canvas.getContext('2d');
+        const size = Math.min(img.width, img.height);
+        const sx = (img.width  - size) / 2;
+        const sy = (img.height - size) / 2;
+        ctx.drawImage(img, sx, sy, size, size, 0, 0, 256, 256);
+        canvas.toBlob(resolve, 'image/jpeg', 0.88);
+      };
+      img.src = URL.createObjectURL(file);
+    });
+
+    try {
+      const storageRef = ref(storage, `avatars/${currentUser.uid}`);
+      await uploadBytes(storageRef, resized, { contentType: 'image/jpeg' });
+      const url = await getDownloadURL(storageRef);
+
+      await updateProfile(auth.currentUser, { photoURL: url });
+      await setDoc(doc(db, 'users', currentUser.uid), { photoURL: url }, { merge: true });
+
+      setAvatarPreview(url);
+      onProfileUpdate?.();
+    } catch (err) {
+      setUploadError('Upload failed — check Firebase Storage rules.');
+    } finally {
+      setUploading(false);
+      e.target.value = '';
+    }
   }
 
   if (loading) {
@@ -187,17 +235,48 @@ export default function ProfilePage({ currentUser, progress: ownProgress }) {
             <div className="flex items-end justify-between gap-4 flex-wrap">
               <div className="flex items-end gap-4">
                 {/* Avatar */}
-                <div className="relative shrink-0">
-                  {photoURL ? (
-                    <img src={photoURL} alt={displayName}
-                      className="w-20 h-20 rounded-2xl object-cover ring-4"
-                      style={{ ringColor: levelInfo.color }} />
+                <div className="relative shrink-0 group">
+                  {/* Hidden file input */}
+                  {isOwn && (
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleAvatarChange}
+                    />
+                  )}
+
+                  {/* Avatar image */}
+                  {(avatarPreview || photoURL) ? (
+                    <img
+                      src={avatarPreview || photoURL}
+                      alt={displayName}
+                      className="w-20 h-20 rounded-2xl object-cover"
+                      style={{ boxShadow: `0 0 0 3px ${levelInfo.color}60` }}
+                    />
                   ) : (
                     <div className="w-20 h-20 rounded-2xl flex items-center justify-center text-3xl font-black text-white"
                       style={{ background: `linear-gradient(135deg, ${levelInfo.color}80, #4f46e5)` }}>
                       {avatarFallback}
                     </div>
                   )}
+
+                  {/* Camera overlay — own profile only */}
+                  {isOwn && (
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploading}
+                      className="absolute inset-0 rounded-2xl flex items-center justify-center transition-all opacity-0 group-hover:opacity-100"
+                      style={{ background: 'rgba(0,0,0,0.55)' }}
+                      title="Change profile photo"
+                    >
+                      {uploading
+                        ? <Loader2 size={22} className="text-white animate-spin" />
+                        : <Camera size={22} className="text-white" />}
+                    </button>
+                  )}
+
                   {/* Level badge */}
                   <div className="absolute -bottom-2 -right-2 px-2 py-0.5 rounded-full text-[10px] font-black text-white shadow-lg"
                     style={{ background: levelInfo.color }}>
@@ -233,6 +312,11 @@ export default function ProfilePage({ currentUser, progress: ownProgress }) {
                 {copied ? 'Copied!' : 'Copy link'}
               </button>
             </div>
+
+            {/* Upload error */}
+            {uploadError && (
+              <p className="text-xs text-red-400 mt-2">{uploadError}</p>
+            )}
 
             {/* XP bar */}
             <div className="mt-5">

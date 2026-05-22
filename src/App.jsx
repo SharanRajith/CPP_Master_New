@@ -25,7 +25,7 @@ import { useParams }   from 'react-router-dom';
 import { PanelGroup, Panel, PanelResizeHandle } from 'react-resizable-panels';
 
 // ─── Layout wrapper ───────────────────────────────────────────────────────────
-function AppShell({ progress, completeLesson, completeQuiz, unlockHint, saveNote, deleteNote, isLessonCompleted, isLessonUnlocked, resetProgress, onLogout, currentUser, isAdmin, isPremium }) { // isLessonUnlocked passed to SearchModal
+function AppShell({ progress, completeLesson, completeQuiz, unlockHint, saveNote, deleteNote, isLessonCompleted, isLessonUnlocked, resetProgress, onLogout, onProfileUpdate, currentUser, isAdmin, isPremium }) {
   const [showSettings,   setShowSettings]   = useState(false);
   const [sidebarOpen,    setSidebarOpen]    = useState(false);
   const [showPremium,    setShowPremium]    = useState(false);
@@ -83,8 +83,8 @@ function AppShell({ progress, completeLesson, completeQuiz, unlockHint, saveNote
           <Route path="/dashboard"    element={<DashboardPage progress={progress} resetProgress={resetProgress} completeQuiz={completeQuiz} currentUser={currentUser} />} />
           <Route path="/leaderboard"  element={<LeaderboardPage currentUser={currentUser} />} />
           <Route path="/admin"        element={<AdminPage currentUser={currentUser} />} />
-          <Route path="/profile"      element={<ProfilePage currentUser={currentUser} progress={progress} />} />
-          <Route path="/profile/:uid" element={<ProfilePage currentUser={currentUser} progress={progress} />} />
+          <Route path="/profile"      element={<ProfilePage currentUser={currentUser} progress={progress} onProfileUpdate={onProfileUpdate} />} />
+          <Route path="/profile/:uid" element={<ProfilePage currentUser={currentUser} progress={progress} onProfileUpdate={onProfileUpdate} />} />
           <Route path="*"             element={<Navigate to="/" replace />} />
         </Routes>
       </div>
@@ -212,15 +212,20 @@ export default function App() {
     );
   }
 
+  function refreshCurrentUser() {
+    const u = auth.currentUser;
+    if (u) setCurrentUser({ uid: u.uid, displayName: u.displayName || u.email?.split('@')[0] || 'User', email: u.email, photoURL: u.photoURL });
+  }
+
   if (!currentUser) return <LoginPage />;
 
-  return <AuthenticatedApp currentUser={currentUser} onLogout={async () => signOut(auth)} />;
+  return <AuthenticatedApp currentUser={currentUser} onLogout={async () => signOut(auth)} onProfileUpdate={refreshCurrentUser} />;
 }
 
 const BACKEND_URL = 'https://cpp-master.onrender.com/';
 const PING_INTERVAL = 10 * 60 * 1000; // 10 minutes
 
-function AuthenticatedApp({ currentUser, onLogout }) {
+function AuthenticatedApp({ currentUser, onLogout, onProfileUpdate }) {
   const { progress, completeLesson, completeQuiz, unlockHint, saveNote, deleteNote, isLessonUnlocked, isLessonCompleted, resetProgress } = useProgress(currentUser);
 
   const isAdmin   = isAdminEmail(currentUser?.email) || !!progress?.isAdmin;
@@ -247,6 +252,7 @@ function AuthenticatedApp({ currentUser, onLogout }) {
         isLessonUnlocked={isLessonUnlocked}
         resetProgress={resetProgress}
         onLogout={onLogout}
+        onProfileUpdate={onProfileUpdate}
         currentUser={currentUser}
         isAdmin={isAdmin}
         isPremium={isPremium}
