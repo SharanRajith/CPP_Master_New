@@ -247,6 +247,7 @@ export const CURRICULUM = [
     id: 'module-14',
     title: 'Embedded C Fundamentals',
     level: 'Embedded',
+    track: 'embedded',
     color: '#22d3ee',
     icon: '🔌',
     lessons: [
@@ -263,6 +264,7 @@ export const CURRICULUM = [
     id: 'module-15',
     title: 'Embedded Patterns & Protocols',
     level: 'Embedded',
+    track: 'embedded',
     color: '#f97316',
     icon: '⚙️',
     lessons: [
