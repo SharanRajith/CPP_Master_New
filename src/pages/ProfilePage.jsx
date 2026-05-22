@@ -5,18 +5,8 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { updateProfile } from 'firebase/auth';
 import { auth, db, storage } from '../lib/firebase';
-import { CURRICULUM } from '../data/curriculum';
 import { LEVELS } from '../hooks/useProgress';
-import {
-  CheckCircle2, Copy, Check, Calendar, Clock, Camera, Loader2,
-} from 'lucide-react';
-
-// ─── Track config ──────────────────────────────────────────────────────────────
-const TRACKS = [
-  { id: 'cpp',      label: 'C++ & DSA',      color: '#818cf8', filter: m => !m.track },
-  { id: 'embedded', label: 'Embedded C',      color: '#22d3ee', filter: m => m.track === 'embedded' },
-  { id: 'dbms',     label: 'DBMS',            color: '#a78bfa', filter: m => m.track === 'dbms' },
-];
+import { Copy, Check, Calendar, Clock, Camera, Loader2 } from 'lucide-react';
 
 function formatJoinDate(ts) {
   if (!ts) return null;
@@ -32,53 +22,6 @@ function formatLastActive(dateStr) {
   if (diff === 1) return 'Yesterday';
   if (diff < 7)  return `${diff} days ago`;
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
-
-// ─── Module completion grid ────────────────────────────────────────────────────
-function ModuleGrid({ completedLessons }) {
-  return (
-    <div className="space-y-6">
-      {TRACKS.map(track => {
-        const modules = CURRICULUM.filter(track.filter);
-        return (
-          <div key={track.id}>
-            <p className="text-[10px] uppercase tracking-widest font-bold mb-3" style={{ color: track.color }}>
-              {track.label}
-            </p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {modules.map(mod => {
-                const total = mod.lessons.length;
-                const done  = mod.lessons.filter(l => completedLessons?.[l.id]).length;
-                const pct   = total > 0 ? (done / total) * 100 : 0;
-                const full  = done === total;
-                return (
-                  <div key={mod.id}
-                    className="rounded-xl p-3 transition-all"
-                    style={{
-                      background: full ? `${mod.color}12` : 'rgba(255,255,255,0.03)',
-                      border: `1px solid ${full ? mod.color + '40' : 'rgba(255,255,255,0.06)'}`,
-                    }}
-                  >
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-base leading-none">{mod.icon}</span>
-                      {full && <CheckCircle2 size={12} style={{ color: mod.color }} className="ml-auto shrink-0" />}
-                    </div>
-                    <p className="text-xs font-semibold text-white leading-snug mb-2 truncate" title={mod.title}>
-                      {mod.title}
-                    </p>
-                    <div className="h-1 rounded-full bg-dark-700 overflow-hidden">
-                      <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: mod.color }} />
-                    </div>
-                    <p className="text-[10px] text-dark-500 mt-1">{done}/{total}</p>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
@@ -176,7 +119,7 @@ export default function ProfilePage({ currentUser, progress: ownProgress, onProf
   }
 
   const { displayName, photoURL, xp = 0, level = 1,
-          completedLessons = {}, joinedAt, lastActiveDate } = profileData;
+          joinedAt, lastActiveDate } = profileData;
 
   const levelInfo      = LEVELS[level - 1] || LEVELS[0];
   const nextLevel      = LEVELS[level]     || null;
@@ -318,18 +261,6 @@ export default function ProfilePage({ currentUser, progress: ownProgress, onProf
               </p>
             )}
           </div>
-        </motion.div>
-
-        {/* ── Module progress ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="rounded-2xl p-5"
-          style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}
-        >
-          <h2 className="text-sm font-bold text-white mb-5">Module Progress</h2>
-          <ModuleGrid completedLessons={completedLessons} />
         </motion.div>
 
         {/* Own profile — view own public link note */}
