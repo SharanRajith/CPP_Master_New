@@ -229,7 +229,7 @@ export default function LessonContent({ lesson, attempts = 0, notes = [], onSave
     { id: 'lesson',     label: '📖 Lesson' },
     { id: 'practice',   label: '🧪 Practice' },
     { id: 'notes',      label: notes.length > 0 ? `📝 Notes (${notes.length})` : '📝 Notes' },
-    { id: 'discussion', label: '💬 Discussion' },
+    { id: 'discussion', label: '📣 Feedback' },
   ];
 
   return (
