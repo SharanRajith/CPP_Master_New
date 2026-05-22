@@ -4,7 +4,7 @@ import rehypeHighlight from 'rehype-highlight';
 import remarkGfm from 'remark-gfm';
 import { Lightbulb, Eye, EyeOff, ExternalLink, Clock, HardDrive, StickyNote, Trash2, Plus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import DiscussionPanel from './DiscussionPanel';
+import DiscussionPanel, { useFeedbackBadge } from './DiscussionPanel';
 
 // ─── LeetCode Problem Card ────────────────────────────────────────────────────
 function LeetCodeCard({ problem }) {
@@ -221,15 +221,16 @@ function LessonNotes({ notes = [], onSaveNote, onDeleteNote }) {
 
 // ─── Main Lesson Content ──────────────────────────────────────────────────────
 export default function LessonContent({ lesson, attempts = 0, notes = [], onSaveNote, onDeleteNote, currentUser, isAdmin }) {
-  if (!lesson) return null;
-
   const [activeTab, setActiveTab] = useState('lesson');
+  const feedbackBadge = useFeedbackBadge(lesson?.id, currentUser, isAdmin);
+
+  if (!lesson) return null;
 
   const TABS = [
     { id: 'lesson',     label: '📖 Lesson' },
     { id: 'practice',   label: '🧪 Practice' },
     { id: 'notes',      label: notes.length > 0 ? `📝 Notes (${notes.length})` : '📝 Notes' },
-    { id: 'discussion', label: '📣 Feedback' },
+    { id: 'discussion', label: feedbackBadge > 0 ? `📣 Feedback (${feedbackBadge})` : '📣 Feedback' },
   ];
 
   return (
