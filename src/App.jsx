@@ -18,6 +18,7 @@ import DashboardPage   from './pages/DashboardPage';
 import LeaderboardPage from './pages/LeaderboardPage';
 import AdminPage       from './pages/AdminPage';
 import ProfilePage     from './pages/ProfilePage';
+import VisualizerPage  from './pages/VisualizerPage';
 import LoginPage       from './pages/LoginPage';
 
 import { useProgress } from './hooks/useProgress';
@@ -85,6 +86,7 @@ function AppShell({ progress, completeLesson, completeQuiz, unlockHint, saveNote
           <Route path="/dashboard"    element={<DashboardPage progress={progress} resetProgress={resetProgress} completeQuiz={completeQuiz} currentUser={currentUser} />} />
           <Route path="/leaderboard"  element={<LeaderboardPage currentUser={currentUser} />} />
           <Route path="/admin"        element={<AdminPage currentUser={currentUser} />} />
+          <Route path="/visualizer"   element={<VisualizerPage />} />
           <Route path="/profile"      element={<ProfilePage currentUser={currentUser} progress={progress} onProfileUpdate={onProfileUpdate} />} />
           <Route path="/profile/:uid" element={<ProfilePage currentUser={currentUser} progress={progress} onProfileUpdate={onProfileUpdate} />} />
           <Route path="*"             element={<Navigate to="/" replace />} />
