@@ -23,17 +23,35 @@ export function useProgress(user) {
           displayName: user.displayName || 'Anonymous',
           photoURL:    user.photoURL    || '',
         };
+        let data;
         if (docSnap.exists()) {
           // Refresh display info in case Google profile changed
           await setDoc(docRef, userMeta, { merge: true });
-          setProgress({ ...docSnap.data(), ...userMeta });
+          data = { ...docSnap.data(), ...userMeta };
         } else {
           // Attempt migration from local legacy data
           const legacyRaw = localStorage.getItem('cpp_dsa_progress');
-          const def = { ...(legacyRaw ? JSON.parse(legacyRaw) : getDefaultProgress()), ...userMeta };
-          await setDoc(docRef, def);
-          setProgress(def);
+          data = { ...(legacyRaw ? JSON.parse(legacyRaw) : getDefaultProgress()), ...userMeta };
+          await setDoc(docRef, data);
         }
+
+        // Update streak on login — so visiting each day counts
+        const today     = new Date().toDateString();
+        const yesterday = new Date(Date.now() - 86400000).toDateString();
+        const lastDate  = data.lastActiveDate;
+        if (lastDate !== today) {
+          let streak = data.streak || 0;
+          if (lastDate === yesterday) {
+            streak += 1;       // consecutive day
+          } else {
+            streak = 1;        // first login or streak broken
+          }
+          const patch = { streak, lastActiveDate: today };
+          await setDoc(docRef, patch, { merge: true });
+          data = { ...data, ...patch };
+        }
+
+        setProgress(data);
       } catch (err) {
         console.error("Firebase sync error", err);
       } finally {
