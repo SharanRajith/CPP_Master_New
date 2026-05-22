@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Settings, LogOut, Flame, Trophy, Home, Menu, ChevronRight, Zap, Medal, Shield, Crown, Search } from 'lucide-react';
+import { Settings, LogOut, Flame, Trophy, Home, Menu, ChevronRight, Zap, Medal, Shield, Crown, Search, User } from 'lucide-react';
 import { LEVELS } from '../../hooks/useProgress';
 
 export default function Navbar({ xp, level, streak, currentUser, isAdmin, isPremium, onOpenSettings, onOpenPremium, onOpenSearch, onLogout, onToggleSidebar }) {
@@ -220,6 +220,15 @@ export default function Navbar({ xp, level, streak, currentUser, isAdmin, isPrem
 
                 {/* Actions */}
                 <div className="p-1.5">
+                  <Link
+                    to={`/profile/${currentUser?.uid}`}
+                    onClick={() => setShowUserMenu(false)}
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-dark-200 hover:bg-dark-700 hover:text-white transition-all"
+                  >
+                    <User size={14} className="text-indigo-400" />
+                    My Profile
+                    <ChevronRight size={12} className="ml-auto text-dark-400" />
+                  </Link>
                   <Link
                     to="/dashboard"
                     onClick={() => setShowUserMenu(false)}

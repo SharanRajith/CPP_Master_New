@@ -2,7 +2,7 @@
 // Manages lesson progress, completion, and unlocking via localStorage
 
 import { useState, useCallback, useEffect } from 'react';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
 const STORAGE_KEY = 'cpp_dsa_progress';
@@ -26,13 +26,14 @@ export function useProgress(user) {
         };
         let data;
         if (docSnap.exists()) {
-          // Refresh display info in case Google profile changed
-          await setDoc(docRef, userMeta, { merge: true });
-          data = { ...docSnap.data(), ...userMeta };
+          const patch = { ...userMeta };
+          if (!docSnap.data().joinedAt) patch.joinedAt = serverTimestamp();
+          await setDoc(docRef, patch, { merge: true });
+          data = { ...docSnap.data(), ...patch };
         } else {
           // Attempt migration from local legacy data
           const legacyRaw = localStorage.getItem('cpp_dsa_progress');
-          data = { ...(legacyRaw ? JSON.parse(legacyRaw) : getDefaultProgress()), ...userMeta };
+          data = { ...(legacyRaw ? JSON.parse(legacyRaw) : getDefaultProgress()), ...userMeta, joinedAt: serverTimestamp() };
           await setDoc(docRef, data);
         }
 
