@@ -22,6 +22,7 @@ export function useProgress(user) {
         const userMeta = {
           displayName: user.displayName || 'Anonymous',
           photoURL:    user.photoURL    || '',
+          email:       user.email       || '',
         };
         let data;
         if (docSnap.exists()) {

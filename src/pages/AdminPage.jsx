@@ -6,7 +6,7 @@ import { db } from '../lib/firebase';
 import { LEVELS } from '../hooks/useProgress';
 import { ADMIN_EMAILS } from '../config/admins';
 
-const SUPER_ADMIN = 'sharanrajithk@gmail.com';
+const SUPER_ADMINS = ['sharanrajithk@gmail.com', 'madhurahegde475@gmail.com'];
 
 export default function AdminPage({ currentUser }) {
   const [users,    setUsers]    = useState([]);
@@ -14,7 +14,7 @@ export default function AdminPage({ currentUser }) {
   const [updating, setUpdating] = useState(null); // uid being updated
 
   const isAdmin      = ADMIN_EMAILS.includes(currentUser?.email) || false;
-  const isSuperAdmin = currentUser?.email === SUPER_ADMIN;
+  const isSuperAdmin = SUPER_ADMINS.includes(currentUser?.email);
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -129,6 +129,7 @@ export default function AdminPage({ currentUser }) {
               const levelInfo        = LEVELS[(user.level ?? 1) - 1] || LEVELS[0];
               const isMe             = user.uid === currentUser?.uid;
               const isHardcodedAdmin = ADMIN_EMAILS.includes(user.email);
+              const isUserSuperAdmin = SUPER_ADMINS.includes(user.email);
               const isDynamicAdmin   = !!user.isAdmin;
               const isUserAdmin      = isHardcodedAdmin || isDynamicAdmin;
               const isUpdPremium     = updating === user.uid + '-premium';
@@ -158,7 +159,8 @@ export default function AdminPage({ currentUser }) {
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <span className="font-semibold text-white text-sm truncate">{user.displayName || 'Anonymous'}</span>
                       {isMe         && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-indigo-900/50 text-indigo-300 border border-indigo-700/50">You</span>}
-                      {isHardcodedAdmin && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-red-900/50 text-red-300 border border-red-700/50 flex items-center gap-0.5"><Shield size={9} />Super Admin</span>}
+                      {isUserSuperAdmin && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-red-900/50 text-red-300 border border-red-700/50 flex items-center gap-0.5"><Shield size={9} />Super Admin</span>}
+                      {isHardcodedAdmin && !isUserSuperAdmin && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-purple-900/50 text-purple-300 border border-purple-700/50 flex items-center gap-0.5"><Shield size={9} />Admin</span>}
                       {!isHardcodedAdmin && isDynamicAdmin && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-purple-900/50 text-purple-300 border border-purple-700/50 flex items-center gap-0.5"><Shield size={9} />Admin</span>}
                       {(user.isPremium || isUserAdmin) && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-yellow-900/50 text-yellow-300 border border-yellow-700/50 flex items-center gap-0.5"><Crown size={9} />Premium</span>}
                     </div>
