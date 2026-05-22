@@ -1,17 +1,30 @@
 import React, { useEffect, useState } from 'react';
-import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
-import { motion } from 'framer-motion';
-import { Shield, Crown, Users, Zap, BookOpen, ToggleLeft, ToggleRight, RefreshCw, UserCog } from 'lucide-react';
+import { collection, getDocs, doc, updateDoc, addDoc, deleteDoc, onSnapshot, query, serverTimestamp } from 'firebase/firestore';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Shield, Crown, Users, Zap, BookOpen, ToggleLeft, ToggleRight, RefreshCw, UserCog, Megaphone, Plus, Trash2, Info, AlertTriangle, CheckCircle } from 'lucide-react';
 import { db } from '../lib/firebase';
 import { LEVELS } from '../hooks/useProgress';
 import { ADMIN_EMAILS } from '../config/admins';
 
 const SUPER_ADMINS = ['sharanrajithk@gmail.com', 'madhurahegde475@gmail.com'];
 
+const ANN_TYPES = [
+  { value: 'info',    label: 'Info',    icon: Info,          color: '#818cf8' },
+  { value: 'warning', label: 'Warning', icon: AlertTriangle, color: '#fbbf24' },
+  { value: 'success', label: 'Success', icon: CheckCircle,   color: '#34d399' },
+];
+
 export default function AdminPage({ currentUser }) {
   const [users,    setUsers]    = useState([]);
   const [loading,  setLoading]  = useState(true);
   const [updating, setUpdating] = useState(null); // uid being updated
+
+  // Announcements state
+  const [announcements,  setAnnouncements]  = useState([]);
+  const [annMessage,     setAnnMessage]     = useState('');
+  const [annType,        setAnnType]        = useState('info');
+  const [annPosting,     setAnnPosting]     = useState(false);
+  const [annError,       setAnnError]       = useState('');
 
   const isAdmin      = ADMIN_EMAILS.includes(currentUser?.email) || false;
   const isSuperAdmin = SUPER_ADMINS.includes(currentUser?.email);
@@ -31,6 +44,45 @@ export default function AdminPage({ currentUser }) {
   };
 
   useEffect(() => { fetchUsers(); }, []);
+
+  useEffect(() => {
+    return onSnapshot(collection(db, 'announcements'), snap => {
+      const list = snap.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+      setAnnouncements(list);
+    }, () => {});
+  }, []);
+
+  const postAnnouncement = async () => {
+    if (!annMessage.trim()) return;
+    setAnnPosting(true);
+    setAnnError('');
+    try {
+      await addDoc(collection(db, 'announcements'), {
+        message:   annMessage.trim(),
+        type:      annType,
+        active:    true,
+        createdAt: serverTimestamp(),
+        createdBy: currentUser?.email,
+      });
+      setAnnMessage('');
+    } catch (e) {
+      setAnnError('Failed to post: ' + e.message);
+    } finally {
+      setAnnPosting(false);
+    }
+  };
+
+  const toggleAnnouncement = async (id, current) => {
+    try { await updateDoc(doc(db, 'announcements', id), { active: !current }); }
+    catch (e) { /* ignore */ }
+  };
+
+  const deleteAnnouncement = async (id) => {
+    try { await deleteDoc(doc(db, 'announcements', id)); }
+    catch (e) { /* ignore */ }
+  };
 
   const togglePremium = async (uid, current) => {
     setUpdating(uid + '-premium');
@@ -107,6 +159,86 @@ export default function AdminPage({ currentUser }) {
             </motion.div>
           ))}
         </div>
+
+        {/* Announcements */}
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mb-8">
+          <h2 className="text-lg font-bold text-white flex items-center gap-2 mb-4">
+            <Megaphone size={16} className="text-indigo-400" /> Announcements
+          </h2>
+
+          {/* Compose */}
+          <div className="rounded-xl p-4 mb-4" style={{ background: 'rgba(17,17,24,0.8)', border: '1px solid rgba(255,255,255,0.07)' }}>
+            <textarea
+              value={annMessage}
+              onChange={e => setAnnMessage(e.target.value)}
+              placeholder="Write an announcement..."
+              rows={2}
+              className="w-full bg-transparent text-white text-sm placeholder-dark-500 resize-none focus:outline-none"
+            />
+            <div className="flex items-center gap-2 mt-3">
+              {ANN_TYPES.map(t => {
+                const Icon = t.icon;
+                return (
+                  <button key={t.value} onClick={() => setAnnType(t.value)}
+                    className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-all"
+                    style={annType === t.value
+                      ? { background: 'rgba(255,255,255,0.1)', border: `1px solid ${t.color}`, color: t.color }
+                      : { background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', color: '#6b7280' }
+                    }>
+                    <Icon size={12} /> {t.label}
+                  </button>
+                );
+              })}
+              <div className="flex-1" />
+              {annError && <span className="text-xs text-red-400">{annError}</span>}
+              <button onClick={postAnnouncement} disabled={annPosting || !annMessage.trim()}
+                className="flex items-center gap-1.5 text-xs px-4 py-1.5 rounded-lg font-semibold transition-all disabled:opacity-50"
+                style={{ background: 'rgba(99,102,241,0.2)', border: '1px solid rgba(99,102,241,0.4)', color: '#a5b4fc' }}>
+                {annPosting ? <RefreshCw size={12} className="animate-spin" /> : <Plus size={12} />}
+                Post
+              </button>
+            </div>
+          </div>
+
+          {/* List */}
+          <div className="space-y-2">
+            <AnimatePresence>
+              {announcements.map(a => {
+                const cfg = ANN_TYPES.find(t => t.value === a.type) || ANN_TYPES[0];
+                const Icon = cfg.icon;
+                return (
+                  <motion.div key={a.id}
+                    initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 8 }}
+                    className="flex items-start gap-3 rounded-xl px-4 py-3"
+                    style={{ background: 'rgba(17,17,24,0.8)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <Icon size={14} style={{ color: cfg.color, marginTop: 2, flexShrink: 0 }} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-white leading-snug">{a.message}</p>
+                      <p className="text-xs text-dark-500 mt-0.5">by {a.createdBy || 'admin'}</p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button onClick={() => toggleAnnouncement(a.id, a.active)}
+                        className="text-xs px-2.5 py-1 rounded-lg transition-all"
+                        style={a.active
+                          ? { background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.3)', color: '#34d399' }
+                          : { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#6b7280' }
+                        }>
+                        {a.active ? 'Live' : 'Off'}
+                      </button>
+                      <button onClick={() => deleteAnnouncement(a.id)}
+                        className="p-1.5 rounded-lg text-dark-400 hover:text-red-400 hover:bg-red-900/20 transition-all">
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+            {announcements.length === 0 && (
+              <p className="text-xs text-dark-500 text-center py-4">No announcements yet.</p>
+            )}
+          </div>
+        </motion.div>
 
         {/* User table */}
         <div className="flex items-center justify-between mb-3">

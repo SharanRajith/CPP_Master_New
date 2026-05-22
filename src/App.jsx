@@ -9,6 +9,7 @@ import SettingsModal from './components/settings/SettingsModal';
 import PremiumModal       from './components/PremiumModal';
 import OnboardingModal, { shouldShowOnboarding } from './components/OnboardingModal';
 import SearchModal from './components/SearchModal';
+import AnnouncementBanner from './components/AnnouncementBanner';
 import { AnimatePresence } from 'framer-motion';
 
 import HomePage        from './pages/HomePage';
@@ -58,6 +59,7 @@ function AppShell({ progress, completeLesson, completeQuiz, unlockHint, saveNote
         onLogout={onLogout}
         onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
       />
+      <AnnouncementBanner />
       <div className="flex flex-1 overflow-hidden relative">
         <Routes>
           <Route path="/" element={<HomePage progress={progress} onOpenPremium={() => setShowPremium(true)} />} />
