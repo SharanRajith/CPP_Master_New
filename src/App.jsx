@@ -141,6 +141,8 @@ function LessonShell({ progress, completeLesson, unlockHint, saveNote, deleteNot
             isLessonUnlocked={isLessonUnlocked}
             isMobile={true}
             isPremium={isPremium}
+            currentUser={currentUser}
+            isAdmin={isAdmin}
           />
         </div>
       </div>
@@ -164,6 +166,8 @@ function LessonShell({ progress, completeLesson, unlockHint, saveNote, deleteNot
           isLessonUnlocked={isLessonUnlocked}
           isMobile={false}
           isPremium={isPremium}
+          currentUser={currentUser}
+          isAdmin={isAdmin}
         />
       </Panel>
     </PanelGroup>

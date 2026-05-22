@@ -58,7 +58,7 @@ function XPToast({ xp, onDone }) {
 }
 
 // ─── Desktop Header Strip ─────────────────────────────────────────────────────
-function LessonHeaderStrip({ lesson, isCompleted, prevLesson, nextLesson, navigate, notes, onSaveNote, onDeleteNote }) {
+function LessonHeaderStrip({ lesson, isCompleted, prevLesson, nextLesson, navigate, notes, onSaveNote, onDeleteNote, currentUser, isAdmin }) {
   return (
     <>
       <div className="px-5 py-3 border-b border-dark-600 shrink-0 flex items-center gap-3 bg-dark-900 z-10">
@@ -75,7 +75,7 @@ function LessonHeaderStrip({ lesson, isCompleted, prevLesson, nextLesson, naviga
         </div>
       </div>
 
-      <LessonContent lesson={lesson} attempts={0} notes={notes} onSaveNote={onSaveNote} onDeleteNote={onDeleteNote} />
+      <LessonContent lesson={lesson} attempts={0} notes={notes} onSaveNote={onSaveNote} onDeleteNote={onDeleteNote} currentUser={currentUser} isAdmin={isAdmin} />
 
       <div className="flex gap-2 p-3 border-t border-dark-600 shrink-0 bg-dark-900">
         {prevLesson && (
@@ -107,7 +107,7 @@ function LessonHeaderStrip({ lesson, isCompleted, prevLesson, nextLesson, naviga
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-export default function LessonPage({ progress, completeLesson, unlockHint, saveNote, deleteNote, isLessonCompleted, isMobile, isPremium, isLessonUnlocked }) {
+export default function LessonPage({ progress, completeLesson, unlockHint, saveNote, deleteNote, isLessonCompleted, isMobile, isPremium, isLessonUnlocked, currentUser, isAdmin }) {
   const { lessonId } = useParams();
   const navigate     = useNavigate();
   const allLessons   = getAllLessons();
@@ -263,7 +263,7 @@ export default function LessonPage({ progress, completeLesson, unlockHint, saveN
           </div>
         </div>
         <div className="flex-1 overflow-y-auto overscroll-contain">
-          <LessonContent lesson={lesson} attempts={0} notes={lessonNotes} onSaveNote={text => saveNote(lessonId, text)} onDeleteNote={id => deleteNote(lessonId, id)} />
+          <LessonContent lesson={lesson} attempts={0} notes={lessonNotes} onSaveNote={text => saveNote(lessonId, text)} onDeleteNote={id => deleteNote(lessonId, id)} currentUser={currentUser} isAdmin={isAdmin} />
         </div>
         <div className="flex gap-2 p-3 border-t border-dark-600 shrink-0 bg-dark-900">
           {prevLesson && <button onClick={() => navigate(`/lesson/${prevLesson.id}`)} className="flex items-center gap-1.5 text-sm text-dark-300 hover:text-white px-3 py-2 rounded-lg hover:bg-dark-700 transition-all"><ChevronLeft size={14} /> Prev</button>}
@@ -306,7 +306,7 @@ export default function LessonPage({ progress, completeLesson, unlockHint, saveN
           </div>
           <div className="flex-1 overflow-hidden">
             {mobileTab === 'lesson'
-              ? <div className="h-full overflow-y-auto"><LessonContent lesson={lesson} attempts={0} notes={lessonNotes} onSaveNote={text => saveNote(lessonId, text)} onDeleteNote={id => deleteNote(lessonId, id)} /></div>
+              ? <div className="h-full overflow-y-auto"><LessonContent lesson={lesson} attempts={0} notes={lessonNotes} onSaveNote={text => saveNote(lessonId, text)} onDeleteNote={id => deleteNote(lessonId, id)} currentUser={currentUser} isAdmin={isAdmin} /></div>
               : <SqlEditor lesson={lesson} isCompleted={isCompleted} onComplete={handleSqlComplete} hints={lesson.hints} hintIndex={hintIndex} onShowHint={handleShowHint} xp={progress.xp} />
             }
           </div>
@@ -319,7 +319,7 @@ export default function LessonPage({ progress, completeLesson, unlockHint, saveN
         <AnimatePresence>{moduleComplete && <ModuleCompleteModal moduleId={moduleComplete} completedLessons={progress.completedLessons} onClose={() => setModuleComplete(null)} />}</AnimatePresence>
         <PanelGroup direction="horizontal" className="flex-1 flex overflow-hidden">
           <Panel defaultSize={40} minSize={25} className="flex flex-col border-r border-dark-600 overflow-hidden bg-dark-900">
-            <LessonHeaderStrip lesson={lesson} isCompleted={isCompleted} prevLesson={prevLesson} nextLesson={nextLesson} navigate={navigate} notes={lessonNotes} onSaveNote={text => saveNote(lessonId, text)} onDeleteNote={id => deleteNote(lessonId, id)} />
+            <LessonHeaderStrip lesson={lesson} isCompleted={isCompleted} prevLesson={prevLesson} nextLesson={nextLesson} navigate={navigate} notes={lessonNotes} onSaveNote={text => saveNote(lessonId, text)} onDeleteNote={id => deleteNote(lessonId, id)} currentUser={currentUser} isAdmin={isAdmin} />
           </Panel>
           <PanelResizeHandle className="w-1.5 bg-dark-600 hover:bg-brand-500 transition-colors cursor-col-resize shrink-0" />
           <Panel defaultSize={60} minSize={30} className="flex flex-col overflow-hidden">
@@ -491,7 +491,7 @@ export default function LessonPage({ progress, completeLesson, unlockHint, saveN
 
                   {/* Scrollable content */}
                   <div className="flex-1 overflow-y-auto overscroll-contain">
-                    <LessonContent lesson={lesson} attempts={attempts} notes={lessonNotes} onSaveNote={(text) => saveNote(lessonId, text)} onDeleteNote={(id) => deleteNote(lessonId, id)} />
+                    <LessonContent lesson={lesson} attempts={attempts} notes={lessonNotes} onSaveNote={(text) => saveNote(lessonId, text)} onDeleteNote={(id) => deleteNote(lessonId, id)} currentUser={currentUser} isAdmin={isAdmin} />
                   </div>
 
                   {/* Prev / Next footer */}
@@ -594,6 +594,8 @@ export default function LessonPage({ progress, completeLesson, unlockHint, saveN
             notes={lessonNotes}
             onSaveNote={(text) => saveNote(lessonId, text)}
             onDeleteNote={(id) => deleteNote(lessonId, id)}
+            currentUser={currentUser}
+            isAdmin={isAdmin}
           />
         </Panel>
 

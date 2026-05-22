@@ -4,6 +4,7 @@ import rehypeHighlight from 'rehype-highlight';
 import remarkGfm from 'remark-gfm';
 import { Lightbulb, Eye, EyeOff, ExternalLink, Clock, HardDrive, StickyNote, Trash2, Plus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import DiscussionPanel from './DiscussionPanel';
 
 // ─── LeetCode Problem Card ────────────────────────────────────────────────────
 function LeetCodeCard({ problem }) {
@@ -219,15 +220,16 @@ function LessonNotes({ notes = [], onSaveNote, onDeleteNote }) {
 }
 
 // ─── Main Lesson Content ──────────────────────────────────────────────────────
-export default function LessonContent({ lesson, attempts = 0, notes = [], onSaveNote, onDeleteNote }) {
+export default function LessonContent({ lesson, attempts = 0, notes = [], onSaveNote, onDeleteNote, currentUser, isAdmin }) {
   if (!lesson) return null;
 
   const [activeTab, setActiveTab] = useState('lesson');
 
   const TABS = [
-    { id: 'lesson',   label: '📖 Lesson' },
-    { id: 'practice', label: '🧪 Practice' },
-    { id: 'notes',    label: notes.length > 0 ? `📝 Notes (${notes.length})` : '📝 Notes' },
+    { id: 'lesson',     label: '📖 Lesson' },
+    { id: 'practice',   label: '🧪 Practice' },
+    { id: 'notes',      label: notes.length > 0 ? `📝 Notes (${notes.length})` : '📝 Notes' },
+    { id: 'discussion', label: '💬 Discussion' },
   ];
 
   return (
@@ -251,7 +253,9 @@ export default function LessonContent({ lesson, attempts = 0, notes = [], onSave
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-6 pb-24">
-        {activeTab === 'notes' ? (
+        {activeTab === 'discussion' ? (
+          <DiscussionPanel lessonId={lesson.id} currentUser={currentUser} isAdmin={isAdmin} />
+        ) : activeTab === 'notes' ? (
           <LessonNotes notes={notes} onSaveNote={onSaveNote} onDeleteNote={onDeleteNote} />
         ) : activeTab === 'lesson' ? (
           <>
