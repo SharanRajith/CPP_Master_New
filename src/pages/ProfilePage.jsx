@@ -5,8 +5,10 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { updateProfile } from 'firebase/auth';
 import { auth, db, storage } from '../lib/firebase';
+import { CURRICULUM } from '../data/curriculum';
 import { LEVELS } from '../hooks/useProgress';
-import { Copy, Check, Calendar, Clock, Camera, Loader2 } from 'lucide-react';
+import { ACHIEVEMENTS, getEarnedAchievements } from '../config/achievements';
+import { Flame, Zap, BookOpen, Copy, Check, Calendar, Clock, Camera, Loader2 } from 'lucide-react';
 
 function formatJoinDate(ts) {
   if (!ts) return null;
@@ -118,8 +120,8 @@ export default function ProfilePage({ currentUser, progress: ownProgress, onProf
     );
   }
 
-  const { displayName, photoURL, xp = 0, level = 1,
-          joinedAt, lastActiveDate } = profileData;
+  const { displayName, photoURL, xp = 0, level = 1, streak = 0,
+          completedLessons = {}, joinedAt, lastActiveDate } = profileData;
 
   const levelInfo      = LEVELS[level - 1] || LEVELS[0];
   const nextLevel      = LEVELS[level]     || null;
@@ -129,6 +131,9 @@ export default function ProfilePage({ currentUser, progress: ownProgress, onProf
   const avatarFallback = (displayName || 'U').charAt(0).toUpperCase();
   const joinStr        = formatJoinDate(joinedAt);
   const lastStr        = formatLastActive(lastActiveDate);
+  const totalLessons   = CURRICULUM.reduce((s, m) => s + m.lessons.length, 0);
+  const lessonsCount   = Object.keys(completedLessons).length;
+  const earnedBadges   = getEarnedAchievements({ completedLessons, xp, streak, level });
 
   return (
     <div className="flex-1 overflow-y-auto bg-dark-900">
@@ -263,9 +268,54 @@ export default function ProfilePage({ currentUser, progress: ownProgress, onProf
           </div>
         </motion.div>
 
+        {/* ── Compact stats row ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.08 }}
+          className="grid grid-cols-3 gap-3 mb-5"
+        >
+          {[
+            { icon: <Zap size={14} className="text-yellow-400" />,    label: 'XP',      value: xp.toLocaleString() },
+            { icon: <Flame size={14} className="text-orange-400" />,  label: 'Streak',  value: `${streak}d` },
+            { icon: <BookOpen size={14} className="text-indigo-400" />,label: 'Lessons', value: `${lessonsCount}/${totalLessons}` },
+          ].map(s => (
+            <div key={s.label} className="flex flex-col items-center gap-1 py-3 rounded-xl"
+              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+              <div className="flex items-center gap-1.5">
+                {s.icon}
+                <span className="text-lg font-black text-white">{s.value}</span>
+              </div>
+              <span className="text-[10px] uppercase tracking-widest text-dark-500 font-medium">{s.label}</span>
+            </div>
+          ))}
+        </motion.div>
+
+        {/* ── Achievements ── */}
+        {earnedBadges.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.14 }}
+            className="rounded-2xl p-5 mb-5"
+            style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}
+          >
+            <p className="text-xs font-bold text-dark-400 uppercase tracking-widest mb-4">Achievements</p>
+            <div className="flex flex-wrap gap-2">
+              {earnedBadges.map(a => (
+                <div key={a.id} title={a.desc}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold"
+                  style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', color: '#a5b4fc' }}>
+                  <span>{a.icon}</span> {a.name}
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
         {/* Own profile — view own public link note */}
         {isOwn && (
-          <p className="text-center text-xs text-dark-600 mt-6">
+          <p className="text-center text-xs text-dark-600 mt-4">
             This is your public profile · <button onClick={copyLink} className="underline hover:text-dark-400 transition-colors">copy link to share</button>
           </p>
         )}
