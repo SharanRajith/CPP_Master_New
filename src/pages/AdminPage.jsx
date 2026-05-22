@@ -174,8 +174,8 @@ export default function AdminPage({ currentUser }) {
 
                   {/* Action buttons */}
                   <div className="flex items-center gap-2 shrink-0">
-                    {/* Admin toggle — super-admin only, not for hardcoded admins or self */}
-                    {isSuperAdmin && !isHardcodedAdmin && !isMe && (
+                    {/* Admin toggle — super-admin only, not for any admin or self */}
+                    {isSuperAdmin && !isUserAdmin && !isMe && (
                       <button
                         onClick={() => toggleAdmin(user.uid, isDynamicAdmin)}
                         disabled={!!updating}
