@@ -93,9 +93,9 @@ function AdminView({ lessonId }) {
 
 // ─── User view — submit only ──────────────────────────────────────────────────
 function UserView({ lessonId, currentUser }) {
-  const [draft,    setDraft]    = useState('');
-  const [posting,  setPosting]  = useState(false);
-  const [sent,     setSent]     = useState(false);
+  const [draft,   setDraft]   = useState('');
+  const [posting, setPosting] = useState(false);
+  const [sent,    setSent]    = useState(false);
   const taRef = useRef(null);
 
   async function handlePost() {
