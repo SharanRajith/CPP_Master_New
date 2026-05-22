@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronLeft, ChevronRight, Star, Zap,
-  BookOpen, Code2, FlaskConical, CheckCircle2, Terminal,
+  BookOpen, Code2, FlaskConical, CheckCircle2, Terminal, BookMarked,
 } from 'lucide-react';
 
 import CodeEditor      from '../components/ide/CodeEditor';
@@ -17,6 +17,7 @@ import PremiumGate          from '../components/PremiumGate';
 import ModuleCompleteModal  from '../components/ModuleCompleteModal';
 import { readEditorSettings } from '../hooks/useEditorSettings';
 import { CURRICULUM }  from '../data/curriculum';
+import CheatSheetPanel from '../components/lesson/CheatSheetPanel';
 
 import { useCompiler }  from '../hooks/useCompiler';
 import { getAllLessons } from '../data/curriculum';
@@ -58,7 +59,7 @@ function XPToast({ xp, onDone }) {
 }
 
 // ─── Desktop Header Strip ─────────────────────────────────────────────────────
-function LessonHeaderStrip({ lesson, isCompleted, prevLesson, nextLesson, navigate, notes, onSaveNote, onDeleteNote, currentUser, isAdmin }) {
+function LessonHeaderStrip({ lesson, isCompleted, prevLesson, nextLesson, navigate, notes, onSaveNote, onDeleteNote, currentUser, isAdmin, onCheatSheet }) {
   return (
     <>
       <div className="px-5 py-3 border-b border-dark-600 shrink-0 flex items-center gap-3 bg-dark-900 z-10">
@@ -73,6 +74,14 @@ function LessonHeaderStrip({ lesson, isCompleted, prevLesson, nextLesson, naviga
           </div>
           <h1 className="text-base md:text-lg font-bold text-white truncate">{lesson.title}</h1>
         </div>
+        {onCheatSheet && (
+          <button
+            onClick={onCheatSheet}
+            className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-all shrink-0 text-dark-300 hover:text-white hover:bg-dark-700 border border-dark-600 hover:border-dark-500"
+          >
+            <BookMarked size={13} /> Cheat Sheet
+          </button>
+        )}
       </div>
 
       <LessonContent lesson={lesson} attempts={0} notes={notes} onSaveNote={onSaveNote} onDeleteNote={onDeleteNote} currentUser={currentUser} isAdmin={isAdmin} />
@@ -124,7 +133,8 @@ export default function LessonPage({ progress, completeLesson, unlockHint, saveN
   // hintIndex derived from persisted progress so unlocked hints survive page reload
   const hintIndex = ((progress.unlockedHints?.[lessonId]) || []).length - 1;
   const [editorSettings, setEditorSettings] = useState(() => readEditorSettings());
-  const [moduleComplete, setModuleComplete] = useState(null); // moduleId when celebration fires
+  const [moduleComplete, setModuleComplete] = useState(null);
+  const [showCheatSheet, setShowCheatSheet] = useState(false);
 
   const {
     isCompiling, compilerResult, compilerStatus,
@@ -253,6 +263,9 @@ export default function LessonPage({ progress, completeLesson, unlockHint, saveN
       <div className="flex flex-col flex-1 overflow-hidden">
         <AnimatePresence>{showXPToast && <XPToast xp={xpEarned} onDone={() => setShowXPToast(false)} />}</AnimatePresence>
         <AnimatePresence>{moduleComplete && <ModuleCompleteModal moduleId={moduleComplete} completedLessons={progress.completedLessons} onClose={() => setModuleComplete(null)} />}</AnimatePresence>
+        {showCheatSheet && lessonModule && (
+          <CheatSheetPanel moduleId={lessonModule.id} moduleTitle={lessonModule.title} moduleColor={lessonModule.color} onClose={() => setShowCheatSheet(false)} />
+        )}
         <div className="px-5 py-3 border-b border-dark-600 shrink-0 flex items-center gap-3 bg-dark-900">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-0.5">
@@ -261,6 +274,12 @@ export default function LessonPage({ progress, completeLesson, unlockHint, saveN
             </div>
             <h1 className="text-base md:text-lg font-bold text-white truncate">{lesson.title}</h1>
           </div>
+          <button
+            onClick={() => setShowCheatSheet(true)}
+            className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-all shrink-0 text-dark-300 hover:text-white hover:bg-dark-700 border border-dark-600 hover:border-dark-500"
+          >
+            <BookMarked size={13} /> Cheat Sheet
+          </button>
         </div>
         <div className="flex-1 overflow-y-auto overscroll-contain">
           <LessonContent lesson={lesson} attempts={0} notes={lessonNotes} onSaveNote={text => saveNote(lessonId, text)} onDeleteNote={id => deleteNote(lessonId, id)} currentUser={currentUser} isAdmin={isAdmin} />
@@ -317,9 +336,12 @@ export default function LessonPage({ progress, completeLesson, unlockHint, saveN
       <div className="flex flex-col flex-1 overflow-hidden">
         <AnimatePresence>{showXPToast && <XPToast xp={xpEarned} onDone={() => setShowXPToast(false)} />}</AnimatePresence>
         <AnimatePresence>{moduleComplete && <ModuleCompleteModal moduleId={moduleComplete} completedLessons={progress.completedLessons} onClose={() => setModuleComplete(null)} />}</AnimatePresence>
+        {showCheatSheet && lessonModule && (
+          <CheatSheetPanel moduleId={lessonModule.id} moduleTitle={lessonModule.title} moduleColor={lessonModule.color} onClose={() => setShowCheatSheet(false)} />
+        )}
         <PanelGroup direction="horizontal" className="flex-1 flex overflow-hidden">
           <Panel defaultSize={40} minSize={25} className="flex flex-col border-r border-dark-600 overflow-hidden bg-dark-900">
-            <LessonHeaderStrip lesson={lesson} isCompleted={isCompleted} prevLesson={prevLesson} nextLesson={nextLesson} navigate={navigate} notes={lessonNotes} onSaveNote={text => saveNote(lessonId, text)} onDeleteNote={id => deleteNote(lessonId, id)} currentUser={currentUser} isAdmin={isAdmin} />
+            <LessonHeaderStrip lesson={lesson} isCompleted={isCompleted} prevLesson={prevLesson} nextLesson={nextLesson} navigate={navigate} notes={lessonNotes} onSaveNote={text => saveNote(lessonId, text)} onDeleteNote={id => deleteNote(lessonId, id)} currentUser={currentUser} isAdmin={isAdmin} onCheatSheet={() => setShowCheatSheet(true)} />
           </Panel>
           <PanelResizeHandle className="w-1.5 bg-dark-600 hover:bg-brand-500 transition-colors cursor-col-resize shrink-0" />
           <Panel defaultSize={60} minSize={30} className="flex flex-col overflow-hidden">
@@ -582,6 +604,9 @@ export default function LessonPage({ progress, completeLesson, unlockHint, saveN
           />
         )}
       </AnimatePresence>
+      {showCheatSheet && lessonModule && (
+        <CheatSheetPanel moduleId={lessonModule.id} moduleTitle={lessonModule.title} moduleColor={lessonModule.color} onClose={() => setShowCheatSheet(false)} />
+      )}
 
       <PanelGroup direction="horizontal" className="flex-1 flex overflow-hidden">
         <Panel defaultSize={38} minSize={25} className="flex flex-col border-r border-dark-600 overflow-hidden bg-dark-900">
@@ -596,6 +621,7 @@ export default function LessonPage({ progress, completeLesson, unlockHint, saveN
             onDeleteNote={(id) => deleteNote(lessonId, id)}
             currentUser={currentUser}
             isAdmin={isAdmin}
+            onCheatSheet={() => setShowCheatSheet(true)}
           />
         </Panel>
 
