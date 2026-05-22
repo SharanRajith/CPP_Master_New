@@ -37,6 +37,7 @@ function AdminView({ lessonId }) {
   const [replyingTo, setReplyingTo] = useState(null);
   const [replyText,  setReplyText]  = useState('');
   const [sending,    setSending]    = useState(false);
+  const [replyError, setReplyError] = useState('');
 
   // Mark all as read when admin opens this panel
   useEffect(() => {
@@ -63,12 +64,18 @@ function AdminView({ lessonId }) {
   async function handleReply(commentId) {
     if (!replyText.trim() || sending) return;
     setSending(true);
+    setReplyError('');
     try {
       await updateDoc(doc(db, 'discussions', lessonId, 'comments', commentId), {
-        adminReply: { text: replyText.trim(), createdAt: serverTimestamp() },
+        'adminReply.text':      replyText.trim(),
+        'adminReply.createdAt': serverTimestamp(),
       });
       setReplyingTo(null);
       setReplyText('');
+    } catch (err) {
+      setReplyError(err.code === 'permission-denied'
+        ? 'Permission denied — update Firestore rules (see instructions).'
+        : 'Failed to send reply. Try again.');
     } finally {
       setSending(false);
     }
@@ -153,9 +160,12 @@ function AdminView({ lessonId }) {
                     rows={3}
                     className="w-full bg-transparent text-xs text-slate-200 px-3 pt-2 pb-1 resize-none outline-none placeholder:text-dark-600"
                   />
+                  {replyError && (
+                    <p className="text-[10px] text-red-400 px-3 pb-1">{replyError}</p>
+                  )}
                   <div className="flex items-center justify-end gap-2 px-3 pb-2">
                     <button
-                      onClick={() => setReplyingTo(null)}
+                      onClick={() => { setReplyingTo(null); setReplyError(''); }}
                       className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg text-dark-400 hover:text-white hover:bg-dark-600 transition-all"
                     >
                       <X size={10} /> Cancel
