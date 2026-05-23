@@ -16,7 +16,7 @@ export default function Navbar({ xp, level, streak, currentUser, isAdmin, isPrem
   const [showExploreMenu, setShowExploreMenu] = useState(false);
 
   const avatarFallback = (currentUser?.displayName || 'U').charAt(0).toUpperCase();
-  const avatarURL = firestorePhoto || avatarURL;
+  const avatarURL = firestorePhoto || currentUser?.photoURL;
 
   return (
     <header className="h-14 flex items-center px-2 md:px-4 gap-2 md:gap-3 bg-dark-800 border-b border-dark-600 shrink-0 z-20 w-full relative">
