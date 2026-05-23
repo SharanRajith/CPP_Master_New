@@ -75,6 +75,7 @@ function AppShell({ progress, completeLesson, completeQuiz, unlockHint, saveNote
         onOpenSearch={() => setShowSearch(true)}
         onLogout={onLogout}
         onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+        photoURL={progress.photoURL}
       />
       <AnnouncementBanner />
       <RoutesContainer>

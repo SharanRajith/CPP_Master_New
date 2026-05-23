@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Settings, LogOut, Flame, Trophy, Home, Menu, ChevronRight, Zap, Medal, Shield, Crown, Search, User, GitBranch, Swords, BookOpen, Headphones, Compass } from 'lucide-react';
 import { LEVELS } from '../../hooks/useProgress';
 
-export default function Navbar({ xp, level, streak, currentUser, isAdmin, isPremium, onOpenSettings, onOpenPremium, onOpenSupport, onOpenSearch, onLogout, onToggleSidebar }) {
+export default function Navbar({ xp, level, streak, currentUser, isAdmin, isPremium, onOpenSettings, onOpenPremium, onOpenSupport, onOpenSearch, onLogout, onToggleSidebar, photoURL: firestorePhoto }) {
   const location      = useLocation();
   const isLessonRoute = location.pathname.startsWith('/lesson/');
   const levelInfo     = LEVELS[level - 1] || LEVELS[0];
@@ -16,6 +16,7 @@ export default function Navbar({ xp, level, streak, currentUser, isAdmin, isPrem
   const [showExploreMenu, setShowExploreMenu] = useState(false);
 
   const avatarFallback = (currentUser?.displayName || 'U').charAt(0).toUpperCase();
+  const avatarURL = firestorePhoto || avatarURL;
 
   return (
     <header className="h-14 flex items-center px-2 md:px-4 gap-2 md:gap-3 bg-dark-800 border-b border-dark-600 shrink-0 z-20 w-full relative">
@@ -195,9 +196,9 @@ export default function Navbar({ xp, level, streak, currentUser, isAdmin, isPrem
           aria-label="User menu"
         >
           <div className="relative">
-            {currentUser?.photoURL ? (
+            {avatarURL ? (
               <img
-                src={currentUser.photoURL}
+                src={avatarURL}
                 alt={currentUser.displayName}
                 className={`w-7 h-7 rounded-full object-cover ring-2 ${isPremium ? 'ring-yellow-500' : 'ring-brand-600/50'}`}
               />
@@ -241,8 +242,8 @@ export default function Navbar({ xp, level, streak, currentUser, isAdmin, isPrem
                 {/* User info header */}
                 <div className="px-4 py-3 border-b border-dark-600">
                   <div className="flex items-center gap-3">
-                    {currentUser?.photoURL ? (
-                      <img src={currentUser.photoURL} alt="" className="w-9 h-9 rounded-full" />
+                    {avatarURL ? (
+                      <img src={avatarURL} alt="" className="w-9 h-9 rounded-full" />
                     ) : (
                       <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center text-sm font-bold text-white">
                         {avatarFallback}

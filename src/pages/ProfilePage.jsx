@@ -90,8 +90,10 @@ export default function ProfilePage({ currentUser, progress: ownProgress, onProf
     });
 
     try {
-      await updateProfile(auth.currentUser, { photoURL: base64 });
+      // Firestore is the source of truth — write here first
       await setDoc(doc(db, 'users', currentUser.uid), { photoURL: base64 }, { merge: true });
+      // Best-effort Auth update (may fail if base64 URL is too long — that's OK)
+      try { await updateProfile(auth.currentUser, { photoURL: base64 }); } catch (_) {}
       setAvatarPreview(base64);
       onProfileUpdate?.();
     } catch (err) {
