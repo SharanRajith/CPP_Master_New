@@ -62,7 +62,7 @@ hash(42) = bucket 7 → [row at page 3, offset 120]
 
 ### When to Use Hash Index
 
-- Columns used only in equality conditions (`WHERE id = ?`)
+- Columns used only in equality conditions (WHERE id = ?)
 - In-memory hash tables (e.g. PostgreSQL hash index, MySQL MEMORY engine)
 - Join hash tables built at query time (hash join algorithm)
 
