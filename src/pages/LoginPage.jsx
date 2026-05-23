@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, Zap, Trophy, BookOpen, Code2, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
+import { CheckCircle2, Zap, Trophy, BookOpen, Code2, Mail, Lock, User, Eye, EyeOff, BarChart2, MessageSquare, Layers, Swords } from 'lucide-react';
 import { auth, googleProvider } from '../lib/firebase';
 import {
   signInWithPopup,
@@ -10,16 +10,18 @@ import {
 } from 'firebase/auth';
 
 const STATS = [
-  { value: '13',   label: 'Modules' },
+  { value: '3',    label: 'Tracks' },
   { value: '120+', label: 'Lessons' },
   { value: '15',   label: 'FAANG Problems' },
 ];
 
 const FEATURES = [
-  { icon: <Code2 size={14} />,    text: 'In-browser C++ compiler — no install needed' },
-  { icon: <Zap size={14} />,      text: 'XP, levels, streaks & achievement badges' },
-  { icon: <Trophy size={14} />,   text: 'Leaderboard & completion certificate' },
-  { icon: <BookOpen size={14} />, text: 'FAANG-style problems with hints & solutions' },
+  { icon: <Code2 size={14} />,        text: 'In-browser C++ compiler — no install needed' },
+  { icon: <BarChart2 size={14} />,    text: 'Algorithm Visualizer — sorting, trees & graphs step-by-step' },
+  { icon: <Layers size={14} />,       text: '3 tracks: C++ DSA · Embedded C · DBMS' },
+  { icon: <Swords size={14} />,       text: 'Daily challenges + FAANG-style problems with hints' },
+  { icon: <Zap size={14} />,          text: 'XP, levels, streaks & achievement badges' },
+  { icon: <MessageSquare size={14} />,text: 'Public comments with @mentions on every lesson' },
 ];
 
 const CODE_LINES = [
@@ -169,7 +171,7 @@ export default function LoginPage() {
               <span style={{ background: 'linear-gradient(135deg,#f59e0b,#f97316)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>FAANG‑ready</span>
             </h2>
             <p className="text-slate-400 text-sm leading-relaxed">
-              The structured C++ &amp; DSA curriculum that takes you from zero to cracking top-tier tech interviews.
+              C++ DSA, Embedded C &amp; DBMS — all in one platform. Interactive lessons, live compiler, algorithm visualizer, and daily challenges.
             </p>
           </motion.div>
 
@@ -382,7 +384,7 @@ export default function LoginPage() {
               <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.06)' }} />
             </div>
             <ul className="space-y-2.5">
-              {['Full C++ & DSA curriculum', 'Live in-browser compiler', 'XP, streaks & achievements'].map((item, i) => (
+              {['C++ DSA · Embedded C · DBMS curriculum', 'Live in-browser compiler', 'Algorithm Visualizer + daily challenges', 'XP, streaks & achievements'].map((item, i) => (
                 <li key={i} className="flex items-center gap-2.5 text-xs text-slate-400">
                   <CheckCircle2 size={13} className="text-indigo-400 shrink-0" />{item}
                 </li>
