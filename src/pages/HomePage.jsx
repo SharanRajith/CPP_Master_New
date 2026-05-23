@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Play, Trophy, Flame, BookOpen, ArrowRight, Star, Zap, Code2, ChevronRight, CalendarDays, CheckCircle2, Swords, Crown } from 'lucide-react';
+import { Play, Trophy, Flame, BookOpen, ArrowRight, Star, Zap, Code2, ChevronRight, CalendarDays, CheckCircle2, Swords, Crown, GitBranch, BarChart2, Network } from 'lucide-react';
 import { CURRICULUM, getAllLessons } from '../data/curriculum';
 import { LEVELS } from '../hooks/useProgress';
 
@@ -158,6 +158,55 @@ function ModuleCard({ module, progress, onStart }) {
   );
 }
 
+function VisualizerBanner() {
+  const navigate = useNavigate();
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.16 }}
+      className="mx-4 sm:mx-8 mt-5 rounded-2xl overflow-hidden cursor-pointer group"
+      style={{ border: '1px solid rgba(99,102,241,0.35)', background: 'linear-gradient(135deg, rgba(79,70,229,0.12) 0%, rgba(124,58,237,0.08) 100%)' }}
+      onClick={() => navigate('/visualizer')}
+    >
+      <div className="flex items-center gap-4 px-4 py-4">
+        {/* Icons row */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(99,102,241,0.2)', border: '1px solid rgba(99,102,241,0.35)' }}>
+            <BarChart2 size={18} className="text-indigo-400" />
+          </div>
+          <div className="hidden sm:flex flex-col gap-1">
+            <div className="w-6 h-5 rounded-lg flex items-center justify-center" style={{ background: 'rgba(139,92,246,0.2)', border: '1px solid rgba(139,92,246,0.3)' }}>
+              <GitBranch size={11} className="text-violet-400" />
+            </div>
+            <div className="w-6 h-5 rounded-lg flex items-center justify-center" style={{ background: 'rgba(59,130,246,0.2)', border: '1px solid rgba(59,130,246,0.3)' }}>
+              <Network size={11} className="text-blue-400" />
+            </div>
+          </div>
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-0.5">
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide"
+              style={{ background: 'rgba(99,102,241,0.2)', color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.3)' }}>
+              Interactive Tool
+            </span>
+          </div>
+          <p className="text-sm font-bold text-white">Algorithm Visualizer</p>
+          <p className="text-xs text-dark-300 mt-0.5">Step through Sorting, Trees &amp; Graphs — see every move.</p>
+        </div>
+
+        <div
+          className="shrink-0 flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition-all group-hover:opacity-90"
+          style={{ background: 'linear-gradient(135deg,#4f46e5,#7c3aed)', color: 'white' }}
+        >
+          Try it <ChevronRight size={12} />
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 export default function HomePage({ progress, onOpenPremium }) {
   const navigate = useNavigate();
   const allLessons = getAllLessons();
@@ -287,6 +336,9 @@ export default function HomePage({ progress, onOpenPremium }) {
 
       {/* Daily Challenge */}
       <DailyChallenge progress={progress} />
+
+      {/* Algorithm Visualizer promo */}
+      <VisualizerBanner />
 
       {/* Curriculum Grid */}
       <div className="px-4 sm:px-8 py-8">
