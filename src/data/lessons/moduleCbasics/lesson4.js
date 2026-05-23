@@ -2,6 +2,7 @@ const lesson = {
   id: 'mcb-l4',
   title: 'Pointers & Arrays in C',
   module: 'C Basics for Embedded',
+  lessonNumber: 4,
   type: 'theory',
   xpReward: 10,
   content: `
@@ -152,6 +153,13 @@ printf("Via ptr: %c\\n", *name);          // A
 
 Pointers = addresses. In embedded, **registers are just addresses** — you cast an integer address to a pointer and read/write hardware directly. Mastering pointers means you can write drivers from scratch without any HAL.
 `,
+  hints: [
+    '`&x` gives the address of x; `*ptr` dereferences ptr to get the value at that address — these two operators are inverses of each other.',
+    'Array names are already pointers to the first element: `readings[2]` and `*(readings + 2)` are identical.',
+    'Hardware registers are accessed by casting an integer address to a volatile pointer: `volatile unsigned int *REG = (volatile unsigned int *)0x40020014;` — `volatile` prevents the compiler from optimizing away the access.',
+  ],
+  complexity: null,
+  tags: ['embedded-c', 'c-basics', 'pointers', 'arrays', 'memory-mapped-io', 'volatile'],
 };
 
 export default lesson;

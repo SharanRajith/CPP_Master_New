@@ -2,6 +2,7 @@ const lesson = {
   id: 'mcb-l1',
   title: 'Variables & Data Types in C',
   module: 'C Basics for Embedded',
+  lessonNumber: 1,
   type: 'theory',
   xpReward: 10,
   content: `
@@ -104,6 +105,13 @@ Always cast explicitly in C. The compiler won't warn you by default.
 
 C has no objects, no templates, no \`std::\` — just variables, functions, and memory. This simplicity is what makes it ideal for embedded systems where you need **full control over every byte**.
 `,
+  hints: [
+    'Use `unsigned char` (0–255) for register values and GPIO bytes — it maps directly to a single hardware register.',
+    'Use `#define` for pin numbers and addresses (no memory cost); use `const` when you need a typed constant.',
+    'Always cast explicitly when mixing int and float: `(float)a / b` gives 2.5, but `a / b` gives 2 (integer division).',
+  ],
+  complexity: null,
+  tags: ['embedded-c', 'c-basics', 'variables', 'data-types', 'printf'],
 };
 
 export default lesson;

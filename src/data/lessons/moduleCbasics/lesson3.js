@@ -2,6 +2,7 @@ const lesson = {
   id: 'mcb-l3',
   title: 'Functions & Scope in C',
   module: 'C Basics for Embedded',
+  lessonNumber: 3,
   type: 'theory',
   xpReward: 10,
   content: `
@@ -172,6 +173,13 @@ The \`#ifndef / #define / #endif\` guard prevents double-inclusion.
 
 Functions + header files = the C equivalent of classes for embedded. A well-structured embedded project looks like \`uart.c/h\`, \`sensor.c/h\`, \`main.c\` — each \`.c\` file owns one peripheral or responsibility.
 `,
+  hints: [
+    'Declare function prototypes before `main()` (or in a `.h` file) — C requires a function to be declared before it is called.',
+    'Use `static` on a variable inside a function to make it persist between calls without making it global.',
+    'To modify a variable from inside a function, pass its address: `double_it(&val)` and dereference inside: `*x = (*x) * 2`.',
+  ],
+  complexity: null,
+  tags: ['embedded-c', 'c-basics', 'functions', 'scope', 'header-files', 'static'],
 };
 
 export default lesson;

@@ -2,6 +2,7 @@ const lesson = {
   id: 'mcb-l2',
   title: 'Conditionals & Loops in C',
   module: 'C Basics for Embedded',
+  lessonNumber: 2,
   type: 'theory',
   xpReward: 10,
   content: `
@@ -143,6 +144,13 @@ int led_state = (temperature > 80) ? 1 : 0;
 
 The \`while(1)\` superloop is the heartbeat of embedded firmware. Knowing when to use \`for\`, \`while\`, and \`switch\` efficiently directly impacts your MCU's responsiveness and power consumption.
 `,
+  hints: [
+    'Always add `break` at the end of each `switch` case — omitting it causes fall-through where execution continues into the next case.',
+    'Use `switch` instead of long if-else chains for command decoders and state machines — compilers often turn it into a jump table (O(1) dispatch).',
+    'The embedded superloop pattern is `while(1) { read_sensors(); process(); update_outputs(); }` — the MCU runs this forever after `main()` starts.',
+  ],
+  complexity: null,
+  tags: ['embedded-c', 'c-basics', 'control-flow', 'loops', 'switch', 'superloop'],
 };
 
 export default lesson;

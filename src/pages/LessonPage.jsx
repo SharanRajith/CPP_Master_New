@@ -152,6 +152,7 @@ export default function LessonPage({ progress, completeLesson, unlockHint, saveN
     setLoading(true);
     setLesson(null);
     setMobileTab('lesson');
+    setAttempts(0);
     const meta = allLessons.find(l => l.id === lessonId);
     if (!meta) { setLoading(false); return; }
     meta.file()

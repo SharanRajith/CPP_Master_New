@@ -2,6 +2,7 @@ const lesson = {
   id: 'mcb-l5',
   title: 'Structs & Memory in C',
   module: 'C Basics for Embedded',
+  lessonNumber: 5,
   type: 'theory',
   xpReward: 10,
   content: `
@@ -178,6 +179,13 @@ Enums give names to integer constants — essential for readable state machines.
 
 Structs + enums + typedefs are the backbone of embedded C architecture. When you see a struct pointer with \`->\` in a driver, you now know exactly what's happening. The next modules build directly on this.
 `,
+  hints: [
+    'Use `typedef struct { ... } Name_t;` to avoid writing `struct` every time you declare a variable — the `_t` suffix is the embedded C convention.',
+    'Access struct members through a pointer with `->`: `p->voltage` is shorthand for `(*p).voltage`.',
+    'Add `__attribute__((packed))` to a struct when you need it to match a raw byte layout (e.g. a UART packet) — without it the compiler may add padding bytes for alignment.',
+  ],
+  complexity: null,
+  tags: ['embedded-c', 'c-basics', 'structs', 'memory', 'typedef', 'enum', 'packed'],
 };
 
 export default lesson;
