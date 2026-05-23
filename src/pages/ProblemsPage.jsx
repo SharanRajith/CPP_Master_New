@@ -124,6 +124,30 @@ const PROBLEMS = [
   { id: 'ip-9',   title: 'Maximum Product Subarray',             company: 'Google',    diff: 'Medium', topic: 'DP / Prefix-Suffix',  module: 'Interview Patterns', lessonId: 'm12-l3' },
   { id: 'ip-10',  title: 'Meeting Rooms II',                     company: 'Meta',      diff: 'Medium', topic: 'Sweep Line / Heap',   module: 'Interview Patterns', lessonId: 'm12-l8' },
 
+  // ── Embedded C (Modules 14–15) ── 10 problems ──────────────────────────────
+  { id: 'emb-1',  title: 'Check if a Register Bit is Set',       company: 'Apple',     diff: 'Easy',   topic: 'Bit Masking',          module: 'Embedded C', lessonId: 'm14-l4' },
+  { id: 'emb-2',  title: 'Toggle a GPIO Pin',                    company: 'Microsoft', diff: 'Easy',   topic: 'Bit XOR Masking',      module: 'Embedded C', lessonId: 'm14-l4' },
+  { id: 'emb-3',  title: 'Count Set Bits in a Register',         company: 'Apple',     diff: 'Easy',   topic: 'Bit Counting',         module: 'Embedded C', lessonId: 'm14-l3' },
+  { id: 'emb-4',  title: 'Fixed-Width Integer Overflow Check',   company: 'Amazon',    diff: 'Easy',   topic: 'stdint.h / Overflow',  module: 'Embedded C', lessonId: 'm14-l2' },
+  { id: 'emb-5',  title: 'Memory-Mapped I/O Register Access',    company: 'Apple',     diff: 'Medium', topic: 'volatile keyword',     module: 'Embedded C', lessonId: 'm14-l5' },
+  { id: 'emb-6',  title: 'Implement a Circular (Ring) Buffer',   company: 'Amazon',    diff: 'Medium', topic: 'Ring Buffer',          module: 'Embedded C', lessonId: 'm15-l2' },
+  { id: 'emb-7',  title: 'Design a Finite State Machine',        company: 'Microsoft', diff: 'Medium', topic: 'FSM Pattern',          module: 'Embedded C', lessonId: 'm15-l1' },
+  { id: 'emb-8',  title: 'UART Transmit Buffer Design',          company: 'Apple',     diff: 'Medium', topic: 'UART / Serial',        module: 'Embedded C', lessonId: 'm15-l3' },
+  { id: 'emb-9',  title: 'Interrupt-Driven LED Controller',      company: 'Amazon',    diff: 'Hard',   topic: 'ISR / Interrupts',     module: 'Embedded C', lessonId: 'm15-l4' },
+  { id: 'emb-10', title: 'Memory Footprint Optimization',        company: 'Apple',     diff: 'Hard',   topic: 'Memory Optimization',  module: 'Embedded C', lessonId: 'm15-l6' },
+
+  // ── DBMS / SQL (Modules 16–20) ── 10 problems ──────────────────────────────
+  { id: 'db-1',   title: 'Select All Employees by Department',   company: 'Microsoft', diff: 'Easy',   topic: 'SELECT / WHERE',       module: 'DBMS / SQL', lessonId: 'm17-l2' },
+  { id: 'db-2',   title: 'Sort Products by Price (Top 5)',        company: 'Amazon',    diff: 'Easy',   topic: 'ORDER BY / LIMIT',     module: 'DBMS / SQL', lessonId: 'm17-l3' },
+  { id: 'db-3',   title: 'Count Orders per Customer',            company: 'Amazon',    diff: 'Easy',   topic: 'GROUP BY / COUNT',     module: 'DBMS / SQL', lessonId: 'm17-l4' },
+  { id: 'db-4',   title: 'Find Customers with No Orders',        company: 'Meta',      diff: 'Easy',   topic: 'LEFT JOIN / NULL',     module: 'DBMS / SQL', lessonId: 'm18-l2' },
+  { id: 'db-5',   title: 'Join Orders with Products',            company: 'Microsoft', diff: 'Medium', topic: 'INNER JOIN',           module: 'DBMS / SQL', lessonId: 'm18-l1' },
+  { id: 'db-6',   title: 'Find Second Highest Salary',           company: 'Amazon',    diff: 'Medium', topic: 'Subquery / LIMIT',     module: 'DBMS / SQL', lessonId: 'm18-l3' },
+  { id: 'db-7',   title: 'Normalize a Sales Table to 3NF',       company: 'Google',    diff: 'Medium', topic: 'Normalization / 3NF',  module: 'DBMS / SQL', lessonId: 'm19-l3' },
+  { id: 'db-8',   title: 'Create an Index for Faster Lookup',    company: 'Microsoft', diff: 'Medium', topic: 'Indexing / Views',     module: 'DBMS / SQL', lessonId: 'm18-l4' },
+  { id: 'db-9',   title: 'Implement a Transaction with Rollback',company: 'Amazon',    diff: 'Hard',   topic: 'ACID / Transactions',  module: 'DBMS / SQL', lessonId: 'm20-l1' },
+  { id: 'db-10',  title: 'Query Optimization & Execution Plan',  company: 'Google',    diff: 'Hard',   topic: 'Indexing / Optimization', module: 'DBMS / SQL', lessonId: 'm20-l3' },
+
   // ── FAANG Bank (Module 13) ── 30 problems — sorted Easy → Medium → Hard ───
   // Easy (7)
   { id: 'fb-e1',  title: 'Two Sum',                              company: 'Google',    diff: 'Easy',   topic: 'HashMap',                module: 'FAANG Bank', lessonId: 'm4-l9'  },
@@ -162,7 +186,7 @@ const PROBLEMS = [
   { id: 'fb-h10', title: 'Merge Intervals',                      company: 'Meta',      diff: 'Hard',   topic: 'Sorting + Greedy',       module: 'FAANG Bank', lessonId: 'm13-l7'  },
 ];
 
-const MODULES   = ['All', 'Arrays & Strings', 'Linked Lists', 'Stacks & Queues', 'Trees', 'Heaps', 'Graphs', 'Dynamic Programming', 'Advanced', 'Interview Patterns', 'FAANG Bank'];
+const MODULES   = ['All', 'Arrays & Strings', 'Linked Lists', 'Stacks & Queues', 'Trees', 'Heaps', 'Graphs', 'Dynamic Programming', 'Advanced', 'Interview Patterns', 'Embedded C', 'DBMS / SQL', 'FAANG Bank'];
 const COMPANIES = ['All', 'Google', 'Meta', 'Amazon', 'Microsoft', 'Apple'];
 const DIFFS     = ['All', 'Easy', 'Medium', 'Hard'];
 
@@ -342,7 +366,7 @@ export default function ProblemsPage({ progress }) {
           {[
             { label: 'Total',     value: PROBLEMS.length },
             { label: 'Solved',    value: PROBLEMS.filter(p => solved(p.lessonId)).length },
-            { label: 'Modules',   value: MODULES.length - 1 },
+            { label: 'Modules',  value: MODULES.length - 1 },
             { label: 'Companies', value: 5 },
           ].map((s, i) => (
             <div key={i} className="rounded-xl py-4 text-center"
