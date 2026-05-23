@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Crown, CheckCircle2, Mail, Zap, Lock } from 'lucide-react';
+import { X, Crown, CheckCircle2, Mail, Zap, Lock, BarChart2, Swords, Users, FileText, Headphones, Map } from 'lucide-react';
 
 const FREE_ITEMS = [
   'C++ Fundamentals (14 lessons)',
@@ -9,8 +9,12 @@ const FREE_ITEMS = [
   'Complexity Analysis',
   'Arrays, Strings & Two Pointers',
   'Sorting & Searching',
-  'In-browser C++ compiler',
-  'Streak tracking & XP system',
+  'Embedded C & DBMS tracks',
+  'Algorithm Visualizer (Sort, Trees, Graphs)',
+  'In-browser C++ & C compiler',
+  'Daily coding challenges',
+  'Leaderboard, XP & achievements',
+  'Public comments on every lesson',
 ];
 
 const PREMIUM_ITEMS = [
@@ -20,8 +24,12 @@ const PREMIUM_ITEMS = [
   { text: 'Dynamic Programming (1D → Bitmask)' },
   { text: 'Advanced Algorithms & Segment Trees' },
   { text: 'Interview Patterns & System Design DSA' },
+  { text: 'Mock interview mode — timed & graded', star: true },
+  { text: 'Company-tagged sets: Google · Meta · Amazon', star: true },
   { text: 'FAANG Problem Bank — 15 curated problems', star: true },
+  { text: 'Personalized study roadmap', star: true },
   { text: 'Official completion certificate', star: true },
+  { text: 'Priority support — response within 24 h', star: true },
 ];
 
 export default function PremiumModal({ onClose }) {
@@ -72,7 +80,7 @@ export default function PremiumModal({ onClose }) {
                 </span>
               </h2>
               <p className="text-dark-400 text-sm max-w-md mx-auto">
-                Unlock 7 advanced modules with the exact algorithms and patterns asked at Google, Meta, Amazon, Microsoft &amp; Apple.
+                Unlock 7 advanced modules, mock interviews, company-tagged problem sets, and a personalized roadmap — everything you need to crack top-tier tech interviews.
               </p>
             </div>
           </div>
@@ -150,12 +158,15 @@ export default function PremiumModal({ onClose }) {
           </div>
 
           {/* Stats strip */}
-          <div className="grid grid-cols-3 gap-px mx-6 sm:mx-8 mb-6 rounded-2xl overflow-hidden"
+          <div className="grid grid-cols-3 sm:grid-cols-6 gap-px mx-6 sm:mx-8 mb-6 rounded-2xl overflow-hidden"
             style={{ border: '1px solid rgba(255,255,255,0.05)' }}>
             {[
-              { icon: <Zap size={14} className="text-yellow-400" />, value: '120+', label: 'Lessons' },
-              { icon: <Crown size={14} className="text-yellow-400" />, value: '7', label: 'Premium Modules' },
-              { icon: <Lock size={14} className="text-yellow-400" />, value: '15', label: 'FAANG Problems' },
+              { icon: <Zap size={14} className="text-yellow-400" />,   value: '120+', label: 'Lessons' },
+              { icon: <Crown size={14} className="text-yellow-400" />, value: '7',    label: 'Premium Modules' },
+              { icon: <Lock size={14} className="text-yellow-400" />,  value: '15',   label: 'FAANG Problems' },
+              { icon: <Swords size={14} className="text-yellow-400" />,value: '∞',    label: 'Daily Challenges' },
+              { icon: <FileText size={14} className="text-yellow-400" />, value: '1', label: 'Certificate' },
+              { icon: <Headphones size={14} className="text-yellow-400" />, value: '24h', label: 'Support' },
             ].map((s, i) => (
               <div key={i} className="flex flex-col items-center gap-1 py-3 text-center"
                 style={{ background: 'rgba(255,255,255,0.02)' }}>
