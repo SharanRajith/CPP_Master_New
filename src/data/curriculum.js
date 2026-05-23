@@ -306,6 +306,26 @@ export const CURRICULUM = [
       { id: 'm15-l10',title: 'Bootloader Basics',              file: () => import('./lessons/module15/lesson10.js') },
     ],
   },
+  {
+    id: 'module-eciq',
+    title: 'Embedded C Interview Questions',
+    level: 'Embedded',
+    track: 'embedded',
+    color: '#f59e0b',
+    icon: '🎯',
+    lessons: [
+      { id: 'meciq-l1',  title: 'volatile & const volatile — Interview Deep Dive',  file: () => import('./lessons/moduleECIQ/lesson1.js')  },
+      { id: 'meciq-l2',  title: 'Bit Manipulation — Must-Know Interview Macros',    file: () => import('./lessons/moduleECIQ/lesson2.js')  },
+      { id: 'meciq-l3',  title: 'Memory Segments — Stack, Heap, BSS, Data, Text',  file: () => import('./lessons/moduleECIQ/lesson3.js')  },
+      { id: 'meciq-l4',  title: 'ISR Design — The 5 Golden Rules',                 file: () => import('./lessons/moduleECIQ/lesson4.js')  },
+      { id: 'meciq-l5',  title: 'Endianness — Detection, Swapping & Safe Casting', file: () => import('./lessons/moduleECIQ/lesson5.js')  },
+      { id: 'meciq-l6',  title: 'Struct Padding, Alignment & Bit Fields',          file: () => import('./lessons/moduleECIQ/lesson6.js')  },
+      { id: 'meciq-l7',  title: 'Function Pointers, Callbacks & State Machines',   file: () => import('./lessons/moduleECIQ/lesson7.js')  },
+      { id: 'meciq-l8',  title: 'Memory-Mapped I/O & Register Access Patterns',    file: () => import('./lessons/moduleECIQ/lesson8.js')  },
+      { id: 'meciq-l9',  title: 'DMA vs Interrupts vs Polling — When to Use Each', file: () => import('./lessons/moduleECIQ/lesson9.js')  },
+      { id: 'meciq-l10', title: 'RTOS — Mutex, Semaphore & Priority Inversion',    file: () => import('./lessons/moduleECIQ/lesson10.js') },
+    ],
+  },
   // ── DBMS Track ───────────────────────────────────────────────────────────────
   {
     id: 'module-16',
