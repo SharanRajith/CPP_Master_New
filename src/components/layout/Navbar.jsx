@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Settings, LogOut, Flame, Trophy, Home, Menu, ChevronRight, Zap, Medal, Shield, Crown, Search, User, GitBranch, Swords, BookOpen, Headphones } from 'lucide-react';
+import { Settings, LogOut, Flame, Trophy, Home, Menu, ChevronRight, Zap, Medal, Shield, Crown, Search, User, GitBranch, Swords, BookOpen, Headphones, Compass } from 'lucide-react';
 import { LEVELS } from '../../hooks/useProgress';
 
 export default function Navbar({ xp, level, streak, currentUser, isAdmin, isPremium, onOpenSettings, onOpenPremium, onOpenSupport, onOpenSearch, onLogout, onToggleSidebar }) {
@@ -12,7 +12,8 @@ export default function Navbar({ xp, level, streak, currentUser, isAdmin, isPrem
   const xpInLevel     = nextLevel ? xp - levelInfo.minXP : 0;
   const xpNeeded      = nextLevel ? nextLevel.minXP - levelInfo.minXP : 1;
   const pct           = nextLevel ? Math.min((xpInLevel / xpNeeded) * 100, 100) : 100;
-  const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showUserMenu,    setShowUserMenu]    = useState(false);
+  const [showExploreMenu, setShowExploreMenu] = useState(false);
 
   const avatarFallback = (currentUser?.displayName || 'U').charAt(0).toUpperCase();
 
@@ -117,15 +118,61 @@ export default function Navbar({ xp, level, streak, currentUser, isAdmin, isPrem
         <Link id="nav-leaderboard" to="/leaderboard" className="p-2 rounded-lg text-dark-300 hover:text-white hover:bg-dark-700 transition-all" title="Leaderboard">
           <Medal size={17} />
         </Link>
-        <Link to="/visualizer" className="p-2 rounded-lg text-dark-300 hover:text-white hover:bg-dark-700 transition-all" title="Algorithm Visualizer">
-          <GitBranch size={17} />
-        </Link>
-        <Link to="/problems" className="p-2 rounded-lg text-dark-300 hover:text-white hover:bg-dark-700 transition-all" title="FAANG Problem Sets">
-          <BookOpen size={17} />
-        </Link>
-        <Link to="/interview" className="p-2 rounded-lg text-dark-300 hover:text-white hover:bg-dark-700 transition-all" title="Mock Interview">
-          <Swords size={17} />
-        </Link>
+        {/* Explore dropdown */}
+        <div className="relative">
+          <button
+            onClick={() => setShowExploreMenu(v => !v)}
+            className="p-2 rounded-lg text-dark-300 hover:text-white hover:bg-dark-700 transition-all"
+            title="Explore features"
+          >
+            <Compass size={17} />
+          </button>
+          <AnimatePresence>
+            {showExploreMenu && (
+              <>
+                <div className="fixed inset-0 z-30" onClick={() => setShowExploreMenu(false)} />
+                <motion.div
+                  initial={{ opacity: 0, y: -8, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -8, scale: 0.95 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute right-0 top-full mt-2 w-52 rounded-xl shadow-2xl z-40 overflow-hidden"
+                  style={{
+                    background: 'rgba(20,18,48,0.97)',
+                    backdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(99,102,241,0.2)',
+                    boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
+                  }}
+                >
+                  <div className="p-1.5">
+                    {[
+                      { to: '/visualizer', icon: <GitBranch size={14} className="text-indigo-400" />, label: 'Algorithm Visualizer', sub: 'Sorting, Trees, Graphs' },
+                      { to: '/problems',   icon: <BookOpen  size={14} className="text-emerald-400" />, label: 'FAANG Problems',        sub: '15 company-tagged sets' },
+                      { to: '/interview',  icon: <Swords    size={14} className="text-yellow-400" />,  label: 'Mock Interview',         sub: '10 questions · timed' },
+                    ].map(item => (
+                      <Link
+                        key={item.to}
+                        to={item.to}
+                        onClick={() => setShowExploreMenu(false)}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-dark-700 transition-all group"
+                      >
+                        <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+                          style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                          {item.icon}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-white leading-none">{item.label}</p>
+                          <p className="text-[10px] text-dark-400 mt-0.5">{item.sub}</p>
+                        </div>
+                        <ChevronRight size={12} className="ml-auto text-dark-500 group-hover:text-dark-300 shrink-0" />
+                      </Link>
+                    ))}
+                  </div>
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>
+        </div>
         {isAdmin && (
           <Link id="nav-admin" to="/admin" className="p-2 rounded-lg text-indigo-400 hover:text-indigo-300 hover:bg-indigo-900/30 transition-all" title="Admin Panel">
             <Shield size={17} />
