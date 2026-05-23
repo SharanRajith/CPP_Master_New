@@ -7,7 +7,7 @@ import { auth, db } from '../lib/firebase';
 import { CURRICULUM } from '../data/curriculum';
 import { LEVELS } from '../hooks/useProgress';
 import { ACHIEVEMENTS, getEarnedAchievements } from '../config/achievements';
-import { Flame, Zap, BookOpen, Copy, Check, Calendar, Clock, Camera, Loader2, Mail, Pencil, X } from 'lucide-react';
+import { Flame, Zap, BookOpen, Copy, Check, Calendar, Clock, Camera, Loader2, Mail, Pencil, X, Trash2 } from 'lucide-react';
 
 function formatJoinDate(ts) {
   if (!ts) return null;
@@ -101,6 +101,21 @@ export default function ProfilePage({ currentUser, progress: ownProgress, onProf
     } finally {
       setUploading(false);
       e.target.value = '';
+    }
+  }
+
+  async function handleDeleteAvatar() {
+    setUploading(true);
+    setUploadError('');
+    try {
+      await setDoc(doc(db, 'users', currentUser.uid), { photoURL: null }, { merge: true });
+      try { await updateProfile(auth.currentUser, { photoURL: null }); } catch (_) {}
+      setAvatarPreview(null);
+      onProfileUpdate?.();
+    } catch (err) {
+      setUploadError('Delete failed. Please try again.');
+    } finally {
+      setUploading(false);
     }
   }
 
@@ -217,19 +232,27 @@ export default function ProfilePage({ currentUser, progress: ownProgress, onProf
                   {/* Camera overlay — own profile only */}
                   {isOwn && (
                     <>
-                      {/* Hover overlay (desktop) */}
-                      <button
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={uploading}
-                        className="absolute inset-0 rounded-2xl items-center justify-center transition-all hidden md:flex opacity-0 group-hover:opacity-100"
+                      {/* Hover overlay (desktop) — upload + delete */}
+                      <div
+                        className="absolute inset-0 rounded-2xl items-center justify-center gap-3 transition-all hidden md:flex opacity-0 group-hover:opacity-100"
                         style={{ background: 'rgba(0,0,0,0.55)' }}
-                        title="Change profile photo"
                       >
-                        {uploading
-                          ? <Loader2 size={22} className="text-white animate-spin" />
-                          : <Camera size={22} className="text-white" />}
-                      </button>
-                      {/* Always-visible badge (mobile) */}
+                        {uploading ? (
+                          <Loader2 size={22} className="text-white animate-spin" />
+                        ) : (
+                          <>
+                            <button onClick={() => fileInputRef.current?.click()} title="Change photo">
+                              <Camera size={20} className="text-white hover:text-indigo-300 transition-colors" />
+                            </button>
+                            {(avatarPreview || photoURL) && (
+                              <button onClick={handleDeleteAvatar} title="Remove photo">
+                                <Trash2 size={20} className="text-red-400 hover:text-red-300 transition-colors" />
+                              </button>
+                            )}
+                          </>
+                        )}
+                      </div>
+                      {/* Always-visible camera badge (mobile) */}
                       <button
                         onClick={() => fileInputRef.current?.click()}
                         disabled={uploading}
@@ -241,6 +264,18 @@ export default function ProfilePage({ currentUser, progress: ownProgress, onProf
                           ? <Loader2 size={12} className="text-white animate-spin" />
                           : <Camera size={12} className="text-white" />}
                       </button>
+                      {/* Delete badge (mobile) — only when photo exists */}
+                      {(avatarPreview || photoURL) && (
+                        <button
+                          onClick={handleDeleteAvatar}
+                          disabled={uploading}
+                          className="md:hidden absolute -bottom-1 -left-1 w-7 h-7 rounded-full flex items-center justify-center shadow-lg z-10"
+                          style={{ background: '#dc2626', border: '2px solid #0e0e1a' }}
+                          title="Remove photo"
+                        >
+                          <Trash2 size={12} className="text-white" />
+                        </button>
+                      )}
                     </>
                   )}
 
