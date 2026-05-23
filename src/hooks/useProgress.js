@@ -19,21 +19,28 @@ export function useProgress(user) {
         const docRef = doc(db, 'users', user.uid);
         const docSnap = await getDoc(docRef);
         
-        const userMeta = {
-          displayName: user.displayName || 'Anonymous',
-          photoURL:    user.photoURL    || '',
-          email:       user.email       || '',
-        };
         let data;
         if (docSnap.exists()) {
-          const patch = { ...userMeta };
-          if (!docSnap.data().joinedAt) patch.joinedAt = serverTimestamp();
+          const firestoreData = docSnap.data();
+          // Don't overwrite photoURL if Firestore already has one (e.g. base64 from profile upload)
+          const patch = {
+            displayName: user.displayName || 'Anonymous',
+            email:       user.email       || '',
+            ...(firestoreData.photoURL ? {} : { photoURL: user.photoURL || '' }),
+          };
+          if (!firestoreData.joinedAt) patch.joinedAt = serverTimestamp();
           await setDoc(docRef, patch, { merge: true });
-          data = { ...docSnap.data(), ...patch };
+          data = { ...firestoreData, ...patch };
         } else {
-          // Attempt migration from local legacy data
+          // New user — attempt migration from local legacy data
           const legacyRaw = localStorage.getItem('cpp_dsa_progress');
-          data = { ...(legacyRaw ? JSON.parse(legacyRaw) : getDefaultProgress()), ...userMeta, joinedAt: serverTimestamp() };
+          data = {
+            ...(legacyRaw ? JSON.parse(legacyRaw) : getDefaultProgress()),
+            displayName: user.displayName || 'Anonymous',
+            photoURL:    user.photoURL    || '',
+            email:       user.email       || '',
+            joinedAt:    serverTimestamp(),
+          };
           await setDoc(docRef, data);
         }
 
