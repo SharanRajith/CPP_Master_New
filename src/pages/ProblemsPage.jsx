@@ -16,75 +16,113 @@ const DIFF_BG    = { Easy: 'rgba(52,211,153,0.1)', Medium: 'rgba(245,158,11,0.1)
 const DIFF_ORDER = { Easy: 0, Medium: 1, Hard: 2 };
 
 const PROBLEMS = [
-  // ── Arrays & Strings (Module 4) ── 8 problems ─────────────────────────────
+  // ── Arrays & Strings (Module 4) ── 10 problems ────────────────────────────
   { id: 'arr-1',  title: 'Two Sum',                              company: 'Google',    diff: 'Easy',   topic: 'HashMap',             module: 'Arrays & Strings', lessonId: 'm4-l9'  },
   { id: 'arr-2',  title: 'Best Time to Buy and Sell Stock',      company: 'Amazon',    diff: 'Easy',   topic: 'Greedy',              module: 'Arrays & Strings', lessonId: 'm4-l10' },
+  { id: 'arr-9',  title: 'Valid Anagram',                        company: 'Amazon',    diff: 'Easy',   topic: 'HashMap / Sorting',   module: 'Arrays & Strings', lessonId: 'm4-l8'  },
   { id: 'arr-3',  title: 'Container With Most Water',            company: 'Google',    diff: 'Medium', topic: 'Two Pointers',        module: 'Arrays & Strings', lessonId: 'm4-l1'  },
   { id: 'arr-4',  title: 'Longest Substring Without Repeating',  company: 'Meta',      diff: 'Medium', topic: 'Sliding Window',      module: 'Arrays & Strings', lessonId: 'm4-l2'  },
   { id: 'arr-5',  title: 'Maximum Subarray',                     company: 'Amazon',    diff: 'Medium', topic: "Kadane's Algorithm",  module: 'Arrays & Strings', lessonId: 'm4-l5'  },
   { id: 'arr-6',  title: 'Subarray Sum Equals K',                company: 'Meta',      diff: 'Medium', topic: 'Prefix Sums',         module: 'Arrays & Strings', lessonId: 'm4-l3'  },
   { id: 'arr-7',  title: 'Search in Rotated Sorted Array',       company: 'Microsoft', diff: 'Medium', topic: 'Binary Search',       module: 'Arrays & Strings', lessonId: 'm4-l4'  },
   { id: 'arr-8',  title: 'Rotate Image (90°)',                   company: 'Google',    diff: 'Medium', topic: 'Matrix Simulation',   module: 'Arrays & Strings', lessonId: 'm4-l7'  },
+  { id: 'arr-10', title: 'Jump Game',                            company: 'Google',    diff: 'Medium', topic: 'Greedy',              module: 'Arrays & Strings', lessonId: 'm4-l10' },
 
-  // ── Linked Lists (Module 5) ── 6 problems ──────────────────────────────────
+  // ── Linked Lists (Module 5) ── 10 problems ─────────────────────────────────
   { id: 'll-1',   title: 'Reverse Linked List',                  company: 'Amazon',    diff: 'Easy',   topic: 'Linked List',          module: 'Linked Lists', lessonId: 'm5-l2'  },
   { id: 'll-2',   title: 'Detect Cycle in Linked List',          company: 'Google',    diff: 'Easy',   topic: 'Fast & Slow Pointers', module: 'Linked Lists', lessonId: 'm5-l3'  },
   { id: 'll-3',   title: 'Merge Two Sorted Lists',               company: 'Meta',      diff: 'Easy',   topic: 'Linked List',          module: 'Linked Lists', lessonId: 'm5-l4'  },
+  { id: 'll-7',   title: 'Middle of the Linked List',            company: 'Amazon',    diff: 'Easy',   topic: 'Fast & Slow Pointers', module: 'Linked Lists', lessonId: 'm5-l3'  },
+  { id: 'll-8',   title: 'Palindrome Linked List',               company: 'Meta',      diff: 'Easy',   topic: 'Two Pointers + Stack', module: 'Linked Lists', lessonId: 'm5-l9'  },
   { id: 'll-4',   title: 'Remove Nth Node From End',             company: 'Amazon',    diff: 'Medium', topic: 'Two Pointers',         module: 'Linked Lists', lessonId: 'm5-l5'  },
+  { id: 'll-9',   title: 'Copy List with Random Pointer',        company: 'Meta',      diff: 'Medium', topic: 'HashMap / Deep Copy',  module: 'Linked Lists', lessonId: 'm5-l9'  },
+  { id: 'll-10',  title: 'Sort List',                            company: 'Amazon',    diff: 'Medium', topic: 'Merge Sort on List',   module: 'Linked Lists', lessonId: 'm5-l4'  },
   { id: 'll-5',   title: 'Reorder List',                         company: 'Microsoft', diff: 'Medium', topic: 'Linked List',          module: 'Linked Lists', lessonId: 'm5-l8'  },
   { id: 'll-6',   title: 'Add Two Numbers',                      company: 'Meta',      diff: 'Medium', topic: 'Linked List',          module: 'Linked Lists', lessonId: 'm5-l10' },
 
-  // ── Stacks & Queues (Module 6) ── 6 problems ───────────────────────────────
+  // ── Stacks & Queues (Module 6) ── 10 problems ──────────────────────────────
   { id: 'sq-1',   title: 'Valid Parentheses',                    company: 'Meta',      diff: 'Easy',   topic: 'Stack',               module: 'Stacks & Queues', lessonId: 'm6-l4'  },
   { id: 'sq-2',   title: 'Min Stack',                            company: 'Amazon',    diff: 'Easy',   topic: 'Stack',               module: 'Stacks & Queues', lessonId: 'm6-l7'  },
   { id: 'sq-3',   title: 'Next Greater Element',                 company: 'Google',    diff: 'Easy',   topic: 'Monotonic Stack',     module: 'Stacks & Queues', lessonId: 'm6-l5'  },
+  { id: 'sq-7',   title: 'Baseball Game',                        company: 'Amazon',    diff: 'Easy',   topic: 'Stack Simulation',    module: 'Stacks & Queues', lessonId: 'm6-l1'  },
   { id: 'sq-4',   title: 'Daily Temperatures',                   company: 'Amazon',    diff: 'Medium', topic: 'Monotonic Stack',     module: 'Stacks & Queues', lessonId: 'm6-l10' },
+  { id: 'sq-8',   title: 'Implement Queue using Two Stacks',     company: 'Amazon',    diff: 'Easy',   topic: 'Stack + Queue',       module: 'Stacks & Queues', lessonId: 'm6-l6'  },
   { id: 'sq-5',   title: 'Evaluate Reverse Polish Notation',     company: 'Amazon',    diff: 'Medium', topic: 'Stack',               module: 'Stacks & Queues', lessonId: 'm6-l11' },
+  { id: 'sq-9',   title: 'Decode String',                        company: 'Google',    diff: 'Medium', topic: 'Stack + Recursion',   module: 'Stacks & Queues', lessonId: 'm6-l12' },
+  { id: 'sq-10',  title: 'Car Fleet',                            company: 'Google',    diff: 'Medium', topic: 'Monotonic Stack',     module: 'Stacks & Queues', lessonId: 'm6-l3'  },
   { id: 'sq-6',   title: 'Largest Rectangle in Histogram',       company: 'Google',    diff: 'Hard',   topic: 'Monotonic Stack',     module: 'Stacks & Queues', lessonId: 'm6-l9'  },
 
-  // ── Trees (Module 7) ── 6 problems ─────────────────────────────────────────
-  { id: 'tr-1',   title: 'Maximum Depth of Binary Tree',         company: 'Amazon',    diff: 'Easy',   topic: 'DFS / BFS',           module: 'Trees', lessonId: 'm7-l1'  },
-  { id: 'tr-2',   title: 'Balanced Binary Tree',                 company: 'Google',    diff: 'Easy',   topic: 'Tree DFS',            module: 'Trees', lessonId: 'm7-l5'  },
-  { id: 'tr-3',   title: 'Validate Binary Search Tree',          company: 'Microsoft', diff: 'Medium', topic: 'BST',                 module: 'Trees', lessonId: 'm7-l2'  },
-  { id: 'tr-4',   title: 'Lowest Common Ancestor of BST',        company: 'Meta',      diff: 'Medium', topic: 'Tree DFS',            module: 'Trees', lessonId: 'm7-l4'  },
-  { id: 'tr-5',   title: 'Implement Trie (Prefix Tree)',         company: 'Microsoft', diff: 'Medium', topic: 'Trie',                module: 'Trees', lessonId: 'm7-l7'  },
-  { id: 'tr-6',   title: 'Serialize & Deserialize Binary Tree',  company: 'Google',    diff: 'Hard',   topic: 'Tree BFS',            module: 'Trees', lessonId: 'm7-l6'  },
+  // ── Trees (Module 7) ── 10 problems ────────────────────────────────────────
+  { id: 'tr-1',   title: 'Maximum Depth of Binary Tree',         company: 'Amazon',    diff: 'Easy',   topic: 'DFS / BFS',            module: 'Trees', lessonId: 'm7-l1'  },
+  { id: 'tr-2',   title: 'Balanced Binary Tree',                 company: 'Google',    diff: 'Easy',   topic: 'Tree DFS',             module: 'Trees', lessonId: 'm7-l5'  },
+  { id: 'tr-7',   title: 'Binary Tree Inorder Traversal',        company: 'Microsoft', diff: 'Easy',   topic: 'DFS Iterative',        module: 'Trees', lessonId: 'm7-l1'  },
+  { id: 'tr-8',   title: 'Symmetric Tree',                       company: 'Amazon',    diff: 'Easy',   topic: 'Tree BFS / DFS',       module: 'Trees', lessonId: 'm7-l1'  },
+  { id: 'tr-3',   title: 'Validate Binary Search Tree',          company: 'Microsoft', diff: 'Medium', topic: 'BST',                  module: 'Trees', lessonId: 'm7-l2'  },
+  { id: 'tr-4',   title: 'Lowest Common Ancestor of BST',        company: 'Meta',      diff: 'Medium', topic: 'Tree DFS',             module: 'Trees', lessonId: 'm7-l4'  },
+  { id: 'tr-9',   title: 'Kth Smallest Element in BST',          company: 'Amazon',    diff: 'Medium', topic: 'BST Inorder',          module: 'Trees', lessonId: 'm7-l2'  },
+  { id: 'tr-10',  title: 'Construct BT from Preorder & Inorder', company: 'Meta',      diff: 'Medium', topic: 'Divide & Conquer',     module: 'Trees', lessonId: 'm7-l1'  },
+  { id: 'tr-5',   title: 'Implement Trie (Prefix Tree)',         company: 'Microsoft', diff: 'Medium', topic: 'Trie',                 module: 'Trees', lessonId: 'm7-l7'  },
+  { id: 'tr-6',   title: 'Serialize & Deserialize Binary Tree',  company: 'Google',    diff: 'Hard',   topic: 'Tree BFS',             module: 'Trees', lessonId: 'm7-l6'  },
 
-  // ── Heaps (Module 8) ── 5 problems ─────────────────────────────────────────
+  // ── Heaps (Module 8) ── 10 problems ────────────────────────────────────────
+  { id: 'hp-6',   title: 'Last Stone Weight',                    company: 'Amazon',    diff: 'Easy',   topic: 'Max-Heap',            module: 'Heaps', lessonId: 'm8-l1'  },
   { id: 'hp-1',   title: 'Kth Largest Element in Array',         company: 'Amazon',    diff: 'Medium', topic: 'Min-Heap',            module: 'Heaps', lessonId: 'm8-l3'  },
   { id: 'hp-2',   title: 'Top K Frequent Elements',              company: 'Google',    diff: 'Medium', topic: 'Max-Heap / Bucket',   module: 'Heaps', lessonId: 'm8-l6'  },
+  { id: 'hp-7',   title: 'K Closest Points to Origin',           company: 'Amazon',    diff: 'Medium', topic: 'Min-Heap',            module: 'Heaps', lessonId: 'm8-l8'  },
+  { id: 'hp-8',   title: 'Kth Smallest in Sorted Matrix',        company: 'Google',    diff: 'Medium', topic: 'Min-Heap / Binary Search', module: 'Heaps', lessonId: 'm8-l3' },
+  { id: 'hp-9',   title: 'Reorganize String',                    company: 'Google',    diff: 'Medium', topic: 'Max-Heap + Greedy',   module: 'Heaps', lessonId: 'm8-l10' },
   { id: 'hp-3',   title: 'Task Scheduler',                       company: 'Meta',      diff: 'Medium', topic: 'Greedy + Heap',       module: 'Heaps', lessonId: 'm8-l9'  },
+  { id: 'hp-10',  title: 'Sliding Window Maximum',               company: 'Amazon',    diff: 'Hard',   topic: 'Deque / Monotonic',   module: 'Heaps', lessonId: 'm8-l5'  },
   { id: 'hp-4',   title: 'Merge K Sorted Lists',                 company: 'Amazon',    diff: 'Hard',   topic: 'Min-Heap',            module: 'Heaps', lessonId: 'm8-l4'  },
   { id: 'hp-5',   title: 'Find Median from Data Stream',         company: 'Google',    diff: 'Hard',   topic: 'Two Heaps',           module: 'Heaps', lessonId: 'm8-l7'  },
 
-  // ── Graphs (Module 9) ── 6 problems ────────────────────────────────────────
+  // ── Graphs (Module 9) ── 10 problems ───────────────────────────────────────
+  { id: 'gr-7',   title: 'Find if Path Exists in Graph',         company: 'Amazon',    diff: 'Easy',   topic: 'BFS / Union-Find',    module: 'Graphs', lessonId: 'm9-l1'  },
+  { id: 'gr-8',   title: 'Flood Fill',                           company: 'Amazon',    diff: 'Easy',   topic: 'DFS',                 module: 'Graphs', lessonId: 'm9-l11' },
   { id: 'gr-1',   title: 'Clone Graph',                          company: 'Meta',      diff: 'Medium', topic: 'BFS',                 module: 'Graphs', lessonId: 'm9-l1'  },
   { id: 'gr-2',   title: 'Number of Islands',                    company: 'Amazon',    diff: 'Medium', topic: 'DFS / BFS',           module: 'Graphs', lessonId: 'm9-l11' },
   { id: 'gr-3',   title: 'Pacific Atlantic Water Flow',           company: 'Google',    diff: 'Medium', topic: 'Multi-source DFS',    module: 'Graphs', lessonId: 'm9-l2'  },
   { id: 'gr-4',   title: 'Network Delay Time',                   company: 'Amazon',    diff: 'Medium', topic: "Dijkstra's",          module: 'Graphs', lessonId: 'm9-l6'  },
   { id: 'gr-5',   title: 'Bipartite Graph Check',                company: 'Microsoft', diff: 'Medium', topic: 'BFS Coloring',        module: 'Graphs', lessonId: 'm9-l10' },
+  { id: 'gr-9',   title: 'Course Schedule II',                   company: 'Microsoft', diff: 'Medium', topic: 'Topological Sort',    module: 'Graphs', lessonId: 'm9-l5'  },
+  { id: 'gr-10',  title: 'Surrounded Regions',                   company: 'Google',    diff: 'Medium', topic: 'DFS from Border',     module: 'Graphs', lessonId: 'm9-l2'  },
   { id: 'gr-6',   title: "Minimum Spanning Tree (Kruskal's)",    company: 'Google',    diff: 'Hard',   topic: 'MST / Union-Find',    module: 'Graphs', lessonId: 'm9-l8'  },
 
-  // ── Dynamic Programming (Module 10) ── 6 problems ──────────────────────────
+  // ── Dynamic Programming (Module 10) ── 10 problems ─────────────────────────
+  { id: 'dp-7',   title: 'Fibonacci Number',                     company: 'Amazon',    diff: 'Easy',   topic: 'Memoization',         module: 'Dynamic Programming', lessonId: 'm10-l1' },
   { id: 'dp-1',   title: 'Climbing Stairs',                      company: 'Amazon',    diff: 'Easy',   topic: '1D DP',               module: 'Dynamic Programming', lessonId: 'm10-l2' },
+  { id: 'dp-8',   title: 'Min Cost Climbing Stairs',             company: 'Amazon',    diff: 'Easy',   topic: '1D DP',               module: 'Dynamic Programming', lessonId: 'm10-l2' },
   { id: 'dp-2',   title: 'House Robber',                         company: 'Google',    diff: 'Medium', topic: '1D DP',               module: 'Dynamic Programming', lessonId: 'm10-l3' },
   { id: 'dp-3',   title: 'Unique Paths',                         company: 'Microsoft', diff: 'Medium', topic: '2D DP',               module: 'Dynamic Programming', lessonId: 'm10-l4' },
   { id: 'dp-4',   title: 'Longest Common Subsequence',           company: 'Google',    diff: 'Medium', topic: '2D DP',               module: 'Dynamic Programming', lessonId: 'm10-l6' },
   { id: 'dp-5',   title: 'Longest Increasing Subsequence',       company: 'Microsoft', diff: 'Medium', topic: 'DP + Binary Search',  module: 'Dynamic Programming', lessonId: 'm10-l7' },
+  { id: 'dp-9',   title: 'Coin Change II (Count Ways)',          company: 'Google',    diff: 'Medium', topic: 'Unbounded Knapsack',  module: 'Dynamic Programming', lessonId: 'm10-l5' },
   { id: 'dp-6',   title: 'Partition Equal Subset Sum',           company: 'Amazon',    diff: 'Hard',   topic: '0/1 Knapsack',        module: 'Dynamic Programming', lessonId: 'm10-l5' },
+  { id: 'dp-10',  title: 'Edit Distance',                        company: 'Microsoft', diff: 'Hard',   topic: '2D DP',               module: 'Dynamic Programming', lessonId: 'm10-l6' },
 
-  // ── Advanced Topics (Module 11) ── 4 problems ──────────────────────────────
-  { id: 'adv-1',  title: 'Single Number (Bit Manipulation)',     company: 'Amazon',    diff: 'Easy',   topic: 'Bit XOR',             module: 'Advanced', lessonId: 'm11-l2' },
+  // ── Advanced Topics (Module 11) ── 10 problems ─────────────────────────────
+  { id: 'adv-5',  title: 'Number of 1 Bits',                     company: 'Amazon',    diff: 'Easy',   topic: 'Bit Counting',        module: 'Advanced', lessonId: 'm11-l1' },
+  { id: 'adv-1',  title: 'Single Number',                        company: 'Amazon',    diff: 'Easy',   topic: 'Bit XOR',             module: 'Advanced', lessonId: 'm11-l2' },
+  { id: 'adv-6',  title: 'Missing Number',                       company: 'Amazon',    diff: 'Easy',   topic: 'Bit XOR / Math',      module: 'Advanced', lessonId: 'm11-l2' },
+  { id: 'adv-7',  title: 'Reverse Bits',                         company: 'Apple',     diff: 'Easy',   topic: 'Bit Manipulation',    module: 'Advanced', lessonId: 'm11-l1' },
   { id: 'adv-2',  title: 'Merge Intervals',                      company: 'Meta',      diff: 'Medium', topic: 'Intervals + Sort',    module: 'Advanced', lessonId: 'm11-l4' },
+  { id: 'adv-8',  title: 'Insert Interval',                      company: 'Google',    diff: 'Medium', topic: 'Intervals',           module: 'Advanced', lessonId: 'm11-l4' },
+  { id: 'adv-9',  title: 'Sum of Two Integers',                  company: 'Meta',      diff: 'Medium', topic: 'Bit Manipulation',    module: 'Advanced', lessonId: 'm11-l1' },
+  { id: 'adv-10', title: 'Counting Bits',                        company: 'Google',    diff: 'Easy',   topic: 'DP + Bits',           module: 'Advanced', lessonId: 'm11-l1' },
   { id: 'adv-3',  title: 'Word Ladder',                          company: 'Google',    diff: 'Hard',   topic: 'BFS Shortest Path',   module: 'Advanced', lessonId: 'm11-l3' },
   { id: 'adv-4',  title: "Tarjan's Bridge Finding",              company: 'Google',    diff: 'Hard',   topic: 'DFS / SCC',           module: 'Advanced', lessonId: 'm11-l7' },
 
-  // ── Interview Patterns (Module 12) ── 5 problems ────────────────────────────
+  // ── Interview Patterns (Module 12) ── 10 problems ──────────────────────────
   { id: 'ip-1',   title: 'Valid Palindrome',                     company: 'Meta',      diff: 'Easy',   topic: 'Two Pointers',        module: 'Interview Patterns', lessonId: 'm12-l1' },
   { id: 'ip-2',   title: 'Linked List Cycle II',                 company: 'Amazon',    diff: 'Medium', topic: 'Fast & Slow',         module: 'Interview Patterns', lessonId: 'm12-l2' },
+  { id: 'ip-6',   title: 'Find the Duplicate Number',            company: 'Amazon',    diff: 'Medium', topic: 'Fast & Slow / Bits',  module: 'Interview Patterns', lessonId: 'm12-l2' },
   { id: 'ip-3',   title: 'Longest Repeating Char Replacement',   company: 'Google',    diff: 'Medium', topic: 'Sliding Window',      module: 'Interview Patterns', lessonId: 'm12-l3' },
+  { id: 'ip-7',   title: 'Permutation in String',                company: 'Meta',      diff: 'Medium', topic: 'Sliding Window',      module: 'Interview Patterns', lessonId: 'm12-l3' },
   { id: 'ip-4',   title: 'Subarray Sum Equals K (Pattern)',      company: 'Meta',      diff: 'Medium', topic: 'Prefix Sum Map',      module: 'Interview Patterns', lessonId: 'm12-l4' },
   { id: 'ip-5',   title: 'Koko Eating Bananas',                  company: 'Amazon',    diff: 'Medium', topic: 'Binary Search',       module: 'Interview Patterns', lessonId: 'm12-l5' },
+  { id: 'ip-8',   title: 'Minimum in Rotated Sorted Array',      company: 'Microsoft', diff: 'Medium', topic: 'Binary Search',       module: 'Interview Patterns', lessonId: 'm12-l5' },
+  { id: 'ip-9',   title: 'Maximum Product Subarray',             company: 'Google',    diff: 'Medium', topic: 'DP / Prefix-Suffix',  module: 'Interview Patterns', lessonId: 'm12-l3' },
+  { id: 'ip-10',  title: 'Meeting Rooms II',                     company: 'Meta',      diff: 'Medium', topic: 'Sweep Line / Heap',   module: 'Interview Patterns', lessonId: 'm12-l8' },
 
   // ── FAANG Bank (Module 13) ── 30 problems — sorted Easy → Medium → Hard ───
   // Easy (7)
