@@ -9,16 +9,19 @@ const MEDAL = ['🥇', '🥈', '🥉'];
 
 function Avatar({ photoURL, displayName, size = 9 }) {
   const initial = (displayName || 'U').charAt(0).toUpperCase();
+  const px = size * 4;
+  const sizeStyle = { width: px, height: px };
   return photoURL ? (
     <img
       src={photoURL}
       alt={displayName}
-      className={`w-${size} h-${size} rounded-full object-cover ring-2 ring-dark-600`}
+      className="rounded-full object-cover ring-2 ring-dark-600"
+      style={sizeStyle}
     />
   ) : (
     <div
-      className={`w-${size} h-${size} rounded-full flex items-center justify-center text-sm font-bold text-white ring-2 ring-dark-600`}
-      style={{ background: 'linear-gradient(135deg,#4f46e5,#7c3aed)' }}
+      className="rounded-full flex items-center justify-center text-sm font-bold text-white ring-2 ring-dark-600"
+      style={{ ...sizeStyle, background: 'linear-gradient(135deg,#4f46e5,#7c3aed)' }}
     >
       {initial}
     </div>

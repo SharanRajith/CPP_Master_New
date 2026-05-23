@@ -33,8 +33,10 @@ export function useProgress(user) {
         } else {
           // New user — attempt migration from local legacy data
           const legacyRaw = localStorage.getItem('cpp_dsa_progress');
+          let legacyData = getDefaultProgress();
+          if (legacyRaw) { try { legacyData = JSON.parse(legacyRaw); } catch (_) {} }
           data = {
-            ...(legacyRaw ? JSON.parse(legacyRaw) : getDefaultProgress()),
+            ...legacyData,
             displayName: user.displayName || 'Anonymous',
             photoURL:    user.photoURL    || '',
             email:       user.email       || '',

@@ -18,6 +18,7 @@ function formatJoinDate(ts) {
 function formatLastActive(dateStr) {
   if (!dateStr) return null;
   const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return null;
   const diff = Math.floor((Date.now() - d) / 86400000);
   if (diff === 0) return 'Today';
   if (diff === 1) return 'Yesterday';
