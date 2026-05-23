@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Play, Pause, ChevronRight, ChevronLeft, Shuffle, RotateCcw, BarChart2, GitBranch, Share2 } from 'lucide-react';
+import { Play, Pause, ChevronRight, ChevronLeft, Shuffle, RotateCcw, BarChart2, GitBranch, Share2, BookOpen, Code2, Clock, Database } from 'lucide-react';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const SPEEDS = { Slow: 1800, Normal: 700, Fast: 200 };
@@ -16,6 +16,314 @@ const NODE = {
   current: { fill: '#78350f', stroke: '#fbbf24', text: '#fde68a' },
   visited: { fill: '#064e3b', stroke: '#34d399', text: '#6ee7b7' },
 };
+
+// ─── Algorithm info ───────────────────────────────────────────────────────────
+const SORT_INFO = {
+  Bubble: {
+    summary: 'Repeatedly walks through the array comparing adjacent pairs. If a pair is out of order it swaps them. After each full pass, the largest unsorted element is guaranteed to be in its final position — it "bubbles up" to the right.',
+    bullets: ['Simple to implement and understand', 'Best case O(n) when already sorted (with early-exit)', 'Rarely used in practice — Selection/Insertion are usually better'],
+    time: 'O(n²)', best: 'O(n)', space: 'O(1)',
+    code: `void bubbleSort(int arr[], int n) {
+    for (int i = 0; i < n - 1; i++) {
+        bool swapped = false;
+        for (int j = 0; j < n - i - 1; j++) {
+            if (arr[j] > arr[j + 1]) {
+                swap(arr[j], arr[j + 1]);
+                swapped = true;
+            }
+        }
+        // Early exit if no swap occurred — already sorted
+        if (!swapped) break;
+    }
+}`,
+  },
+  Selection: {
+    summary: 'Divides the array into a sorted left region and an unsorted right region. Each pass scans the unsorted region to find its minimum, then moves that minimum to the end of the sorted region.',
+    bullets: ['Always O(n²) — does not benefit from partially sorted input', 'Minimum number of swaps (at most n−1) — good when writes are expensive', 'Not stable — equal elements can be reordered'],
+    time: 'O(n²)', best: 'O(n²)', space: 'O(1)',
+    code: `void selectionSort(int arr[], int n) {
+    for (int i = 0; i < n - 1; i++) {
+        int minIdx = i;
+        for (int j = i + 1; j < n; j++) {
+            if (arr[j] < arr[minIdx])
+                minIdx = j;
+        }
+        // Place minimum at the sorted boundary
+        if (minIdx != i)
+            swap(arr[i], arr[minIdx]);
+    }
+}`,
+  },
+  Insertion: {
+    summary: 'Builds the sorted array one element at a time. Each new element is picked from the unsorted right portion and shifted leftward into its correct position within the already-sorted left portion — like sorting playing cards in your hand.',
+    bullets: ['Adaptive — O(n) on nearly-sorted data', 'Stable — preserves the relative order of equal elements', 'Preferred for small arrays; used inside Timsort and Introsort'],
+    time: 'O(n²)', best: 'O(n)', space: 'O(1)',
+    code: `void insertionSort(int arr[], int n) {
+    for (int i = 1; i < n; i++) {
+        int key = arr[i];
+        int j = i - 1;
+        // Shift elements greater than key one position right
+        while (j >= 0 && arr[j] > key) {
+            arr[j + 1] = arr[j];
+            j--;
+        }
+        arr[j + 1] = key;
+    }
+}`,
+  },
+  Quick: {
+    summary: 'Picks a pivot element and partitions the array so all elements ≤ pivot are left of it and all elements > pivot are right. Then recursively sorts both halves. The pivot is in its final sorted position after each partition call.',
+    bullets: ['O(n log n) average — one of the fastest sorting algorithms in practice', 'O(n²) worst case when pivot is always the min/max (avoidable with random pivot)', 'In-place and cache-friendly — widely used in standard libraries'],
+    time: 'O(n log n)', best: 'O(n log n)', space: 'O(log n)',
+    code: `int partition(int arr[], int lo, int hi) {
+    int pivot = arr[hi];
+    int i = lo - 1;
+    for (int j = lo; j < hi; j++) {
+        if (arr[j] <= pivot)
+            swap(arr[++i], arr[j]);
+    }
+    swap(arr[i + 1], arr[hi]); // pivot in final position
+    return i + 1;
+}
+
+void quickSort(int arr[], int lo, int hi) {
+    if (lo >= hi) return;
+    int pi = partition(arr, lo, hi);
+    quickSort(arr, lo, pi - 1);
+    quickSort(arr, pi + 1, hi);
+}`,
+  },
+};
+
+const TREE_INFO = {
+  Inorder: {
+    summary: 'Visits nodes in Left → Root → Right order. On a Binary Search Tree this always produces the elements in ascending sorted order — making it the go-to traversal for sorted output.',
+    bullets: ['Produces sorted output on a BST', 'Used to validate whether a tree is a valid BST', 'Recursive and iterative (stack-based) versions are common'],
+    time: 'O(n)', space: 'O(h)',
+    code: `// Recursive inorder traversal
+void inorder(TreeNode* root) {
+    if (!root) return;
+    inorder(root->left);
+    cout << root->val << " ";
+    inorder(root->right);
+}
+
+// Iterative version using a stack
+void inorderIterative(TreeNode* root) {
+    stack<TreeNode*> st;
+    TreeNode* curr = root;
+    while (curr || !st.empty()) {
+        while (curr) { st.push(curr); curr = curr->left; }
+        curr = st.top(); st.pop();
+        cout << curr->val << " ";
+        curr = curr->right;
+    }
+}`,
+  },
+  Preorder: {
+    summary: 'Visits nodes in Root → Left → Right order. The root is processed before its children, making this ideal for copying a tree or serializing its structure to a file.',
+    bullets: ['Root is always visited first — great for tree serialization', 'Used to create a prefix expression from an expression tree', 'Produces the same insertion order to recreate the BST'],
+    time: 'O(n)', space: 'O(h)',
+    code: `// Recursive preorder traversal
+void preorder(TreeNode* root) {
+    if (!root) return;
+    cout << root->val << " "; // process root first
+    preorder(root->left);
+    preorder(root->right);
+}
+
+// Serialize BST to reconstruct later
+void serialize(TreeNode* root, vector<int>& out) {
+    if (!root) { out.push_back(-1); return; }
+    out.push_back(root->val);
+    serialize(root->left, out);
+    serialize(root->right, out);
+}`,
+  },
+  Postorder: {
+    summary: 'Visits nodes in Left → Right → Root order. Children are always processed before their parent — essential for safely deleting a tree and for evaluating expression trees (compute sub-expressions first).',
+    bullets: ['Children processed before parent — safe for deletion', 'Used to evaluate arithmetic expression trees', 'Computes subtree size / height naturally (children first)'],
+    time: 'O(n)', space: 'O(h)',
+    code: `// Recursive postorder traversal
+void postorder(TreeNode* root) {
+    if (!root) return;
+    postorder(root->left);
+    postorder(root->right);
+    cout << root->val << " "; // root last
+}
+
+// Delete entire tree safely
+void deleteTree(TreeNode*& root) {
+    if (!root) return;
+    deleteTree(root->left);
+    deleteTree(root->right);
+    delete root;
+    root = nullptr;
+}`,
+  },
+  'Level-order': {
+    summary: 'Uses a queue to visit all nodes level by level, left to right. Also called Breadth-First Search (BFS) on a tree. Useful when you need to process nodes closest to the root first.',
+    bullets: ['Finds the shortest path from root to a target node', 'Used to print tree level by level (zigzag, right-side view)', 'The queue is the key data structure — not recursion'],
+    time: 'O(n)', space: 'O(w)',
+    code: `// Level-order (BFS) traversal
+void levelOrder(TreeNode* root) {
+    if (!root) return;
+    queue<TreeNode*> q;
+    q.push(root);
+
+    while (!q.empty()) {
+        int size = q.size(); // nodes at current level
+        for (int i = 0; i < size; i++) {
+            TreeNode* node = q.front(); q.pop();
+            cout << node->val << " ";
+            if (node->left)  q.push(node->left);
+            if (node->right) q.push(node->right);
+        }
+        cout << "\\n"; // newline after each level
+    }
+}`,
+  },
+};
+
+const GRAPH_INFO = {
+  BFS: {
+    summary: 'Breadth-First Search uses a queue to explore all neighbors of the current node before moving deeper. It processes the graph layer by layer, guaranteeing the shortest path (in terms of edge count) to any reachable node in an unweighted graph.',
+    bullets: ['Guarantees shortest path in unweighted graphs', 'Visited set prevents revisiting nodes in cycles', 'Time O(V+E) — visits every vertex and edge once'],
+    time: 'O(V + E)', space: 'O(V)',
+    code: `void BFS(int start, vector<vector<int>>& adj, int V) {
+    vector<bool> visited(V, false);
+    queue<int> q;
+
+    visited[start] = true;
+    q.push(start);
+
+    while (!q.empty()) {
+        int node = q.front(); q.pop();
+        cout << node << " ";
+
+        for (int neighbor : adj[node]) {
+            if (!visited[neighbor]) {
+                visited[neighbor] = true;
+                q.push(neighbor);
+            }
+        }
+    }
+}`,
+  },
+  DFS: {
+    summary: 'Depth-First Search dives as deep as possible along each branch before backtracking. The call stack (or an explicit stack) keeps track of the path. Used to detect cycles, find connected components, and generate topological orderings.',
+    bullets: ['Uses the call stack (implicit) or an explicit stack', 'Detects cycles, finds connected components, topological sort', 'Does NOT guarantee shortest path — use BFS for that'],
+    time: 'O(V + E)', space: 'O(V)',
+    code: `void DFS(int node, vector<vector<int>>& adj,
+         vector<bool>& visited) {
+    visited[node] = true;
+    cout << node << " ";
+
+    for (int neighbor : adj[node]) {
+        if (!visited[neighbor])
+            DFS(neighbor, adj, visited);
+    }
+}
+
+// Entry point
+void DFSAll(int V, vector<vector<int>>& adj) {
+    vector<bool> visited(V, false);
+    for (int i = 0; i < V; i++)
+        if (!visited[i])
+            DFS(i, adj, visited);
+}`,
+  },
+};
+
+// ─── AlgoInfo panel ───────────────────────────────────────────────────────────
+function AlgoInfo({ info }) {
+  const [tab, setTab] = useState('explain');
+  if (!info) return null;
+  return (
+    <motion.div
+      key={info.summary}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25 }}
+      className="mt-4 rounded-2xl overflow-hidden"
+      style={{ border: '1px solid rgba(99,102,241,0.18)', background: 'rgba(12,12,22,0.85)' }}
+    >
+      {/* Tab bar */}
+      <div className="flex border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+        {[['explain', <BookOpen size={12} />, 'How it works'], ['code', <Code2 size={12} />, 'C++ Code']].map(([id, icon, label]) => (
+          <button
+            key={id}
+            onClick={() => setTab(id)}
+            className="flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold transition-all"
+            style={tab === id
+              ? { color: '#a5b4fc', borderBottom: '2px solid #6366f1', background: 'rgba(99,102,241,0.08)' }
+              : { color: '#6b7280', borderBottom: '2px solid transparent' }}
+          >
+            {icon} {label}
+          </button>
+        ))}
+        {/* Complexity chips */}
+        <div className="ml-auto flex items-center gap-2 px-4">
+          <span className="flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded"
+            style={{ background: 'rgba(251,191,36,0.1)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.2)' }}>
+            <Clock size={9} /> {info.time}
+          </span>
+          <span className="flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded"
+            style={{ background: 'rgba(99,102,241,0.1)', color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.2)' }}>
+            <Database size={9} /> {info.space}
+          </span>
+          {info.best && info.best !== info.time && (
+            <span className="flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded"
+              style={{ background: 'rgba(52,211,153,0.1)', color: '#34d399', border: '1px solid rgba(52,211,153,0.2)' }}>
+              Best {info.best}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {tab === 'explain' ? (
+        <div className="p-5">
+          <p className="text-sm text-slate-300 leading-relaxed mb-4">{info.summary}</p>
+          <ul className="flex flex-col gap-2">
+            {info.bullets.map((b, i) => (
+              <li key={i} className="flex items-start gap-2.5 text-xs text-dark-300 leading-relaxed">
+                <span className="mt-0.5 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: '#6366f1' }} />
+                {b}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : (
+        <div className="relative">
+          <pre
+            className="overflow-x-auto text-xs leading-relaxed p-5 m-0"
+            style={{ background: 'transparent', color: '#e2e8f0', fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace" }}
+          >
+            <code dangerouslySetInnerHTML={{ __html: highlight(info.code) }} />
+          </pre>
+        </div>
+      )}
+    </motion.div>
+  );
+}
+
+// Minimal syntax highlighter — no external dep needed
+function highlight(code) {
+  const keywords = ['void', 'int', 'bool', 'for', 'while', 'if', 'return', 'true', 'false', 'nullptr', 'struct', 'class', 'auto', 'break'];
+  const types    = ['vector', 'queue', 'stack', 'deque', 'set', 'map', 'TreeNode', 'string'];
+  let out = code
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/\/\/.*/g, m => `<span style="color:#4b5563;font-style:italic">${m}</span>`)
+    .replace(/\b(\d+)\b/g, '<span style="color:#f9a8d4">$1</span>')
+    .replace(/(".*?")/g, '<span style="color:#6ee7b7">$1</span>');
+  keywords.forEach(k => {
+    out = out.replace(new RegExp(`\\b(${k})\\b`, 'g'), '<span style="color:#c084fc;font-weight:600">$1</span>');
+  });
+  types.forEach(t => {
+    out = out.replace(new RegExp(`\\b(${t})\\b`, 'g'), '<span style="color:#67e8f9">$1</span>');
+  });
+  return out;
+}
 
 // ─── Sorting helpers ──────────────────────────────────────────────────────────
 function randArray(n = 20) {
@@ -337,6 +645,7 @@ function SortingSection() {
         <InfoBox text={step.info} />
         <Controls {...player} total={steps.length} speed={speed} onSpeed={setSpeed} onShuffle={() => setArr(randArray())} />
       </div>
+      <AlgoInfo info={SORT_INFO[algo]} />
     </div>
   );
 }
@@ -403,6 +712,7 @@ function TreeSection() {
         <InfoBox text={step.info} />
         <Controls {...player} total={steps.length} speed={speed} onSpeed={setSpeed} onShuffle={() => setVals(randBST())} />
       </div>
+      <AlgoInfo info={TREE_INFO[algo]} />
     </div>
   );
 }
@@ -480,6 +790,7 @@ function GraphSection() {
         <InfoBox text={step.info} />
         <Controls {...player} total={steps.length} speed={speed} onSpeed={setSpeed} />
       </div>
+      <AlgoInfo info={GRAPH_INFO[algo]} />
     </div>
   );
 }
