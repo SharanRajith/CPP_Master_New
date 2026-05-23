@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Play, Trophy, Flame, BookOpen, ArrowRight, Star, Zap, Code2, ChevronRight, CalendarDays, CheckCircle2, Swords, Crown, GitBranch, BarChart2, Network } from 'lucide-react';
-import { CURRICULUM, getAllLessons } from '../data/curriculum';
+import { Play, Trophy, Flame, BookOpen, ArrowRight, Star, Zap, Code2, ChevronRight, CalendarDays, CheckCircle2, Swords, Crown, GitBranch, BarChart2, Network, Lock } from 'lucide-react';
+import { CURRICULUM, getAllLessons, getPreviousLessonId, TRACK_ENTRY_LESSONS } from '../data/curriculum';
 import { LEVELS } from '../hooks/useProgress';
 
 // ─── Daily Challenge ──────────────────────────────────────────────────────────
@@ -95,6 +95,15 @@ function DailyChallenge({ progress }) {
   );
 }
 
+function isModuleUnlocked(module, completedLessons) {
+  const firstId = module.lessons[0]?.id;
+  if (!firstId) return false;
+  if (TRACK_ENTRY_LESSONS.has(firstId)) return true;
+  const prevId = getPreviousLessonId(firstId);
+  if (!prevId) return true;
+  return !!completedLessons[prevId];
+}
+
 function ModuleCard({ module, progress, onStart }) {
   const total     = module.lessons.length;
   const completed = module.lessons.filter(l => progress.completedLessons[l.id]).length;
@@ -102,13 +111,14 @@ function ModuleCard({ module, progress, onStart }) {
   const firstLesson = module.lessons[0];
   const firstUncompleted = module.lessons.find(l => !progress.completedLessons[l.id]);
   const isAllDone = completed === total;
+  const unlocked  = isModuleUnlocked(module, progress.completedLessons);
 
   return (
     <motion.div
-      whileHover={{ y: -4, scale: 1.01 }}
-      className="glass rounded-2xl p-6 flex flex-col gap-4 cursor-pointer group transition-all"
+      whileHover={unlocked ? { y: -4, scale: 1.01 } : {}}
+      className={`glass rounded-2xl p-6 flex flex-col gap-4 transition-all ${unlocked ? 'cursor-pointer group' : 'opacity-50 cursor-not-allowed'}`}
       style={{ borderColor: `${module.color}30` }}
-      onClick={() => onStart(firstUncompleted?.id || firstLesson.id)}
+      onClick={() => unlocked && onStart(firstUncompleted?.id || firstLesson.id)}
     >
       <div className="flex items-start gap-4">
         <div
@@ -149,9 +159,9 @@ function ModuleCard({ module, progress, onStart }) {
       <div className="flex items-center justify-between">
         <span className="text-xs text-dark-300">{Math.round(pct)}% complete</span>
         <div className="flex items-center gap-1 text-sm font-medium group-hover:translate-x-1 transition-transform"
-          style={{ color: module.color }}>
-          {isAllDone ? 'Review' : completed === 0 ? 'Start' : 'Continue'}
-          <ArrowRight size={14} />
+          style={{ color: unlocked ? module.color : '#6b7280' }}>
+          {!unlocked ? <><Lock size={12} /> Locked</> : isAllDone ? 'Review' : completed === 0 ? 'Start' : 'Continue'}
+          {unlocked && <ArrowRight size={14} />}
         </div>
       </div>
     </motion.div>
