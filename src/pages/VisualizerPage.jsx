@@ -307,20 +307,22 @@ function AlgoInfo({ info }) {
   );
 }
 
-// Minimal syntax highlighter — no external dep needed
+// Minimal syntax highlighter — numbers run first so later span injections don't get re-matched
 function highlight(code) {
   const keywords = ['void', 'int', 'bool', 'for', 'while', 'if', 'return', 'true', 'false', 'nullptr', 'struct', 'class', 'auto', 'break'];
   const types    = ['vector', 'queue', 'stack', 'deque', 'set', 'map', 'TreeNode', 'string'];
-  let out = code
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/\/\/.*/g, m => `<span style="color:#4b5563;font-style:italic">${m}</span>`)
-    .replace(/\b(\d+)\b/g, '<span style="color:#f9a8d4">$1</span>')
-    .replace(/(".*?")/g, '<span style="color:#6ee7b7">$1</span>');
+  // Escape HTML entities first
+  let out = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  // Numbers before any HTML is injected — avoids matching digits inside style attributes
+  out = out.replace(/\b(\d+)\b/g, '<span style="color:pink">$1</span>');
+  // Comments, strings, keywords, types — all use named colors (no hex digits)
+  out = out.replace(/\/\/.*/g, m => `<span style="color:slategray;font-style:italic">${m}</span>`);
+  out = out.replace(/(".*?")/g, '<span style="color:lightgreen">$1</span>');
   keywords.forEach(k => {
-    out = out.replace(new RegExp(`\\b(${k})\\b`, 'g'), '<span style="color:#c084fc;font-weight:600">$1</span>');
+    out = out.replace(new RegExp(`\\b(${k})\\b`, 'g'), '<span style="color:violet;font-weight:bold">$1</span>');
   });
   types.forEach(t => {
-    out = out.replace(new RegExp(`\\b(${t})\\b`, 'g'), '<span style="color:#67e8f9">$1</span>');
+    out = out.replace(new RegExp(`\\b(${t})\\b`, 'g'), '<span style="color:cyan">$1</span>');
   });
   return out;
 }
