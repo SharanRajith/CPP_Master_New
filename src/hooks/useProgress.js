@@ -22,11 +22,10 @@ export function useProgress(user) {
         let data;
         if (docSnap.exists()) {
           const firestoreData = docSnap.data();
-          // Don't overwrite photoURL if Firestore already has one (e.g. base64 from profile upload)
+          // Never overwrite photoURL — it is managed exclusively by ProfilePage upload/delete
           const patch = {
             displayName: user.displayName || 'Anonymous',
             email:       user.email       || '',
-            ...(firestoreData.photoURL ? {} : { photoURL: user.photoURL || '' }),
           };
           if (!firestoreData.joinedAt) patch.joinedAt = serverTimestamp();
           await setDoc(docRef, patch, { merge: true });

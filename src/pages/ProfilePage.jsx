@@ -34,9 +34,10 @@ export default function ProfilePage({ currentUser, progress: ownProgress, onProf
   const [loading,       setLoading]       = useState(!isOwn);
   const [notFound,      setNotFound]      = useState(false);
   const [copied,        setCopied]        = useState(false);
-  const [uploading,     setUploading]     = useState(false);
-  const [uploadError,   setUploadError]   = useState('');
-  const [avatarPreview, setAvatarPreview] = useState(null);
+  const [uploading,      setUploading]      = useState(false);
+  const [uploadError,    setUploadError]    = useState('');
+  const [avatarPreview,  setAvatarPreview]  = useState(null);
+  const [storedPhotoURL, setStoredPhotoURL] = useState(null);
   const [editingName,   setEditingName]   = useState(false);
   const [nameValue,     setNameValue]     = useState('');
   const [nameSaving,    setNameSaving]    = useState(false);
@@ -44,6 +45,14 @@ export default function ProfilePage({ currentUser, progress: ownProgress, onProf
   const [nameSaved,     setNameSaved]     = useState(false);
   const fileInputRef = useRef(null);
   const nameInputRef = useRef(null);
+
+  // Read photoURL directly from Firestore for own profile — bypasses useProgress timing issues
+  useEffect(() => {
+    if (!isOwn || !currentUser?.uid) return;
+    getDoc(doc(db, 'users', currentUser.uid)).then(snap => {
+      if (snap.exists()) setStoredPhotoURL(snap.data().photoURL || null);
+    });
+  }, [isOwn, currentUser?.uid]);
 
   useEffect(() => {
     if (isOwn) { setProfileData(ownProgress); return; }
@@ -95,6 +104,7 @@ export default function ProfilePage({ currentUser, progress: ownProgress, onProf
       // Best-effort Auth update (may fail if base64 URL is too long — that's OK)
       try { await updateProfile(auth.currentUser, { photoURL: base64 }); } catch (_) {}
       setAvatarPreview(base64);
+      setStoredPhotoURL(base64);
       onProfileUpdate?.();
     } catch (err) {
       setUploadError('Upload failed. Please try again.');
@@ -111,6 +121,7 @@ export default function ProfilePage({ currentUser, progress: ownProgress, onProf
       await setDoc(doc(db, 'users', currentUser.uid), { photoURL: null }, { merge: true });
       try { await updateProfile(auth.currentUser, { photoURL: null }); } catch (_) {}
       setAvatarPreview(null);
+      setStoredPhotoURL(null);
       onProfileUpdate?.();
     } catch (err) {
       setUploadError('Delete failed. Please try again.');
@@ -215,9 +226,9 @@ export default function ProfilePage({ currentUser, progress: ownProgress, onProf
                   )}
 
                   {/* Avatar image */}
-                  {(avatarPreview || photoURL) ? (
+                  {(avatarPreview || storedPhotoURL || photoURL) ? (
                     <img
-                      src={avatarPreview || photoURL}
+                      src={avatarPreview || storedPhotoURL || photoURL}
                       alt={displayName}
                       className="w-20 h-20 rounded-2xl object-cover"
                       style={{ boxShadow: `0 0 0 3px ${levelInfo.color}60` }}
@@ -244,7 +255,7 @@ export default function ProfilePage({ currentUser, progress: ownProgress, onProf
                             <button onClick={() => fileInputRef.current?.click()} title="Change photo">
                               <Camera size={20} className="text-white hover:text-indigo-300 transition-colors" />
                             </button>
-                            {(avatarPreview || photoURL) && (
+                            {(avatarPreview || storedPhotoURL || photoURL) && (
                               <button onClick={handleDeleteAvatar} title="Remove photo">
                                 <Trash2 size={20} className="text-red-400 hover:text-red-300 transition-colors" />
                               </button>
@@ -265,7 +276,7 @@ export default function ProfilePage({ currentUser, progress: ownProgress, onProf
                           : <Camera size={12} className="text-white" />}
                       </button>
                       {/* Delete badge (mobile) — only when photo exists */}
-                      {(avatarPreview || photoURL) && (
+                      {(avatarPreview || storedPhotoURL || photoURL) && (
                         <button
                           onClick={handleDeleteAvatar}
                           disabled={uploading}
