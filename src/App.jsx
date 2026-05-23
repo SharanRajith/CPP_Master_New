@@ -243,7 +243,7 @@ export default function App() {
     if (u) setCurrentUser({ uid: u.uid, displayName: u.displayName || u.email?.split('@')[0] || 'User', email: u.email, photoURL: u.photoURL });
   }
 
-  if (!currentUser) return <LoginPage />;
+  if (!currentUser) return <Suspense fallback={<PageLoader />}><LoginPage /></Suspense>;
 
   return <AuthenticatedApp currentUser={currentUser} onLogout={async () => signOut(auth)} onProfileUpdate={refreshCurrentUser} />;
 }
