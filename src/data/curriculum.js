@@ -475,3 +475,11 @@ export function getPreviousLessonId(lessonId) {
   if (idx <= 0) return null;
   return all[idx - 1].id;
 }
+
+/** First lesson of each track — always unlocked regardless of prior progress */
+export const TRACK_ENTRY_LESSONS = new Set(
+  [...new Set(CURRICULUM.map(m => m.track || 'dsa'))].map(track => {
+    const mod = CURRICULUM.find(m => (m.track || 'dsa') === track);
+    return mod?.lessons?.[0]?.id;
+  }).filter(Boolean)
+);

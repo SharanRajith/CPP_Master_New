@@ -4,6 +4,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+import { TRACK_ENTRY_LESSONS } from '../data/curriculum';
 
 const STORAGE_KEY = 'cpp_dsa_progress';
 
@@ -203,6 +204,7 @@ export function useProgress(user) {
   /** Check if a lesson is unlocked (first lesson always unlocked) */
   const isLessonUnlocked = useCallback((lessonId, prevLessonId) => {
     if (progress.completedLessons[lessonId]) return true;
+    if (TRACK_ENTRY_LESSONS.has(lessonId)) return true;
     if (!prevLessonId) return true;
     return !!progress.completedLessons[prevLessonId];
   }, [progress.completedLessons]);

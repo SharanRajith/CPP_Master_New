@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { ChevronDown, ChevronRight, Lock, CheckCircle2, Circle, BookOpen, Crown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CURRICULUM, getAllLessons, getPreviousLessonId } from '../../data/curriculum';
+import { CURRICULUM, getAllLessons, getPreviousLessonId, TRACK_ENTRY_LESSONS } from '../../data/curriculum';
 
 export default function Sidebar({ progress, currentLessonId, isPremium }) {
   const [expandedModules, setExpandedModules] = useState({ 'module-1': true });
@@ -14,6 +14,7 @@ export default function Sidebar({ progress, currentLessonId, isPremium }) {
 
   function isUnlocked(lesson) {
     if (progress.completedLessons[lesson.id]) return true;
+    if (TRACK_ENTRY_LESSONS.has(lesson.id)) return true;
     const prevId = getPreviousLessonId(lesson.id);
     if (!prevId) return true;
     return !!progress.completedLessons[prevId];
