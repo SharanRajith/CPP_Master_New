@@ -55,6 +55,41 @@ int main() {
     printVector(arr);
     return 0;
 }`,
+    ccode: `#include <stdio.h>
+#include <stdbool.h>
+
+void swap(int* a, int* b) {
+    int temp = *a; *a = *b; *b = temp;
+}
+
+void bubbleSort(int arr[], int n) {
+    bool swapped;
+    for (int i = 0; i < n - 1; i++) {
+        swapped = false;
+        for (int j = 0; j < n - i - 1; j++) {
+            if (arr[j] > arr[j + 1]) {
+                swap(&arr[j], &arr[j + 1]);
+                swapped = true;
+            }
+        }
+        // If no two elements were swapped, break early
+        if (!swapped) break;
+    }
+}
+
+void printArray(int arr[], int n) {
+    for (int i = 0; i < n; i++)
+        printf(" %d", arr[i]);
+}
+
+int main() {
+    int arr[] = { 64, 34, 25, 12, 22, 11, 90 };
+    int n = sizeof(arr) / sizeof(arr[0]);
+    bubbleSort(arr, n);
+    printf("Sorted array:\\n");
+    printArray(arr, n);
+    return 0;
+}`,
   },
   Selection: {
     summary: 'Divides the array into a sorted left region and an unsorted right region. Each pass scans the unsorted region to find its minimum, then moves that minimum to the end of the sorted region.',
@@ -89,6 +124,38 @@ int main() {
     printVector(arr);
     return 0;
 }`,
+    ccode: `#include <stdio.h>
+
+void swap(int* a, int* b) {
+    int temp = *a; *a = *b; *b = temp;
+}
+
+void selectionSort(int arr[], int n) {
+    for (int i = 0; i < n - 1; i++) {
+        int minIdx = i;
+        for (int j = i + 1; j < n; j++) {
+            if (arr[j] < arr[minIdx])
+                minIdx = j;
+        }
+        // Place minimum at the sorted boundary
+        if (minIdx != i)
+            swap(&arr[i], &arr[minIdx]);
+    }
+}
+
+void printArray(int arr[], int n) {
+    for (int i = 0; i < n; i++)
+        printf(" %d", arr[i]);
+}
+
+int main() {
+    int arr[] = { 64, 25, 12, 22, 11 };
+    int n = sizeof(arr) / sizeof(arr[0]);
+    selectionSort(arr, n);
+    printf("Sorted array:\\n");
+    printArray(arr, n);
+    return 0;
+}`,
   },
   Insertion: {
     summary: 'Builds the sorted array one element at a time. Each new element is picked from the unsorted right portion and shifted leftward into its correct position within the already-sorted left portion — like sorting playing cards in your hand.',
@@ -121,6 +188,34 @@ int main() {
     insertionSort(arr);
     cout << "Sorted array: \\n";
     printVector(arr);
+    return 0;
+}`,
+    ccode: `#include <stdio.h>
+
+void insertionSort(int arr[], int n) {
+    for (int i = 1; i < n; i++) {
+        int key = arr[i];
+        int j = i - 1;
+        // Shift elements greater than key one position right
+        while (j >= 0 && arr[j] > key) {
+            arr[j + 1] = arr[j];
+            j--;
+        }
+        arr[j + 1] = key;
+    }
+}
+
+void printArray(int arr[], int n) {
+    for (int i = 0; i < n; i++)
+        printf(" %d", arr[i]);
+}
+
+int main() {
+    int arr[] = { 12, 11, 13, 5, 6 };
+    int n = sizeof(arr) / sizeof(arr[0]);
+    insertionSort(arr, n);
+    printf("Sorted array:\\n");
+    printArray(arr, n);
     return 0;
 }`,
   },
@@ -162,6 +257,42 @@ int main() {
     printVector(arr);
     return 0;
 }`,
+    ccode: `#include <stdio.h>
+
+void swap(int* a, int* b) {
+    int temp = *a; *a = *b; *b = temp;
+}
+
+int partition(int arr[], int lo, int hi) {
+    int pivot = arr[hi], i = lo - 1;
+    for (int j = lo; j < hi; j++) {
+        if (arr[j] <= pivot)
+            swap(&arr[++i], &arr[j]);
+    }
+    swap(&arr[i + 1], &arr[hi]); // pivot placed at final position
+    return i + 1;
+}
+
+void quickSort(int arr[], int lo, int hi) {
+    if (lo >= hi) return;
+    int pi = partition(arr, lo, hi);
+    quickSort(arr, lo, pi - 1);
+    quickSort(arr, pi + 1, hi);
+}
+
+void printArray(int arr[], int n) {
+    for (int i = 0; i < n; i++)
+        printf(" %d", arr[i]);
+}
+
+int main() {
+    int arr[] = { 10, 7, 8, 9, 1, 5 };
+    int n = sizeof(arr) / sizeof(arr[0]);
+    quickSort(arr, 0, n - 1);
+    printf("Sorted array:\\n");
+    printArray(arr, n);
+    return 0;
+}`,
   },
 };
 
@@ -189,6 +320,39 @@ void inorderIterative(TreeNode* root) {
         curr = curr->right;
     }
 }`,
+    ccode: `#include <stdio.h>
+#include <stdlib.h>
+
+struct Node {
+    int val;
+    struct Node* left;
+    struct Node* right;
+};
+
+struct Node* newNode(int val) {
+    struct Node* n = malloc(sizeof(struct Node));
+    n->val = val; n->left = n->right = NULL;
+    return n;
+}
+
+void inorder(struct Node* root) {
+    if (!root) return;
+    inorder(root->left);
+    printf("%d ", root->val);
+    inorder(root->right);
+}
+
+int main() {
+    struct Node* root = newNode(50);
+    root->left  = newNode(25);  root->right = newNode(75);
+    root->left->left  = newNode(12);
+    root->left->right = newNode(37);
+    root->right->left = newNode(62);
+    root->right->right = newNode(88);
+    printf("Inorder: ");
+    inorder(root);
+    return 0;
+}`,
   },
   Preorder: {
     summary: 'Visits nodes in Root → Left → Right order. The root is processed before its children, making this ideal for copying a tree or serializing its structure to a file.',
@@ -208,6 +372,39 @@ void serialize(TreeNode* root, vector<int>& out) {
     out.push_back(root->val);
     serialize(root->left, out);
     serialize(root->right, out);
+}`,
+    ccode: `#include <stdio.h>
+#include <stdlib.h>
+
+struct Node {
+    int val;
+    struct Node* left;
+    struct Node* right;
+};
+
+struct Node* newNode(int val) {
+    struct Node* n = malloc(sizeof(struct Node));
+    n->val = val; n->left = n->right = NULL;
+    return n;
+}
+
+void preorder(struct Node* root) {
+    if (!root) return;
+    printf("%d ", root->val); // root first
+    preorder(root->left);
+    preorder(root->right);
+}
+
+int main() {
+    struct Node* root = newNode(50);
+    root->left  = newNode(25);  root->right = newNode(75);
+    root->left->left  = newNode(12);
+    root->left->right = newNode(37);
+    root->right->left = newNode(62);
+    root->right->right = newNode(88);
+    printf("Preorder: ");
+    preorder(root);
+    return 0;
 }`,
   },
   Postorder: {
@@ -230,6 +427,39 @@ void deleteTree(TreeNode*& root) {
     delete root;
     root = nullptr;
 }`,
+    ccode: `#include <stdio.h>
+#include <stdlib.h>
+
+struct Node {
+    int val;
+    struct Node* left;
+    struct Node* right;
+};
+
+struct Node* newNode(int val) {
+    struct Node* n = malloc(sizeof(struct Node));
+    n->val = val; n->left = n->right = NULL;
+    return n;
+}
+
+void postorder(struct Node* root) {
+    if (!root) return;
+    postorder(root->left);
+    postorder(root->right);
+    printf("%d ", root->val); // root last
+}
+
+int main() {
+    struct Node* root = newNode(50);
+    root->left  = newNode(25);  root->right = newNode(75);
+    root->left->left  = newNode(12);
+    root->left->right = newNode(37);
+    root->right->left = newNode(62);
+    root->right->right = newNode(88);
+    printf("Postorder: ");
+    postorder(root);
+    return 0;
+}`,
   },
   'Level-order': {
     summary: 'Uses a queue to visit all nodes level by level, left to right. Also called Breadth-First Search (BFS) on a tree. Useful when you need to process nodes closest to the root first.',
@@ -251,6 +481,45 @@ void levelOrder(TreeNode* root) {
         }
         cout << "\\n"; // newline after each level
     }
+}`,
+    ccode: `#include <stdio.h>
+#include <stdlib.h>
+
+struct Node {
+    int val;
+    struct Node* left;
+    struct Node* right;
+};
+
+struct Node* newNode(int val) {
+    struct Node* n = malloc(sizeof(struct Node));
+    n->val = val; n->left = n->right = NULL;
+    return n;
+}
+
+void levelOrder(struct Node* root) {
+    if (!root) return;
+    struct Node* queue[100];
+    int front = 0, rear = 0;
+    queue[rear++] = root;
+    while (front < rear) {
+        struct Node* node = queue[front++];
+        printf("%d ", node->val);
+        if (node->left)  queue[rear++] = node->left;
+        if (node->right) queue[rear++] = node->right;
+    }
+}
+
+int main() {
+    struct Node* root = newNode(50);
+    root->left  = newNode(25);  root->right = newNode(75);
+    root->left->left  = newNode(12);
+    root->left->right = newNode(37);
+    root->right->left = newNode(62);
+    root->right->right = newNode(88);
+    printf("Level-order: ");
+    levelOrder(root);
+    return 0;
 }`,
   },
 };
@@ -279,6 +548,40 @@ const GRAPH_INFO = {
         }
     }
 }`,
+    ccode: `#include <stdio.h>
+#include <stdbool.h>
+
+#define V 8
+
+int adj[V][V] = {
+    {0,1,1,0,0,0,0,0}, {1,0,0,1,1,0,0,0},
+    {1,0,0,0,0,1,1,0}, {0,1,0,0,0,0,0,1},
+    {0,1,0,0,0,1,0,1}, {0,0,1,0,1,0,0,0},
+    {0,0,1,0,0,0,0,0}, {0,0,0,1,1,0,0,0},
+};
+
+void BFS(int start) {
+    bool visited[V] = { false };
+    int queue[V], front = 0, rear = 0;
+    visited[start] = true;
+    queue[rear++] = start;
+    while (front < rear) {
+        int node = queue[front++];
+        printf("%d ", node);
+        for (int i = 0; i < V; i++) {
+            if (adj[node][i] && !visited[i]) {
+                visited[i] = true;
+                queue[rear++] = i;
+            }
+        }
+    }
+}
+
+int main() {
+    printf("BFS from node 0:\\n");
+    BFS(0);
+    return 0;
+}`,
   },
   DFS: {
     summary: 'Depth-First Search dives as deep as possible along each branch before backtracking. The call stack (or an explicit stack) keeps track of the path. Used to detect cycles, find connected components, and generate topological orderings.',
@@ -302,6 +605,36 @@ void DFSAll(int V, vector<vector<int>>& adj) {
         if (!visited[i])
             DFS(i, adj, visited);
 }`,
+    ccode: `#include <stdio.h>
+#include <stdbool.h>
+
+#define V 8
+
+int adj[V][V] = {
+    {0,1,1,0,0,0,0,0}, {1,0,0,1,1,0,0,0},
+    {1,0,0,0,0,1,1,0}, {0,1,0,0,0,0,0,1},
+    {0,1,0,0,0,1,0,1}, {0,0,1,0,1,0,0,0},
+    {0,0,1,0,0,0,0,0}, {0,0,0,1,1,0,0,0},
+};
+
+bool visited[V];
+
+void DFS(int node) {
+    visited[node] = true;
+    printf("%d ", node);
+    for (int i = 0; i < V; i++) {
+        if (adj[node][i] && !visited[i])
+            DFS(i);
+    }
+}
+
+int main() {
+    // initialise visited to false
+    for (int i = 0; i < V; i++) visited[i] = false;
+    printf("DFS from node 0:\\n");
+    DFS(0);
+    return 0;
+}`,
   },
 };
 
@@ -320,7 +653,7 @@ function AlgoInfo({ info }) {
     >
       {/* Tab bar */}
       <div className="flex border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-        {[['explain', <BookOpen size={12} />, 'How it works'], ['code', <Code2 size={12} />, 'C++ Code']].map(([id, icon, label]) => (
+        {[['explain', <BookOpen size={12} />, 'How it works'], ['code', <Code2 size={12} />, 'C++ Code'], ['ccode', <Code2 size={12} />, 'C Code']].map(([id, icon, label]) => (
           <button
             key={id}
             onClick={() => setTab(id)}
@@ -369,7 +702,7 @@ function AlgoInfo({ info }) {
             className="overflow-x-auto text-xs leading-relaxed p-5 m-0"
             style={{ background: 'transparent', color: '#e2e8f0', fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace" }}
           >
-            <code dangerouslySetInnerHTML={{ __html: highlight(info.code) }} />
+            <code dangerouslySetInnerHTML={{ __html: highlight(tab === 'ccode' ? info.ccode : info.code) }} />
           </pre>
         </div>
       )}
