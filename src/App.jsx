@@ -29,19 +29,9 @@ import { isAdminEmail } from './config/admins';
 import { useParams }   from 'react-router-dom';
 import { PanelGroup, Panel, PanelResizeHandle } from 'react-resizable-panels';
 
-// Routes container — scrollable on /interview, fixed-overflow elsewhere
-function RoutesContainer({ children }) {
-  const { pathname } = useLocation();
-  const isInterview = pathname === '/interview';
-  return (
-    <div className={`flex flex-1 relative ${isInterview ? 'overflow-y-auto' : 'overflow-hidden'}`}>
-      {children}
-    </div>
-  );
-}
-
 // ─── Layout wrapper ───────────────────────────────────────────────────────────
 function AppShell({ progress, completeLesson, completeQuiz, unlockHint, saveNote, deleteNote, isLessonCompleted, isLessonUnlocked, resetProgress, onLogout, onProfileUpdate, currentUser, isAdmin, isPremium }) {
+  const { pathname } = useLocation();
   const [showSettings,   setShowSettings]   = useState(false);
   const [sidebarOpen,    setSidebarOpen]    = useState(false);
   const [showPremium,    setShowPremium]    = useState(false);
@@ -78,7 +68,7 @@ function AppShell({ progress, completeLesson, completeQuiz, unlockHint, saveNote
         photoURL={progress.photoURL}
       />
       <AnnouncementBanner />
-      <RoutesContainer>
+      <div className={`flex flex-1 relative ${pathname === '/interview' ? 'overflow-y-auto' : 'overflow-hidden'}`}>
         <Routes>
           <Route path="/" element={<HomePage progress={progress} onOpenPremium={() => setShowPremium(true)} />} />
           <Route
@@ -110,7 +100,7 @@ function AppShell({ progress, completeLesson, completeQuiz, unlockHint, saveNote
           <Route path="/profile/:uid" element={<ProfilePage currentUser={currentUser} progress={progress} onProfileUpdate={onProfileUpdate} />} />
           <Route path="*"             element={<Navigate to="/" replace />} />
         </Routes>
-      </RoutesContainer>
+      </div>
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
       <AnimatePresence>
         {showPremium && <PremiumModal onClose={() => setShowPremium(false)} onOpenSupport={() => { setShowPremium(false); setShowSupport(true); }} />}
