@@ -107,8 +107,8 @@ const STATUS_META = {
 // ─── Start screen ─────────────────────────────────────────────────────────────
 function StartScreen({ onStart }) {
   return (
-    <div className="flex-1 min-h-0 overflow-y-auto" style={{ background: '#0a0f1c' }}>
-      <div className="min-h-full flex items-center justify-center p-6">
+    <div className="absolute inset-0 overflow-y-auto" style={{ background: '#0a0f1c' }}>
+      <div className="min-h-full flex items-center justify-center p-6 py-10">
       <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} className="max-w-lg w-full text-center">
         <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6"
           style={{ background: 'linear-gradient(135deg,#4f46e5,#7c3aed)', boxShadow: '0 0 40px rgba(99,102,241,0.3)' }}>
@@ -170,7 +170,7 @@ function ResultsScreen({ answers, timeTaken, onRetry, navigate }) {
               :              { label: 'Need practice', color: '#f87171' };
 
   return (
-    <div className="flex-1 min-h-0 overflow-y-auto" style={{ background: '#0a0f1c' }}>
+    <div className="absolute inset-0 overflow-y-auto" style={{ background: '#0a0f1c' }}>
       <div className="max-w-2xl mx-auto px-4 py-10 pb-24">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           {/* Header */}
@@ -300,7 +300,7 @@ export default function InterviewPage() {
   const timerColor = timeLeft < 600 ? '#f87171' : timeLeft < 1800 ? '#f59e0b' : '#a5b4fc';
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col overflow-hidden" style={{ background: '#0a0f1c' }}>
+    <div className="absolute inset-0 flex flex-col overflow-hidden" style={{ background: '#0a0f1c' }}>
 
       {/* Top bar */}
       <div className="flex items-center gap-4 px-4 py-3 shrink-0"
