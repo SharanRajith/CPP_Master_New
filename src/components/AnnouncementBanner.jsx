@@ -108,13 +108,13 @@ export default function AnnouncementBanner() {
               </motion.div>
 
               {/* megaphone label + message */}
-              <div className="flex-1 flex items-center gap-2 min-w-0">
-                <Megaphone size={12} style={{ color: cfg.iconColor, flexShrink: 0 }} />
-                <span className="text-xs font-bold uppercase tracking-widest" style={{ color: cfg.iconColor }}>
+              <div className="flex-1 flex items-center gap-2 min-w-0 flex-wrap">
+                <Megaphone size={12} style={{ color: cfg.iconColor, flexShrink: 0 }} className="hidden sm:block" />
+                <span className="text-xs font-bold uppercase tracking-widest hidden sm:inline" style={{ color: cfg.iconColor }}>
                   Announcement
                 </span>
-                <span className="text-dark-500 text-xs">·</span>
-                <span className="text-sm font-medium leading-snug truncate" style={{ color: cfg.text }}>
+                <span className="text-dark-500 text-xs hidden sm:inline">·</span>
+                <span className="text-sm font-medium leading-snug" style={{ color: cfg.text }}>
                   {a.message}
                 </span>
               </div>
