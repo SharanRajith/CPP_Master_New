@@ -2,9 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { updateProfile } from 'firebase/auth';
-import { auth, db, storage } from '../lib/firebase';
+import { auth, db } from '../lib/firebase';
 import { CURRICULUM } from '../data/curriculum';
 import { LEVELS } from '../hooks/useProgress';
 import { ACHIEVEMENTS, getEarnedAchievements } from '../config/achievements';
@@ -70,38 +69,33 @@ export default function ProfilePage({ currentUser, progress: ownProgress, onProf
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) { setUploadError('Please select an image file.'); return; }
-    if (file.size > 5 * 1024 * 1024)    { setUploadError('Image must be under 5 MB.');   return; }
+    if (file.size > 10 * 1024 * 1024)   { setUploadError('Image must be under 10 MB.');  return; }
     setUploadError('');
     setUploading(true);
 
-    // Resize to 256×256 using canvas
-    const resized = await new Promise(resolve => {
+    // Resize to 128×128 and convert to base64 — stored in Firestore, no Storage needed
+    const base64 = await new Promise(resolve => {
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement('canvas');
-        canvas.width = canvas.height = 256;
+        canvas.width = canvas.height = 128;
         const ctx = canvas.getContext('2d');
         const size = Math.min(img.width, img.height);
         const sx = (img.width  - size) / 2;
         const sy = (img.height - size) / 2;
-        ctx.drawImage(img, sx, sy, size, size, 0, 0, 256, 256);
-        canvas.toBlob(resolve, 'image/jpeg', 0.88);
+        ctx.drawImage(img, sx, sy, size, size, 0, 0, 128, 128);
+        resolve(canvas.toDataURL('image/jpeg', 0.82));
       };
       img.src = URL.createObjectURL(file);
     });
 
     try {
-      const storageRef = ref(storage, `avatars/${currentUser.uid}`);
-      await uploadBytes(storageRef, resized, { contentType: 'image/jpeg' });
-      const url = await getDownloadURL(storageRef);
-
-      await updateProfile(auth.currentUser, { photoURL: url });
-      await setDoc(doc(db, 'users', currentUser.uid), { photoURL: url }, { merge: true });
-
-      setAvatarPreview(url);
+      await updateProfile(auth.currentUser, { photoURL: base64 });
+      await setDoc(doc(db, 'users', currentUser.uid), { photoURL: base64 }, { merge: true });
+      setAvatarPreview(base64);
       onProfileUpdate?.();
     } catch (err) {
-      setUploadError('Upload failed — check Firebase Storage rules.');
+      setUploadError('Upload failed. Please try again.');
     } finally {
       setUploading(false);
       e.target.value = '';
