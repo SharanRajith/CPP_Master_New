@@ -23,18 +23,37 @@ const SORT_INFO = {
     summary: 'Repeatedly walks through the array comparing adjacent pairs. If a pair is out of order it swaps them. After each full pass, the largest unsorted element is guaranteed to be in its final position — it "bubbles up" to the right.',
     bullets: ['Simple to implement and understand', 'Best case O(n) when already sorted (with early-exit)', 'Rarely used in practice — Selection/Insertion are usually better'],
     time: 'O(n²)', best: 'O(n)', space: 'O(1)',
-    code: `void bubbleSort(int arr[], int n) {
+    code: `#include <bits/stdc++.h>
+using namespace std;
+
+// Optimised bubble sort with early-exit flag
+void bubbleSort(vector<int>& arr) {
+    int n = arr.size();
+    bool swapped;
     for (int i = 0; i < n - 1; i++) {
-        bool swapped = false;
+        swapped = false;
         for (int j = 0; j < n - i - 1; j++) {
             if (arr[j] > arr[j + 1]) {
                 swap(arr[j], arr[j + 1]);
                 swapped = true;
             }
         }
-        // Early exit if no swap occurred — already sorted
+        // If no two elements were swapped, break early
         if (!swapped) break;
     }
+}
+
+void printVector(const vector<int>& arr) {
+    for (int num : arr)
+        cout << " " << num;
+}
+
+int main() {
+    vector<int> arr = { 64, 34, 25, 12, 22, 11, 90 };
+    bubbleSort(arr);
+    cout << "Sorted array: \\n";
+    printVector(arr);
+    return 0;
 }`,
   },
   Selection: {
