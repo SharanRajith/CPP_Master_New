@@ -230,7 +230,7 @@ export default function LessonContent({ lesson, attempts = 0, notes = [], onSave
     { id: 'lesson',     label: '📖 Lesson' },
     { id: 'practice',   label: '🧪 Practice' },
     { id: 'notes',      label: notes.length > 0 ? `📝 Notes (${notes.length})` : '📝 Notes' },
-    { id: 'discussion', label: feedbackBadge > 0 ? `📣 Feedback (${feedbackBadge})` : '📣 Feedback' },
+    { id: 'discussion', label: feedbackBadge > 0 ? `💬 Comments (${feedbackBadge})` : '💬 Comments' },
   ];
 
   return (
