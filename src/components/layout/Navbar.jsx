@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Settings, LogOut, Flame, Trophy, Home, Menu, ChevronRight, Zap, Medal, Shield, Crown, Search, User, GitBranch } from 'lucide-react';
+import { Settings, LogOut, Flame, Trophy, Home, Menu, ChevronRight, Zap, Medal, Shield, Crown, Search, User, GitBranch, Swords, BookOpen, Headphones } from 'lucide-react';
 import { LEVELS } from '../../hooks/useProgress';
 
-export default function Navbar({ xp, level, streak, currentUser, isAdmin, isPremium, onOpenSettings, onOpenPremium, onOpenSearch, onLogout, onToggleSidebar }) {
+export default function Navbar({ xp, level, streak, currentUser, isAdmin, isPremium, onOpenSettings, onOpenPremium, onOpenSupport, onOpenSearch, onLogout, onToggleSidebar }) {
   const location      = useLocation();
   const isLessonRoute = location.pathname.startsWith('/lesson/');
   const levelInfo     = LEVELS[level - 1] || LEVELS[0];
@@ -119,6 +119,12 @@ export default function Navbar({ xp, level, streak, currentUser, isAdmin, isPrem
         </Link>
         <Link to="/visualizer" className="p-2 rounded-lg text-dark-300 hover:text-white hover:bg-dark-700 transition-all" title="Algorithm Visualizer">
           <GitBranch size={17} />
+        </Link>
+        <Link to="/problems" className="p-2 rounded-lg text-dark-300 hover:text-white hover:bg-dark-700 transition-all" title="FAANG Problem Sets">
+          <BookOpen size={17} />
+        </Link>
+        <Link to="/interview" className="p-2 rounded-lg text-dark-300 hover:text-white hover:bg-dark-700 transition-all" title="Mock Interview">
+          <Swords size={17} />
         </Link>
         {isAdmin && (
           <Link id="nav-admin" to="/admin" className="p-2 rounded-lg text-indigo-400 hover:text-indigo-300 hover:bg-indigo-900/30 transition-all" title="Admin Panel">
@@ -241,6 +247,14 @@ export default function Navbar({ xp, level, streak, currentUser, isAdmin, isPrem
                     My Dashboard
                     <ChevronRight size={12} className="ml-auto text-dark-400" />
                   </Link>
+                  <button
+                    onClick={() => { setShowUserMenu(false); onOpenSupport?.(); }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-dark-200 hover:bg-dark-700 hover:text-white transition-all"
+                  >
+                    <Headphones size={14} className="text-indigo-400" />
+                    Support
+                    <ChevronRight size={12} className="ml-auto text-dark-400" />
+                  </button>
                   <button
                     id="user-logout-btn"
                     onClick={() => { setShowUserMenu(false); onLogout(); }}

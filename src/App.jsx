@@ -6,7 +6,8 @@ import { auth } from './lib/firebase';
 import Navbar        from './components/layout/Navbar';
 import Sidebar       from './components/layout/Sidebar';
 import SettingsModal from './components/settings/SettingsModal';
-import PremiumModal       from './components/PremiumModal';
+import PremiumModal  from './components/PremiumModal';
+import SupportModal  from './components/SupportModal';
 import OnboardingModal, { shouldShowOnboarding } from './components/OnboardingModal';
 import SearchModal from './components/SearchModal';
 import AnnouncementBanner from './components/AnnouncementBanner';
@@ -19,6 +20,8 @@ import LeaderboardPage from './pages/LeaderboardPage';
 import AdminPage       from './pages/AdminPage';
 import ProfilePage     from './pages/ProfilePage';
 import VisualizerPage  from './pages/VisualizerPage';
+import ProblemsPage    from './pages/ProblemsPage';
+import InterviewPage   from './pages/InterviewPage';
 import LoginPage       from './pages/LoginPage';
 
 import { useProgress } from './hooks/useProgress';
@@ -31,6 +34,7 @@ function AppShell({ progress, completeLesson, completeQuiz, unlockHint, saveNote
   const [showSettings,   setShowSettings]   = useState(false);
   const [sidebarOpen,    setSidebarOpen]    = useState(false);
   const [showPremium,    setShowPremium]    = useState(false);
+  const [showSupport,    setShowSupport]    = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(() => shouldShowOnboarding());
   const [showSearch,     setShowSearch]     = useState(false);
 
@@ -56,6 +60,7 @@ function AppShell({ progress, completeLesson, completeQuiz, unlockHint, saveNote
         isPremium={isPremium}
         onOpenSettings={() => setShowSettings(true)}
         onOpenPremium={() => setShowPremium(true)}
+        onOpenSupport={() => setShowSupport(true)}
         onOpenSearch={() => setShowSearch(true)}
         onLogout={onLogout}
         onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
@@ -87,6 +92,8 @@ function AppShell({ progress, completeLesson, completeQuiz, unlockHint, saveNote
           <Route path="/leaderboard"  element={<LeaderboardPage currentUser={currentUser} />} />
           <Route path="/admin"        element={<AdminPage currentUser={currentUser} />} />
           <Route path="/visualizer"   element={<VisualizerPage />} />
+          <Route path="/problems"     element={<ProblemsPage progress={progress} />} />
+          <Route path="/interview"    element={<InterviewPage />} />
           <Route path="/profile"      element={<ProfilePage currentUser={currentUser} progress={progress} onProfileUpdate={onProfileUpdate} />} />
           <Route path="/profile/:uid" element={<ProfilePage currentUser={currentUser} progress={progress} onProfileUpdate={onProfileUpdate} />} />
           <Route path="*"             element={<Navigate to="/" replace />} />
@@ -94,7 +101,10 @@ function AppShell({ progress, completeLesson, completeQuiz, unlockHint, saveNote
       </div>
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
       <AnimatePresence>
-        {showPremium && <PremiumModal onClose={() => setShowPremium(false)} />}
+        {showPremium && <PremiumModal onClose={() => setShowPremium(false)} onOpenSupport={() => { setShowPremium(false); setShowSupport(true); }} />}
+      </AnimatePresence>
+      <AnimatePresence>
+        {showSupport && <SupportModal onClose={() => setShowSupport(false)} currentUser={currentUser} isPremium={isPremium} />}
       </AnimatePresence>
       <AnimatePresence>
         {showOnboarding && <OnboardingModal onClose={() => setShowOnboarding(false)} />}

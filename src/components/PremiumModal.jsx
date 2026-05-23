@@ -1,6 +1,7 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Crown, CheckCircle2, Mail, Zap, Lock, BarChart2, Swords, Users, FileText, Headphones, Map } from 'lucide-react';
+import { X, Crown, CheckCircle2, Mail, Zap, Lock, BarChart2, Swords, Users, FileText, Headphones, Map, BookOpen } from 'lucide-react';
 
 const FREE_ITEMS = [
   'C++ Fundamentals (14 lessons)',
@@ -32,7 +33,14 @@ const PREMIUM_ITEMS = [
   { text: 'Priority support — response within 24 h', star: true },
 ];
 
-export default function PremiumModal({ onClose }) {
+export default function PremiumModal({ onClose, onOpenSupport }) {
+  const navigate = useNavigate();
+
+  function goTo(path) {
+    onClose();
+    navigate(path);
+  }
+
   return (
     <AnimatePresence>
       <motion.div
@@ -152,6 +160,24 @@ export default function PremiumModal({ onClose }) {
                 <Mail size={14} /> Request Premium Access
               </a>
               <p className="text-center text-xs text-yellow-900/80 mt-2">Get access within 24 hours</p>
+
+              {/* Preview links */}
+              <div className="flex gap-2 mt-3">
+                <button
+                  onClick={() => goTo('/problems')}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-all hover:opacity-80"
+                  style={{ background: 'rgba(255,255,255,0.06)', color: '#d1d5db', border: '1px solid rgba(255,255,255,0.1)' }}
+                >
+                  <BookOpen size={11} /> Problem Sets
+                </button>
+                <button
+                  onClick={() => goTo('/interview')}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-all hover:opacity-80"
+                  style={{ background: 'rgba(255,255,255,0.06)', color: '#d1d5db', border: '1px solid rgba(255,255,255,0.1)' }}
+                >
+                  <Swords size={11} /> Mock Interview
+                </button>
+              </div>
             </div>
           </div>
 
