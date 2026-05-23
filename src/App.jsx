@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth } from './lib/firebase';
@@ -13,16 +13,24 @@ import SearchModal from './components/SearchModal';
 import AnnouncementBanner from './components/AnnouncementBanner';
 import { AnimatePresence } from 'framer-motion';
 
-import HomePage        from './pages/HomePage';
-import LessonPage      from './pages/LessonPage';
-import DashboardPage   from './pages/DashboardPage';
-import LeaderboardPage from './pages/LeaderboardPage';
-import AdminPage       from './pages/AdminPage';
-import ProfilePage     from './pages/ProfilePage';
-import VisualizerPage  from './pages/VisualizerPage';
-import ProblemsPage    from './pages/ProblemsPage';
-import InterviewPage   from './pages/InterviewPage';
-import LoginPage       from './pages/LoginPage';
+const HomePage        = lazy(() => import('./pages/HomePage'));
+const LessonPage      = lazy(() => import('./pages/LessonPage'));
+const DashboardPage   = lazy(() => import('./pages/DashboardPage'));
+const LeaderboardPage = lazy(() => import('./pages/LeaderboardPage'));
+const AdminPage       = lazy(() => import('./pages/AdminPage'));
+const ProfilePage     = lazy(() => import('./pages/ProfilePage'));
+const VisualizerPage  = lazy(() => import('./pages/VisualizerPage'));
+const ProblemsPage    = lazy(() => import('./pages/ProblemsPage'));
+const InterviewPage   = lazy(() => import('./pages/InterviewPage'));
+const LoginPage       = lazy(() => import('./pages/LoginPage'));
+
+function PageLoader() {
+  return (
+    <div className="flex flex-1 items-center justify-center">
+      <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+}
 
 import { useProgress } from './hooks/useProgress';
 import { isAdminEmail } from './config/admins';
@@ -69,6 +77,7 @@ function AppShell({ progress, completeLesson, completeQuiz, unlockHint, saveNote
       />
       <AnnouncementBanner />
       <div className="flex flex-1 overflow-hidden relative">
+        <Suspense fallback={<PageLoader />}>
         <Routes>
           <Route path="/" element={<HomePage progress={progress} onOpenPremium={() => setShowPremium(true)} />} />
           <Route
@@ -100,6 +109,7 @@ function AppShell({ progress, completeLesson, completeQuiz, unlockHint, saveNote
           <Route path="/profile/:uid" element={<ProfilePage currentUser={currentUser} progress={progress} onProfileUpdate={onProfileUpdate} />} />
           <Route path="*"             element={<Navigate to="/" replace />} />
         </Routes>
+        </Suspense>
       </div>
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
       <AnimatePresence>
