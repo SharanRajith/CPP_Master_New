@@ -135,10 +135,8 @@ export default function PremiumModal({ onClose }) {
               <ul className="space-y-2.5 relative">
                 {PREMIUM_ITEMS.map((item, i) => (
                   <li key={i} className="flex items-center gap-2.5 text-sm">
-                    <Crown size={11} className="shrink-0" style={{ color: item.star ? '#fb923c' : '#f59e0b' }} />
-                    <span style={{ color: item.star ? '#fcd34d' : '#e5e7eb', fontWeight: item.star ? 600 : 400 }}>
-                      {item.text}
-                    </span>
+                    <Crown size={11} className="shrink-0" style={{ color: '#f59e0b' }} />
+                    <span style={{ color: '#e5e7eb' }}>{item.text}</span>
                   </li>
                 ))}
               </ul>
