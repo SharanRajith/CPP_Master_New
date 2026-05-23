@@ -60,7 +60,11 @@ int main() {
     summary: 'Divides the array into a sorted left region and an unsorted right region. Each pass scans the unsorted region to find its minimum, then moves that minimum to the end of the sorted region.',
     bullets: ['Always O(n²) — does not benefit from partially sorted input', 'Minimum number of swaps (at most n−1) — good when writes are expensive', 'Not stable — equal elements can be reordered'],
     time: 'O(n²)', best: 'O(n²)', space: 'O(1)',
-    code: `void selectionSort(int arr[], int n) {
+    code: `#include <bits/stdc++.h>
+using namespace std;
+
+void selectionSort(vector<int>& arr) {
+    int n = arr.size();
     for (int i = 0; i < n - 1; i++) {
         int minIdx = i;
         for (int j = i + 1; j < n; j++) {
@@ -71,13 +75,30 @@ int main() {
         if (minIdx != i)
             swap(arr[i], arr[minIdx]);
     }
+}
+
+void printVector(const vector<int>& arr) {
+    for (int num : arr)
+        cout << " " << num;
+}
+
+int main() {
+    vector<int> arr = { 64, 25, 12, 22, 11 };
+    selectionSort(arr);
+    cout << "Sorted array: \\n";
+    printVector(arr);
+    return 0;
 }`,
   },
   Insertion: {
     summary: 'Builds the sorted array one element at a time. Each new element is picked from the unsorted right portion and shifted leftward into its correct position within the already-sorted left portion — like sorting playing cards in your hand.',
     bullets: ['Adaptive — O(n) on nearly-sorted data', 'Stable — preserves the relative order of equal elements', 'Preferred for small arrays; used inside Timsort and Introsort'],
     time: 'O(n²)', best: 'O(n)', space: 'O(1)',
-    code: `void insertionSort(int arr[], int n) {
+    code: `#include <bits/stdc++.h>
+using namespace std;
+
+void insertionSort(vector<int>& arr) {
+    int n = arr.size();
     for (int i = 1; i < n; i++) {
         int key = arr[i];
         int j = i - 1;
@@ -88,28 +109,58 @@ int main() {
         }
         arr[j + 1] = key;
     }
+}
+
+void printVector(const vector<int>& arr) {
+    for (int num : arr)
+        cout << " " << num;
+}
+
+int main() {
+    vector<int> arr = { 12, 11, 13, 5, 6 };
+    insertionSort(arr);
+    cout << "Sorted array: \\n";
+    printVector(arr);
+    return 0;
 }`,
   },
   Quick: {
     summary: 'Picks a pivot element and partitions the array so all elements ≤ pivot are left of it and all elements > pivot are right. Then recursively sorts both halves. The pivot is in its final sorted position after each partition call.',
     bullets: ['O(n log n) average — one of the fastest sorting algorithms in practice', 'O(n²) worst case when pivot is always the min/max (avoidable with random pivot)', 'In-place and cache-friendly — widely used in standard libraries'],
     time: 'O(n log n)', best: 'O(n log n)', space: 'O(log n)',
-    code: `int partition(int arr[], int lo, int hi) {
+    code: `#include <bits/stdc++.h>
+using namespace std;
+
+int partition(vector<int>& arr, int lo, int hi) {
     int pivot = arr[hi];
     int i = lo - 1;
     for (int j = lo; j < hi; j++) {
         if (arr[j] <= pivot)
             swap(arr[++i], arr[j]);
     }
-    swap(arr[i + 1], arr[hi]); // pivot in final position
+    swap(arr[i + 1], arr[hi]); // pivot placed at final position
     return i + 1;
 }
 
-void quickSort(int arr[], int lo, int hi) {
+void quickSort(vector<int>& arr, int lo, int hi) {
     if (lo >= hi) return;
     int pi = partition(arr, lo, hi);
     quickSort(arr, lo, pi - 1);
     quickSort(arr, pi + 1, hi);
+}
+
+void printVector(const vector<int>& arr) {
+    for (int num : arr)
+        cout << " " << num;
+}
+
+int main() {
+    vector<int> arr = { 10, 7, 8, 9, 1, 5 };
+    int n = arr.size();
+    quickSort(arr, 0, n - 1);
+    cout << "Sorted array: \\n";
+    printVector(arr);
+    return 0;
 }`,
   },
 };
