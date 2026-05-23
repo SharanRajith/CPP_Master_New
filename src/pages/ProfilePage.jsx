@@ -220,17 +220,32 @@ export default function ProfilePage({ currentUser, progress: ownProgress, onProf
 
                   {/* Camera overlay — own profile only */}
                   {isOwn && (
-                    <button
-                      onClick={() => fileInputRef.current?.click()}
-                      disabled={uploading}
-                      className="absolute inset-0 rounded-2xl flex items-center justify-center transition-all opacity-0 group-hover:opacity-100"
-                      style={{ background: 'rgba(0,0,0,0.55)' }}
-                      title="Change profile photo"
-                    >
-                      {uploading
-                        ? <Loader2 size={22} className="text-white animate-spin" />
-                        : <Camera size={22} className="text-white" />}
-                    </button>
+                    <>
+                      {/* Hover overlay (desktop) */}
+                      <button
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploading}
+                        className="absolute inset-0 rounded-2xl items-center justify-center transition-all hidden md:flex opacity-0 group-hover:opacity-100"
+                        style={{ background: 'rgba(0,0,0,0.55)' }}
+                        title="Change profile photo"
+                      >
+                        {uploading
+                          ? <Loader2 size={22} className="text-white animate-spin" />
+                          : <Camera size={22} className="text-white" />}
+                      </button>
+                      {/* Always-visible badge (mobile) */}
+                      <button
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploading}
+                        className="md:hidden absolute -bottom-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center shadow-lg z-10"
+                        style={{ background: '#4f46e5', border: '2px solid #0e0e1a' }}
+                        title="Change profile photo"
+                      >
+                        {uploading
+                          ? <Loader2 size={12} className="text-white animate-spin" />
+                          : <Camera size={12} className="text-white" />}
+                      </button>
+                    </>
                   )}
 
                   {/* Level badge */}
