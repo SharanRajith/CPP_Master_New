@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Play, Pause, ChevronRight, ChevronLeft, Shuffle, RotateCcw, BarChart2, GitBranch, Share2 } from 'lucide-react';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-const SPEEDS = { Slow: 850, Normal: 380, Fast: 100 };
+const SPEEDS = { Slow: 1800, Normal: 700, Fast: 200 };
 
 const BAR = {
   default:   '#1e3a5f',
