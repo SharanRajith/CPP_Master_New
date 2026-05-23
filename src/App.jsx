@@ -68,7 +68,7 @@ function AppShell({ progress, completeLesson, completeQuiz, unlockHint, saveNote
         photoURL={progress.photoURL}
       />
       <AnnouncementBanner />
-      <div className={`flex flex-1 relative ${pathname === '/interview' ? 'overflow-y-auto items-start' : 'overflow-hidden'}`}>
+      <div className="flex flex-1 overflow-hidden relative">
         <Routes>
           <Route path="/" element={<HomePage progress={progress} onOpenPremium={() => setShowPremium(true)} />} />
           <Route

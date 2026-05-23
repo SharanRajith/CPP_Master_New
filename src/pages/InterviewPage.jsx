@@ -107,8 +107,8 @@ const STATUS_META = {
 // ─── Start screen ─────────────────────────────────────────────────────────────
 function StartScreen({ onStart }) {
   return (
-    <div className="w-full min-h-full flex flex-col items-center p-6 py-10" style={{ background: '#0a0f1c' }}>
-      <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} className="max-w-lg w-full text-center">
+    <div className="w-full px-6 py-10" style={{ background: '#0a0f1c' }}>
+      <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} className="max-w-lg w-full mx-auto text-center">
         <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6"
           style={{ background: 'linear-gradient(135deg,#4f46e5,#7c3aed)', boxShadow: '0 0 40px rgba(99,102,241,0.3)' }}>
           <Clock size={28} className="text-white" />
@@ -290,8 +290,8 @@ export default function InterviewPage() {
     if (qIdx < QUESTIONS.length - 1) setQIdx(qIdx + 1);
   }
 
-  if (phase === 'start')   return <StartScreen onStart={startInterview} />;
-  if (phase === 'results') return <ResultsScreen answers={answers} timeTaken={timeTaken} onRetry={startInterview} navigate={navigate} />;
+  if (phase === 'start')   return <div className="h-full overflow-y-auto" style={{ background: '#0a0f1c' }}><StartScreen onStart={startInterview} /></div>;
+  if (phase === 'results') return <div className="h-full overflow-y-auto" style={{ background: '#0a0f1c' }}><ResultsScreen answers={answers} timeTaken={timeTaken} onRetry={startInterview} navigate={navigate} /></div>;
 
   const q = QUESTIONS[qIdx];
   const answered = Object.keys(answers).length;
