@@ -96,6 +96,7 @@ function DailyChallenge({ progress }) {
 }
 
 function isModuleUnlocked(module, progress) {
+  if (progress.isSuperAdmin) return true;
   if (progress.unlockedModules?.includes(module.id)) return true;
   const firstId = module.lessons[0]?.id;
   if (!firstId) return false;

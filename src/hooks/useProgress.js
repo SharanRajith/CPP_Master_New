@@ -5,6 +5,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { TRACK_ENTRY_LESSONS } from '../data/curriculum';
+import { isSuperAdminEmail } from '../config/admins';
 
 const STORAGE_KEY = 'cpp_dsa_progress';
 
@@ -62,7 +63,7 @@ export function useProgress(user) {
           data = { ...data, ...patch };
         }
 
-        setProgress(data);
+        setProgress({ ...data, isSuperAdmin: isSuperAdminEmail(user?.email) });
       } catch (err) {
         console.error("Firebase sync error", err);
       } finally {

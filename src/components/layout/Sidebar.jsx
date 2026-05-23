@@ -13,6 +13,7 @@ export default function Sidebar({ progress, currentLessonId, isPremium }) {
   }
 
   function isUnlocked(lesson, moduleId) {
+    if (progress.isSuperAdmin) return true;
     if (progress.completedLessons[lesson.id]) return true;
     if (TRACK_ENTRY_LESSONS.has(lesson.id)) return true;
     if (progress.unlockedModules?.includes(moduleId)) return true;
