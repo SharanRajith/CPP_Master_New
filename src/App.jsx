@@ -51,7 +51,7 @@ function AppShell({ progress, completeLesson, completeQuiz, unlockHint, saveNote
   }, []);
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
+    <div className="flex flex-col h-dvh overflow-hidden">
       <Navbar
         xp={progress.xp}
         level={progress.level}
