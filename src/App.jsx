@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth } from './lib/firebase';
 
@@ -28,6 +28,17 @@ import { useProgress } from './hooks/useProgress';
 import { isAdminEmail } from './config/admins';
 import { useParams }   from 'react-router-dom';
 import { PanelGroup, Panel, PanelResizeHandle } from 'react-resizable-panels';
+
+// Routes container — scrollable on /interview, fixed-overflow elsewhere
+function RoutesContainer({ children }) {
+  const { pathname } = useLocation();
+  const isInterview = pathname === '/interview';
+  return (
+    <div className={`flex flex-1 relative ${isInterview ? 'overflow-y-auto' : 'overflow-hidden'}`}>
+      {children}
+    </div>
+  );
+}
 
 // ─── Layout wrapper ───────────────────────────────────────────────────────────
 function AppShell({ progress, completeLesson, completeQuiz, unlockHint, saveNote, deleteNote, isLessonCompleted, isLessonUnlocked, resetProgress, onLogout, onProfileUpdate, currentUser, isAdmin, isPremium }) {
@@ -66,7 +77,7 @@ function AppShell({ progress, completeLesson, completeQuiz, unlockHint, saveNote
         onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
       />
       <AnnouncementBanner />
-      <div className="flex flex-1 overflow-hidden relative">
+      <RoutesContainer>
         <Routes>
           <Route path="/" element={<HomePage progress={progress} onOpenPremium={() => setShowPremium(true)} />} />
           <Route
@@ -98,7 +109,7 @@ function AppShell({ progress, completeLesson, completeQuiz, unlockHint, saveNote
           <Route path="/profile/:uid" element={<ProfilePage currentUser={currentUser} progress={progress} onProfileUpdate={onProfileUpdate} />} />
           <Route path="*"             element={<Navigate to="/" replace />} />
         </Routes>
-      </div>
+      </RoutesContainer>
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
       <AnimatePresence>
         {showPremium && <PremiumModal onClose={() => setShowPremium(false)} onOpenSupport={() => { setShowPremium(false); setShowSupport(true); }} />}
