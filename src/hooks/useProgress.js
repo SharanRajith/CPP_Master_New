@@ -248,6 +248,7 @@ function getDefaultProgress() {
     completedQuizzes:  {},
     unlockedHints:     {},  // lessonId → [0, 1, 2, ...]
     notes:             {},  // lessonId → [{ id, text, ts }]
+    unlockedModules:   [],  // admin-granted module unlocks
     xp:                0,
     level:             1,
     streak:            0,

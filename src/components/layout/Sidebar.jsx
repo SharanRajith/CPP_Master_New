@@ -12,9 +12,10 @@ export default function Sidebar({ progress, currentLessonId, isPremium }) {
     setExpandedModules(prev => ({ ...prev, [moduleId]: !prev[moduleId] }));
   }
 
-  function isUnlocked(lesson) {
+  function isUnlocked(lesson, moduleId) {
     if (progress.completedLessons[lesson.id]) return true;
     if (TRACK_ENTRY_LESSONS.has(lesson.id)) return true;
+    if (progress.unlockedModules?.includes(moduleId)) return true;
     const prevId = getPreviousLessonId(lesson.id);
     if (!prevId) return true;
     return !!progress.completedLessons[prevId];
@@ -113,7 +114,7 @@ export default function Sidebar({ progress, currentLessonId, isPremium }) {
                   >
                     {module.lessons.map((lesson, idx) => {
                       const fullLesson  = { ...lesson, id: lesson.id };
-                      const unlocked    = isUnlocked(fullLesson);
+                      const unlocked    = isUnlocked(fullLesson, module.id);
                       const completed   = !!progress.completedLessons[lesson.id];
                       const isCurrent   = lesson.id === currentLessonId;
 

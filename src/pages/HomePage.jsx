@@ -95,13 +95,14 @@ function DailyChallenge({ progress }) {
   );
 }
 
-function isModuleUnlocked(module, completedLessons) {
+function isModuleUnlocked(module, progress) {
+  if (progress.unlockedModules?.includes(module.id)) return true;
   const firstId = module.lessons[0]?.id;
   if (!firstId) return false;
   if (TRACK_ENTRY_LESSONS.has(firstId)) return true;
   const prevId = getPreviousLessonId(firstId);
   if (!prevId) return true;
-  return !!completedLessons[prevId];
+  return !!progress.completedLessons[prevId];
 }
 
 function ModuleCard({ module, progress, onStart }) {
@@ -111,7 +112,7 @@ function ModuleCard({ module, progress, onStart }) {
   const firstLesson = module.lessons[0];
   const firstUncompleted = module.lessons.find(l => !progress.completedLessons[l.id]);
   const isAllDone = completed === total;
-  const unlocked  = isModuleUnlocked(module, progress.completedLessons);
+  const unlocked  = isModuleUnlocked(module, progress);
 
   return (
     <motion.div

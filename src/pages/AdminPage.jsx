@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { collection, getDocs, doc, updateDoc, addDoc, deleteDoc, onSnapshot, query, serverTimestamp } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, Crown, Users, Zap, BookOpen, ToggleLeft, ToggleRight, RefreshCw, UserCog, Megaphone, Plus, Trash2, Info, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Shield, Crown, Users, Zap, BookOpen, ToggleLeft, ToggleRight, RefreshCw, UserCog, Megaphone, Plus, Trash2, Info, AlertTriangle, CheckCircle, KeyRound, ChevronDown, ChevronUp } from 'lucide-react';
 import { db } from '../lib/firebase';
 import { LEVELS } from '../hooks/useProgress';
 import { ADMIN_EMAILS } from '../config/admins';
+import { CURRICULUM } from '../data/curriculum';
 
 const SUPER_ADMINS = ['sharanrajithk@gmail.com', 'madhurahegde475@gmail.com'];
 
@@ -15,9 +16,10 @@ const ANN_TYPES = [
 ];
 
 export default function AdminPage({ currentUser }) {
-  const [users,    setUsers]    = useState([]);
-  const [loading,  setLoading]  = useState(true);
-  const [updating, setUpdating] = useState(null); // uid being updated
+  const [users,        setUsers]        = useState([]);
+  const [loading,      setLoading]      = useState(true);
+  const [updating,     setUpdating]     = useState(null);
+  const [expandedUid,  setExpandedUid]  = useState(null); // uid with unlock panel open
 
   // Announcements state
   const [announcements,  setAnnouncements]  = useState([]);
@@ -105,6 +107,18 @@ export default function AdminPage({ currentUser }) {
     } finally {
       setUpdating(null);
     }
+  };
+
+  const toggleModuleUnlock = async (uid, moduleId, currentUnlocked) => {
+    const user = users.find(u => u.uid === uid);
+    const current = user?.unlockedModules || [];
+    const next = currentUnlocked
+      ? current.filter(id => id !== moduleId)
+      : [...current, moduleId];
+    try {
+      await updateDoc(doc(db, 'users', uid), { unlockedModules: next });
+      setUsers(prev => prev.map(u => u.uid === uid ? { ...u, unlockedModules: next } : u));
+    } catch (e) { /* ignore */ }
   };
 
   if (!isAdmin) {
@@ -267,15 +281,19 @@ export default function AdminPage({ currentUser }) {
               const isUpdPremium     = updating === user.uid + '-premium';
               const isUpdAdmin       = updating === user.uid + '-admin';
 
+              const isExpanded = expandedUid === user.uid;
+              const unlockedModules = user.unlockedModules || [];
+
               return (
                 <motion.div key={user.uid}
                   initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}
-                  className="flex items-center gap-3 rounded-xl px-4 py-3"
+                  className="rounded-xl overflow-hidden"
                   style={{
                     background: isMe ? 'rgba(99,102,241,0.1)' : 'rgba(17,17,24,0.8)',
                     border: isMe ? '1px solid rgba(99,102,241,0.3)' : '1px solid rgba(255,255,255,0.05)',
                   }}
                 >
+                <div className="flex items-center gap-3 px-4 py-3">
                   {/* Avatar */}
                   {user.photoURL ? (
                     <img src={user.photoURL} alt="" className="w-9 h-9 rounded-full shrink-0 ring-2 ring-dark-600" />
@@ -345,7 +363,58 @@ export default function AdminPage({ currentUser }) {
                         }
                       </button>
                     )}
+
+                    {/* Unlock modules */}
+                    <button
+                      onClick={() => setExpandedUid(isExpanded ? null : user.uid)}
+                      title="Unlock modules for this user"
+                      className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-all"
+                      style={unlockedModules.length > 0
+                        ? { background: 'rgba(52,211,153,0.15)', border: '1px solid rgba(52,211,153,0.3)', color: '#34d399' }
+                        : { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#6b7280' }
+                      }
+                    >
+                      <KeyRound size={12} />
+                      {unlockedModules.length > 0 ? unlockedModules.length : ''}
+                      {isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                    </button>
                   </div>
+                </div>
+
+                {/* Unlock panel */}
+                <AnimatePresence>
+                  {isExpanded && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="overflow-hidden border-t border-white/5"
+                    >
+                      <div className="px-4 py-3">
+                        <p className="text-xs text-dark-400 mb-2">Click a module to unlock/lock it for this user:</p>
+                        <div className="flex flex-wrap gap-2">
+                          {CURRICULUM.map(mod => {
+                            const isUnlocked = unlockedModules.includes(mod.id);
+                            return (
+                              <button
+                                key={mod.id}
+                                onClick={() => toggleModuleUnlock(user.uid, mod.id, isUnlocked)}
+                                className="flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg transition-all"
+                                style={isUnlocked
+                                  ? { background: `${mod.color}22`, border: `1px solid ${mod.color}66`, color: mod.color }
+                                  : { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#6b7280' }
+                                }
+                              >
+                                <span>{mod.icon}</span> {mod.title}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
                 </motion.div>
               );
             })}
