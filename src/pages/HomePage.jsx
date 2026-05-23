@@ -241,20 +241,20 @@ export default function HomePage({ progress, onOpenPremium }) {
         >
           <div className="inline-flex items-center gap-2 bg-brand-900/50 border border-brand-700/50 px-4 py-1.5 rounded-full text-sm text-brand-300 mb-6">
             <Code2 size={14} />
-            C++ DSA Learning Platform
+            C++ · DSA · Embedded C · DBMS — All in one platform
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-extrabold mb-4 leading-tight">
             <span className="gradient-text">Master C++&nbsp;&amp;</span>
             <br className="hidden sm:block" />
-            <span className="text-white"> Data Structures</span>
+            <span className="text-white"> Crack FAANG Interviews</span>
           </h1>
-          <p className="text-dark-300 text-lg max-w-xl mx-auto mb-8">
+          <p className="text-dark-300 text-lg max-w-xl mx-auto mb-6">
             From absolute beginner to <strong className="text-brand-300">FAANG-interview-ready</strong>.
-            Interactive lessons, in-browser C++ compilation, real LeetCode problems.
+            120+ lessons, algorithm visualizer, mock interviews &amp; company-tagged problem sets.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <div className="flex flex-col sm:flex-row gap-3 justify-center mb-7">
             <button onClick={handleStart} className="btn-primary text-base px-8 py-3">
               <Play size={18} />
               {totalCompleted > 0 ? 'Continue Learning' : 'Start Learning'}
@@ -266,6 +266,23 @@ export default function HomePage({ progress, onOpenPremium }) {
               <Trophy size={18} />
               My Progress
             </button>
+          </div>
+
+          {/* Feature pills */}
+          <div className="flex flex-wrap justify-center gap-2">
+            {[
+              { icon: <BookOpen size={11} />,  label: '120+ Lessons',          color: '#a5b4fc' },
+              { icon: <BarChart2 size={11} />, label: 'Algorithm Visualizer',  color: '#818cf8' },
+              { icon: <Swords size={11} />,    label: 'Mock Interviews',        color: '#f59e0b' },
+              { icon: <Trophy size={11} />,    label: 'FAANG Problem Sets',     color: '#34d399' },
+              { icon: <Code2 size={11} />,     label: 'In-browser Compiler',    color: '#67e8f9' },
+              { icon: <Flame size={11} />,     label: 'Daily Challenges',       color: '#fb923c' },
+            ].map((f, i) => (
+              <span key={i} className="flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-full"
+                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: f.color }}>
+                {f.icon}{f.label}
+              </span>
+            ))}
           </div>
         </motion.div>
       </div>
