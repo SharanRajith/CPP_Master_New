@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Flame, Zap, BookOpen, Lock, Play, ChevronRight, X, Terminal, Trophy } from 'lucide-react';
+import { Flame, Zap, BookOpen, Lock, Play, ChevronRight, X, Terminal, Trophy, GitBranch, Swords, MessageCircle, StickyNote, Medal, Award, CalendarDays, Database, Cpu } from 'lucide-react';
 
 const STEPS = [
   {
@@ -41,26 +41,24 @@ const STEPS = [
     iconBg: 'rgba(99,102,241,0.12)',
     iconBorder: 'rgba(99,102,241,0.25)',
     accent: '#6366f1',
-    title: '13 Modules. 120+ Lessons.',
-    body: 'Work through the curriculum in order — complete a module to unlock the next. Advanced topics like Graphs and DP are waiting at the end.',
+    title: '3 Tracks. 200+ Lessons.',
+    body: 'Choose your path — DSA in C++, Embedded C, or DBMS. Each track has its own structured curriculum from beginner to interview-ready.',
     visual: (
       <div className="space-y-2">
         {[
-          { name: 'C++ Fundamentals', done: true,  color: '#34d399' },
-          { name: 'OOP in C++',       done: false, color: '#6366f1' },
-          { name: 'Graphs & BFS/DFS', done: false, color: '#a78bfa', locked: true },
-        ].map((m, i) => (
-          <div key={i} className="flex items-center gap-3 px-4 py-2.5 rounded-xl"
-            style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
-            <div className="w-2 h-2 rounded-full shrink-0" style={{ background: m.color }} />
-            <span className="text-sm text-slate-300 flex-1">{m.name}</span>
-            {m.done && <span className="text-xs text-emerald-400">✓ Done</span>}
-            {m.locked && <Lock size={12} className="text-slate-600" />}
-            {!m.done && !m.locked && (
-              <div className="h-1 w-16 rounded-full bg-dark-600">
-                <div className="h-1 rounded-full bg-indigo-500" style={{ width: '0%' }} />
-              </div>
-            )}
+          { icon: <BookOpen size={14} />, name: 'DSA & C++',    sub: '13 modules · Arrays → DP → Graphs', color: '#6366f1', bg: 'rgba(99,102,241,0.1)'   },
+          { icon: <Cpu       size={14} />, name: 'Embedded C',  sub: '4 modules · Peripherals · Protocols', color: '#22d3ee', bg: 'rgba(34,211,238,0.1)'  },
+          { icon: <Database  size={14} />, name: 'DBMS & SQL',  sub: '5 modules · Normalization · Indexing', color: '#a78bfa', bg: 'rgba(167,139,250,0.1)' },
+        ].map((t, i) => (
+          <div key={i} className="flex items-center gap-3 px-3 py-2.5 rounded-xl"
+            style={{ background: t.bg, border: `1px solid ${t.color}30` }}>
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ background: `${t.color}20`, color: t.color }}>
+              {t.icon}
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-white leading-none">{t.name}</p>
+              <p className="text-[10px] text-slate-500 mt-0.5">{t.sub}</p>
+            </div>
           </div>
         ))}
       </div>
@@ -72,7 +70,7 @@ const STEPS = [
     iconBorder: 'rgba(52,211,153,0.25)',
     accent: '#34d399',
     title: 'Code. Run. Learn Instantly.',
-    body: 'Every lesson has a real C++ compiler built in — nothing to install. Write code, hit the shortcut, and see your output instantly.',
+    body: 'Every lesson has a real C++ compiler built in — nothing to install. Write code, hit Ctrl+Enter, and see your output instantly.',
     visual: (
       <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(99,102,241,0.2)' }}>
         <div className="flex items-center gap-2 px-4 py-2" style={{ background: 'rgba(99,102,241,0.08)', borderBottom: '1px solid rgba(99,102,241,0.12)' }}>
@@ -94,6 +92,119 @@ const STEPS = [
           <div><span className="text-purple-400">int</span> <span className="text-blue-400">main</span><span className="text-slate-300">() {'{'}</span></div>
           <div><span className="text-slate-300">&nbsp;&nbsp;cout &lt;&lt; </span><span className="text-green-400">"Hello, World!"</span><span className="text-slate-300">;</span></div>
           <div><span className="text-slate-300">{'}'}</span></div>
+        </div>
+      </div>
+    ),
+  },
+  {
+    icon: <CalendarDays size={28} className="text-rose-400" />,
+    iconBg: 'rgba(251,113,133,0.1)',
+    iconBorder: 'rgba(251,113,133,0.25)',
+    accent: '#fb7185',
+    title: 'Daily Challenge. Every Day.',
+    body: 'A fresh coding challenge drops every day. Solve it to earn bonus XP and keep your streak alive. Miss a day and it resets.',
+    visual: (
+      <div className="rounded-xl p-4" style={{ background: 'rgba(251,113,133,0.06)', border: '1px solid rgba(251,113,133,0.2)' }}>
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-xs font-bold text-rose-400 uppercase tracking-wide">Today's Challenge</span>
+          <span className="text-xs text-slate-500">+50 XP bonus</span>
+        </div>
+        <p className="text-sm font-semibold text-white mb-1">Two Sum — Find indices</p>
+        <p className="text-xs text-slate-400 mb-3">Given an array of integers, return indices of the two numbers such that they add up to target.</p>
+        <div className="flex gap-2">
+          <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(52,211,153,0.12)', color: '#34d399', border: '1px solid rgba(52,211,153,0.2)' }}>Easy</span>
+          <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(99,102,241,0.12)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.2)' }}>HashMap</span>
+        </div>
+      </div>
+    ),
+  },
+  {
+    icon: <GitBranch size={28} className="text-cyan-400" />,
+    iconBg: 'rgba(34,211,238,0.1)',
+    iconBorder: 'rgba(34,211,238,0.25)',
+    accent: '#22d3ee',
+    title: 'Visualize. Practice. Interview.',
+    body: 'Three extra tools to sharpen your skills — find them in the Explore menu (compass icon) in the navbar.',
+    visual: (
+      <div className="space-y-2">
+        {[
+          { icon: <GitBranch size={14} className="text-indigo-400" />, name: 'Algorithm Visualizer', sub: 'See sorting, trees & graphs animate live' },
+          { icon: <BookOpen  size={14} className="text-emerald-400" />, name: 'FAANG Problems',       sub: '15 company-tagged problem sets' },
+          { icon: <Swords    size={14} className="text-yellow-400" />,  name: 'Mock Interview',        sub: '10 timed questions — simulate a real interview' },
+        ].map((item, i) => (
+          <div key={i} className="flex items-center gap-3 px-3 py-2.5 rounded-xl"
+            style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              {item.icon}
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-white leading-none">{item.name}</p>
+              <p className="text-[10px] text-slate-500 mt-0.5">{item.sub}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    ),
+  },
+  {
+    icon: <MessageCircle size={28} className="text-violet-400" />,
+    iconBg: 'rgba(167,139,250,0.1)',
+    iconBorder: 'rgba(167,139,250,0.25)',
+    accent: '#a78bfa',
+    title: 'Ask Questions. Take Notes.',
+    body: 'Stuck on a lesson? Drop a comment and get a reply. Use the Notes tab to save your own insights right inside the lesson.',
+    visual: (
+      <div className="space-y-2">
+        <div className="flex gap-3 p-3 rounded-xl" style={{ background: 'rgba(167,139,250,0.06)', border: '1px solid rgba(167,139,250,0.15)' }}>
+          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-xs font-bold text-white shrink-0">A</div>
+          <div>
+            <p className="text-xs font-semibold text-white">You</p>
+            <p className="text-xs text-slate-400 mt-0.5">Why does the two-pointer approach work here?</p>
+          </div>
+        </div>
+        <div className="flex gap-3 p-3 rounded-xl" style={{ background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.15)' }}>
+          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-600 to-purple-700 flex items-center justify-center text-xs font-bold text-white shrink-0">M</div>
+          <div>
+            <p className="text-xs font-semibold text-white flex items-center gap-1.5">
+              Admin
+              <span className="text-[9px] px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(99,102,241,0.2)', color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.3)' }}>Admin</span>
+            </p>
+            <p className="text-xs text-slate-400 mt-0.5">Because the array is sorted — we can move pointers inward based on the sum!</p>
+          </div>
+        </div>
+      </div>
+    ),
+  },
+  {
+    icon: <Award size={28} className="text-yellow-400" />,
+    iconBg: 'rgba(234,179,8,0.12)',
+    iconBorder: 'rgba(234,179,8,0.25)',
+    accent: '#f59e0b',
+    title: 'Compete. Certify. Conquer.',
+    body: 'Climb the leaderboard, earn achievement badges for milestones, and get a certificate when you complete a full track.',
+    visual: (
+      <div className="flex items-center justify-center gap-5 py-2">
+        <div className="flex flex-col items-center gap-1.5">
+          <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: 'rgba(234,179,8,0.12)', border: '1px solid rgba(234,179,8,0.25)' }}>
+            <Medal size={22} className="text-yellow-400" />
+          </div>
+          <span className="text-xs text-slate-400">Leaderboard</span>
+          <span className="text-[10px] text-slate-600">top rankers</span>
+        </div>
+        <div className="flex flex-col items-center gap-1.5">
+          <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: 'rgba(251,113,133,0.1)', border: '1px solid rgba(251,113,133,0.25)' }}>
+            <Award size={22} className="text-rose-400" />
+          </div>
+          <span className="text-xs text-slate-400">Badges</span>
+          <span className="text-[10px] text-slate-600">achievements</span>
+        </div>
+        <div className="flex flex-col items-center gap-1.5">
+          <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.25)' }}>
+            <Trophy size={22} className="text-emerald-400" />
+          </div>
+          <span className="text-xs text-slate-400">Certificate</span>
+          <span className="text-[10px] text-slate-600">on completion</span>
         </div>
       </div>
     ),
