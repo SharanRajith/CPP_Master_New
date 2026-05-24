@@ -329,8 +329,13 @@ export default function DiscussionPanel({ lessonId, lessonTitle, currentUser, is
                 {c.adminReply && replyingTo !== c.id && (
                   <div className="mt-3 ml-10 pl-3 border-l-2 border-indigo-600/40 flex justify-between items-start gap-2">
                     <div className="min-w-0">
-                      <p className="text-[10px] text-indigo-400 font-semibold mb-0.5">
-                        {c.adminReply.displayName || 'Admin'} replied · {relativeTime(c.adminReply.createdAt)}
+                      <p className="text-[10px] text-indigo-400 font-semibold mb-0.5 flex items-center gap-1.5 flex-wrap">
+                        {c.adminReply.displayName || 'Admin'}
+                        <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold"
+                          style={{ background: 'rgba(99,102,241,0.2)', border: '1px solid rgba(99,102,241,0.4)', color: '#a5b4fc' }}>
+                          Admin
+                        </span>
+                        <span className="text-dark-500 font-normal">replied · {relativeTime(c.adminReply.createdAt)}</span>
                       </p>
                       <CommentText text={c.adminReply.text} />
                     </div>
