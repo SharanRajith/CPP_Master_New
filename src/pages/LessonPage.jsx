@@ -84,7 +84,7 @@ function LessonHeaderStrip({ lesson, isCompleted, prevLesson, nextLesson, naviga
         )}
       </div>
 
-      <LessonContent lesson={lesson} attempts={0} notes={notes} onSaveNote={onSaveNote} onDeleteNote={onDeleteNote} currentUser={currentUser} isAdmin={isAdmin} />
+      <LessonContent lesson={lesson} attempts={0} notes={notes} onSaveNote={onSaveNote} onDeleteNote={onDeleteNote} currentUser={currentUser} isAdmin={isAdmin} completeLeetCode={completeLeetCode} completedLeetCode={progress.completedLeetCode} />
 
       <div className="flex gap-2 p-3 border-t border-dark-600 shrink-0 bg-dark-900">
         {prevLesson && (
@@ -116,7 +116,7 @@ function LessonHeaderStrip({ lesson, isCompleted, prevLesson, nextLesson, naviga
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-export default function LessonPage({ progress, completeLesson, unlockHint, saveNote, deleteNote, isLessonCompleted, isMobile, isPremium, isLessonUnlocked, currentUser, isAdmin }) {
+export default function LessonPage({ progress, completeLesson, completeLeetCode, unlockHint, saveNote, deleteNote, isLessonCompleted, isMobile, isPremium, isLessonUnlocked, currentUser, isAdmin }) {
   const { lessonId } = useParams();
   const navigate     = useNavigate();
   const allLessons   = getAllLessons();
@@ -283,7 +283,7 @@ export default function LessonPage({ progress, completeLesson, unlockHint, saveN
           </button>
         </div>
         <div className="flex-1 overflow-y-auto overscroll-contain">
-          <LessonContent lesson={lesson} attempts={0} notes={lessonNotes} onSaveNote={text => saveNote(lessonId, text)} onDeleteNote={id => deleteNote(lessonId, id)} currentUser={currentUser} isAdmin={isAdmin} />
+          <LessonContent lesson={lesson} attempts={0} notes={lessonNotes} onSaveNote={text => saveNote(lessonId, text)} onDeleteNote={id => deleteNote(lessonId, id)} currentUser={currentUser} isAdmin={isAdmin} completeLeetCode={completeLeetCode} completedLeetCode={progress.completedLeetCode} />
         </div>
         <div className="flex gap-2 p-3 border-t border-dark-600 shrink-0 bg-dark-900">
           {prevLesson && <button onClick={() => navigate(`/lesson/${prevLesson.id}`)} className="flex items-center gap-1.5 text-sm text-dark-300 hover:text-white px-3 py-2 rounded-lg hover:bg-dark-700 transition-all"><ChevronLeft size={14} /> Prev</button>}
@@ -326,7 +326,7 @@ export default function LessonPage({ progress, completeLesson, unlockHint, saveN
           </div>
           <div className="flex-1 overflow-hidden">
             {mobileTab === 'lesson'
-              ? <div className="h-full overflow-y-auto"><LessonContent lesson={lesson} attempts={0} notes={lessonNotes} onSaveNote={text => saveNote(lessonId, text)} onDeleteNote={id => deleteNote(lessonId, id)} currentUser={currentUser} isAdmin={isAdmin} /></div>
+              ? <div className="h-full overflow-y-auto"><LessonContent lesson={lesson} attempts={0} notes={lessonNotes} onSaveNote={text => saveNote(lessonId, text)} onDeleteNote={id => deleteNote(lessonId, id)} currentUser={currentUser} isAdmin={isAdmin} completeLeetCode={completeLeetCode} completedLeetCode={progress.completedLeetCode} /></div>
               : <SqlEditor lesson={lesson} isCompleted={isCompleted} onComplete={handleSqlComplete} hints={lesson.hints} hintIndex={hintIndex} onShowHint={handleShowHint} xp={progress.xp} />
             }
           </div>
@@ -514,7 +514,7 @@ export default function LessonPage({ progress, completeLesson, unlockHint, saveN
 
                   {/* Scrollable content */}
                   <div className="flex-1 overflow-y-auto overscroll-contain">
-                    <LessonContent lesson={lesson} attempts={attempts} notes={lessonNotes} onSaveNote={(text) => saveNote(lessonId, text)} onDeleteNote={(id) => deleteNote(lessonId, id)} currentUser={currentUser} isAdmin={isAdmin} />
+                    <LessonContent lesson={lesson} attempts={attempts} notes={lessonNotes} onSaveNote={(text) => saveNote(lessonId, text)} onDeleteNote={(id) => deleteNote(lessonId, id)} currentUser={currentUser} isAdmin={isAdmin} completeLeetCode={completeLeetCode} completedLeetCode={progress.completedLeetCode} />
                   </div>
 
                   {/* Prev / Next footer */}

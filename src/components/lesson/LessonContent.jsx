@@ -2,12 +2,12 @@ import React, { useState, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import rehypeHighlight from 'rehype-highlight';
 import remarkGfm from 'remark-gfm';
-import { Lightbulb, Eye, EyeOff, ExternalLink, Clock, HardDrive, StickyNote, Trash2, Plus } from 'lucide-react';
+import { Lightbulb, Eye, EyeOff, ExternalLink, Clock, HardDrive, StickyNote, Trash2, Plus, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DiscussionPanel, { useFeedbackBadge } from './DiscussionPanel';
 
 // ─── LeetCode Problem Card ────────────────────────────────────────────────────
-function LeetCodeCard({ problem }) {
+function LeetCodeCard({ problem, onMarkDone, isDone }) {
   const diffColor = {
     Easy:   'text-green-400 bg-green-900/20 border-green-700/30',
     Medium: 'text-yellow-400 bg-yellow-900/20 border-yellow-700/30',
@@ -15,23 +15,37 @@ function LeetCodeCard({ problem }) {
   }[problem.difficulty] || 'text-dark-300 bg-dark-700 border-dark-500';
 
   return (
-    <a
-      href={problem.url}
-      target="_blank"
-      rel="noreferrer"
-      className="flex items-center gap-3 p-3 rounded-lg bg-dark-800 border border-dark-600 hover:border-brand-500 transition-all group"
-    >
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-dark-300">LeetCode #{problem.id}</span>
-          <span className={`text-xs px-1.5 py-0.5 rounded border ${diffColor}`}>
-            {problem.difficulty}
-          </span>
+    <div className={`flex items-center gap-3 p-3 rounded-lg bg-dark-800 border transition-all ${isDone ? 'border-emerald-700/40' : 'border-dark-600'}`}>
+      <a
+        href={problem.url}
+        target="_blank"
+        rel="noreferrer"
+        className="flex items-center gap-3 flex-1 min-w-0 group"
+      >
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-dark-300">LeetCode #{problem.id}</span>
+            <span className={`text-xs px-1.5 py-0.5 rounded border ${diffColor}`}>
+              {problem.difficulty}
+            </span>
+          </div>
+          <p className="text-sm font-medium text-white truncate mt-0.5">{problem.title}</p>
         </div>
-        <p className="text-sm font-medium text-white truncate mt-0.5">{problem.title}</p>
-      </div>
-      <ExternalLink size={14} className="shrink-0 text-dark-300 group-hover:text-brand-400 transition-colors" />
-    </a>
+        <ExternalLink size={14} className="shrink-0 text-dark-300 group-hover:text-brand-400 transition-colors" />
+      </a>
+      <button
+        onClick={onMarkDone}
+        title={isDone ? 'Marked as done' : 'Mark as done'}
+        className={`shrink-0 flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg border transition-all ${
+          isDone
+            ? 'border-emerald-700/40 bg-emerald-900/20 text-emerald-400'
+            : 'border-dark-600 text-dark-400 hover:border-emerald-700/40 hover:text-emerald-400 hover:bg-emerald-900/10'
+        }`}
+      >
+        <CheckCircle2 size={13} />
+        {isDone ? 'Done' : 'Mark Done'}
+      </button>
+    </div>
   );
 }
 
@@ -220,7 +234,7 @@ function LessonNotes({ notes = [], onSaveNote, onDeleteNote }) {
 }
 
 // ─── Main Lesson Content ──────────────────────────────────────────────────────
-export default function LessonContent({ lesson, attempts = 0, notes = [], onSaveNote, onDeleteNote, currentUser, isAdmin }) {
+export default function LessonContent({ lesson, attempts = 0, notes = [], onSaveNote, onDeleteNote, currentUser, isAdmin, completeLeetCode, completedLeetCode = {} }) {
   const [activeTab, setActiveTab] = useState('lesson');
   const feedbackBadge = useFeedbackBadge(lesson?.id, currentUser, isAdmin);
 
@@ -279,7 +293,12 @@ export default function LessonContent({ lesson, attempts = 0, notes = [], onSave
                 </h3>
                 <div className="space-y-2">
                   {lesson.leetcodeProblems.map(p => (
-                    <LeetCodeCard key={p.id} problem={p} />
+                    <LeetCodeCard
+                      key={p.id}
+                      problem={p}
+                      isDone={!!completedLeetCode[p.id]}
+                      onMarkDone={() => completeLeetCode?.(p.id)}
+                    />
                   ))}
                 </div>
               </div>

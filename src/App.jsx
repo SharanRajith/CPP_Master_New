@@ -39,7 +39,7 @@ import { useParams }   from 'react-router-dom';
 import { PanelGroup, Panel, PanelResizeHandle } from 'react-resizable-panels';
 
 // ─── Layout wrapper ───────────────────────────────────────────────────────────
-function AppShell({ progress, completeLesson, completeQuiz, unlockHint, saveNote, deleteNote, isLessonCompleted, isLessonUnlocked, resetProgress, onLogout, onProfileUpdate, currentUser, isAdmin, isPremium }) {
+function AppShell({ progress, completeLesson, completeQuiz, completeLeetCode, unlockHint, saveNote, deleteNote, isLessonCompleted, isLessonUnlocked, resetProgress, onLogout, onProfileUpdate, currentUser, isAdmin, isPremium }) {
   const { pathname } = useLocation();
   const [showSettings,   setShowSettings]   = useState(false);
   const [sidebarOpen,    setSidebarOpen]    = useState(false);
@@ -89,6 +89,7 @@ function AppShell({ progress, completeLesson, completeQuiz, unlockHint, saveNote
               <LessonShell
                 progress={progress}
                 completeLesson={completeLesson}
+                completeLeetCode={completeLeetCode}
                 unlockHint={unlockHint}
                 saveNote={saveNote}
                 deleteNote={deleteNote}
@@ -144,7 +145,7 @@ function AppShell({ progress, completeLesson, completeQuiz, unlockHint, saveNote
 }
 
 // ─── Lesson Shell (responsive) ────────────────────────────────────────────────
-function LessonShell({ progress, completeLesson, unlockHint, saveNote, deleteNote, isLessonCompleted, isLessonUnlocked, sidebarOpen, setSidebarOpen, isPremium, currentUser, isAdmin }) {
+function LessonShell({ progress, completeLesson, completeLeetCode, unlockHint, saveNote, deleteNote, isLessonCompleted, isLessonUnlocked, sidebarOpen, setSidebarOpen, isPremium, currentUser, isAdmin }) {
   const { lessonId } = useParams();
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
@@ -174,6 +175,7 @@ function LessonShell({ progress, completeLesson, unlockHint, saveNote, deleteNot
           <LessonPage
             progress={progress}
             completeLesson={completeLesson}
+            completeLeetCode={completeLeetCode}
             unlockHint={unlockHint}
             saveNote={saveNote}
             deleteNote={deleteNote}
@@ -199,6 +201,7 @@ function LessonShell({ progress, completeLesson, unlockHint, saveNote, deleteNot
         <LessonPage
           progress={progress}
           completeLesson={completeLesson}
+          completeLeetCode={completeLeetCode}
           unlockHint={unlockHint}
           saveNote={saveNote}
           deleteNote={deleteNote}
@@ -261,7 +264,7 @@ const BACKEND_URL = 'https://cpp-master.onrender.com/';
 const PING_INTERVAL = 10 * 60 * 1000; // 10 minutes
 
 function AuthenticatedApp({ currentUser, onLogout, onProfileUpdate }) {
-  const { progress, completeLesson, completeQuiz, unlockHint, saveNote, deleteNote, isLessonUnlocked, isLessonCompleted, resetProgress } = useProgress(currentUser);
+  const { progress, completeLesson, completeQuiz, completeLeetCode, unlockHint, saveNote, deleteNote, isLessonUnlocked, isLessonCompleted, resetProgress } = useProgress(currentUser);
 
   const isAdmin   = isAdminEmail(currentUser?.email) || !!progress?.isAdmin;
   const isPremium = isAdmin || !!progress?.isPremium;
@@ -280,6 +283,7 @@ function AuthenticatedApp({ currentUser, onLogout, onProfileUpdate }) {
         progress={progress}
         completeLesson={completeLesson}
         completeQuiz={completeQuiz}
+        completeLeetCode={completeLeetCode}
         unlockHint={unlockHint}
         saveNote={saveNote}
         deleteNote={deleteNote}
