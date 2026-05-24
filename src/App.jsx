@@ -9,6 +9,7 @@ import SettingsModal from './components/settings/SettingsModal';
 import PremiumModal  from './components/PremiumModal';
 import SupportModal  from './components/SupportModal';
 import OnboardingModal, { shouldShowOnboarding } from './components/OnboardingModal';
+import ProductTour, { shouldShowTour } from './components/ProductTour';
 import SearchModal from './components/SearchModal';
 import AnnouncementBanner from './components/AnnouncementBanner';
 import { AnimatePresence } from 'framer-motion';
@@ -45,6 +46,7 @@ function AppShell({ progress, completeLesson, completeQuiz, unlockHint, saveNote
   const [showPremium,    setShowPremium]    = useState(false);
   const [showSupport,    setShowSupport]    = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(() => shouldShowOnboarding());
+  const [showTour,       setShowTour]       = useState(false);
   const [showSearch,     setShowSearch]     = useState(false);
 
   useEffect(() => {
@@ -119,8 +121,14 @@ function AppShell({ progress, completeLesson, completeQuiz, unlockHint, saveNote
         {showSupport && <SupportModal onClose={() => setShowSupport(false)} currentUser={currentUser} isPremium={isPremium} />}
       </AnimatePresence>
       <AnimatePresence>
-        {showOnboarding && <OnboardingModal onClose={() => setShowOnboarding(false)} />}
+        {showOnboarding && (
+          <OnboardingModal onClose={() => {
+            setShowOnboarding(false);
+            if (shouldShowTour()) setShowTour(true);
+          }} />
+        )}
       </AnimatePresence>
+      {showTour && <ProductTour onDone={() => setShowTour(false)} />}
       <AnimatePresence>
         {showSearch && (
           <SearchModal

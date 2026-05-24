@@ -176,6 +176,7 @@ export default function Navbar({ xp, level, streak, currentUser, isAdmin, isPrem
         {/* Explore dropdown */}
         <div className="relative">
           <button
+            id="nav-explore"
             onClick={() => setShowExploreMenu(v => !v)}
             className="p-2 rounded-lg text-dark-300 hover:text-white hover:bg-dark-700 transition-all"
             title="Explore features"
