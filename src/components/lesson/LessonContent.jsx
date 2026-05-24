@@ -287,11 +287,31 @@ export default function LessonContent({ lesson, attempts = 0, notes = [], onSave
           </>
         ) : (
           <>
-            <div className="mb-4 bg-dark-800 border border-brand-900 rounded-lg p-4">
-              <h3 className="text-sm font-semibold text-brand-300 mb-1">🎯 Challenge</h3>
-              <p className="text-sm text-dark-200">
-                Read the starter code carefully. Implement the solution and click <strong className="text-white">Run Tests</strong> to verify.
-              </p>
+            {/* Task description */}
+            <div className="mb-4 rounded-xl overflow-hidden" style={{ border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(99,102,241,0.05)' }}>
+              <div className="px-4 py-2.5 border-b flex items-center gap-2" style={{ borderColor: 'rgba(99,102,241,0.15)', background: 'rgba(99,102,241,0.08)' }}>
+                <span className="text-sm">🎯</span>
+                <span className="text-sm font-bold text-indigo-300">Your Task</span>
+              </div>
+              <div className="px-4 py-3 flex flex-col gap-3">
+                {lesson.testCases?.length > 0 ? (
+                  lesson.testCases.map((tc, i) => (
+                    <div key={i}>
+                      {tc.description && (
+                        <p className="text-sm text-dark-100 leading-relaxed mb-2">{tc.description}</p>
+                      )}
+                      {tc.expectedOutput && (
+                        <div>
+                          <p className="text-[10px] text-dark-500 uppercase tracking-widest font-bold mb-1">Expected Output</p>
+                          <pre className="text-xs text-emerald-300 bg-dark-900 rounded-lg px-3 py-2 font-mono whitespace-pre-wrap" style={{ border: '1px solid rgba(52,211,153,0.15)' }}>{tc.expectedOutput}</pre>
+                        </div>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-dark-300">Complete the starter code in the editor and click <strong className="text-white">Run Tests</strong> to verify.</p>
+                )}
+              </div>
             </div>
 
             <HintSystem hints={lesson.hints} />

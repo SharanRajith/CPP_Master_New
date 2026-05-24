@@ -257,8 +257,13 @@ export default function Navbar({ xp, level, streak, currentUser, isAdmin, isPrem
                   >
                     <div className="px-4 py-3 border-b border-dark-700 flex items-center justify-between">
                       <span className="text-sm font-bold text-white">Notifications</span>
-                      {notifications.length > 0 && (
-                        <span className="text-[10px] text-dark-400">{notifications.length} total</span>
+                      {unreadCount > 0 && (
+                        <button
+                          onClick={markAllRead}
+                          className="text-[10px] text-indigo-400 hover:text-indigo-300 transition-colors font-medium"
+                        >
+                          Mark all read
+                        </button>
                       )}
                     </div>
                     <div className="max-h-80 overflow-y-auto">
