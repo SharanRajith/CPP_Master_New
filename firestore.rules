@@ -22,6 +22,11 @@ service cloud.firestore {
       }
     }
 
+    match /discussions/{lessonId} {
+      allow read:  if request.auth != null;
+      allow write: if isAdmin();
+    }
+
     match /discussions/{lessonId}/comments/{commentId} {
       allow read:   if request.auth != null;
       allow create: if request.auth != null;
