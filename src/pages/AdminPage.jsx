@@ -364,20 +364,22 @@ export default function AdminPage({ currentUser }) {
                       </button>
                     )}
 
-                    {/* Unlock modules */}
-                    <button
-                      onClick={() => setExpandedUid(isExpanded ? null : user.uid)}
-                      title="Unlock modules for this user"
-                      className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-all"
-                      style={unlockedModules.length > 0
-                        ? { background: 'rgba(52,211,153,0.15)', border: '1px solid rgba(52,211,153,0.3)', color: '#34d399' }
-                        : { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#6b7280' }
-                      }
-                    >
-                      <KeyRound size={12} />
-                      {unlockedModules.length > 0 ? unlockedModules.length : ''}
-                      {isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-                    </button>
+                    {/* Unlock modules — hidden for super admins (they have everything) */}
+                    {!isUserSuperAdmin && (
+                      <button
+                        onClick={() => setExpandedUid(isExpanded ? null : user.uid)}
+                        title="Unlock modules for this user"
+                        className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-all"
+                        style={unlockedModules.length > 0
+                          ? { background: 'rgba(52,211,153,0.15)', border: '1px solid rgba(52,211,153,0.3)', color: '#34d399' }
+                          : { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#6b7280' }
+                        }
+                      >
+                        <KeyRound size={12} />
+                        {unlockedModules.length > 0 ? unlockedModules.length : ''}
+                        {isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                      </button>
+                    )}
                   </div>
                 </div>
 
