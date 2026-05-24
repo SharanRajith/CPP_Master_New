@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { NavLink } from 'react-router-dom';
 import { ChevronDown, ChevronRight, Lock, CheckCircle2, Circle, BookOpen, Crown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -10,10 +10,15 @@ export default function Sidebar({ progress, currentLessonId, isPremium }) {
     activeModule ? { [activeModule.id]: true } : { 'module-1': true }
   );
   const allLessons = getAllLessons();
+  const activeModuleRef = useRef(null);
 
   useEffect(() => {
     if (activeModule) {
       setExpandedModules(prev => ({ ...prev, [activeModule.id]: true }));
+      // Scroll active module into view after expansion animates
+      setTimeout(() => {
+        activeModuleRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 150);
     }
   }, [currentLessonId]);
 
@@ -80,7 +85,10 @@ export default function Sidebar({ progress, currentLessonId, isPremium }) {
                   </div>
                 );
               })()}
-            <div className="border-b border-dark-700">
+            <div
+              className="border-b border-dark-700"
+              ref={activeModule?.id === module.id ? activeModuleRef : null}
+            >
               {/* Module header */}
               <button
                 onClick={() => toggleModule(module.id)}
