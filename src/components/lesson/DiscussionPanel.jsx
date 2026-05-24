@@ -89,10 +89,12 @@ export default function DiscussionPanel({ lessonId, lessonTitle, currentUser, is
   const [replyText,   setReplyText]   = useState('');
   const [sending,     setSending]     = useState(false);
   const [replyError,  setReplyError]  = useState('');
+  const [quotingComment, setQuotingComment] = useState(null); // { id, displayName, text }
   const [allUsers,    setAllUsers]    = useState([]);
   const [mentionList, setMentionList] = useState([]);
   const [showMention, setShowMention] = useState(false);
-  const taRef = useRef(null);
+  const taRef    = useRef(null);
+  const composeRef = useRef(null);
 
   // Load all comments (public thread, newest first)
   useEffect(() => {
@@ -162,6 +164,7 @@ export default function DiscussionPanel({ lessonId, lessonTitle, currentUser, is
         createdAt:   serverTimestamp(),
         read:        false,
         isAdmin:     isAdmin || false,
+        ...(quotingComment ? { replyTo: { displayName: quotingComment.displayName, text: quotingComment.text.slice(0, 120) } } : {}),
       });
       // Best-effort notification — don't block comment posting if this fails
       addDoc(collection(db, 'notifications'), {
@@ -175,6 +178,7 @@ export default function DiscussionPanel({ lessonId, lessonTitle, currentUser, is
         read:         false,
       }).catch(() => {});
       setDraft('');
+      setQuotingComment(null);
       setSent(true);
       setTimeout(() => setSent(false), 3000);
     } finally {
@@ -222,11 +226,33 @@ export default function DiscussionPanel({ lessonId, lessonTitle, currentUser, is
   return (
     <div className="flex flex-col gap-4">
       {/* Compose box */}
-      <div className="relative">
+      <div className="relative" ref={composeRef}>
         <div
           className="rounded-xl overflow-visible"
           style={{ border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(99,102,241,0.04)' }}
         >
+          {/* Quote preview */}
+          <AnimatePresence>
+            {quotingComment && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="flex items-start gap-2 mx-3 mt-3 px-3 py-2 rounded-lg"
+                  style={{ background: 'rgba(99,102,241,0.1)', borderLeft: '2px solid rgba(99,102,241,0.6)' }}>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[10px] font-semibold text-indigo-400 mb-0.5">{quotingComment.displayName}</p>
+                    <p className="text-xs text-dark-400 truncate">{quotingComment.text}</p>
+                  </div>
+                  <button onClick={() => setQuotingComment(null)} className="shrink-0 text-dark-500 hover:text-white transition-colors mt-0.5">
+                    <X size={12} />
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
           <textarea
             ref={taRef}
             value={draft}
@@ -333,7 +359,25 @@ export default function DiscussionPanel({ lessonId, lessonTitle, currentUser, is
                       )}
                       <span className="text-[10px] text-dark-600 ml-auto">{relativeTime(c.createdAt)}</span>
                     </div>
+                    {c.replyTo && (
+                      <div className="mb-1.5 pl-2 rounded" style={{ borderLeft: '2px solid rgba(99,102,241,0.5)' }}>
+                        <p className="text-[10px] font-semibold text-indigo-400">{c.replyTo.displayName}</p>
+                        <p className="text-xs text-dark-500 truncate">{c.replyTo.text}</p>
+                      </div>
+                    )}
                     <CommentText text={c.text} />
+                    {currentUser && (
+                      <button
+                        onClick={() => {
+                          setQuotingComment({ id: c.id, displayName: c.displayName, text: c.text });
+                          composeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                          setTimeout(() => taRef.current?.focus(), 300);
+                        }}
+                        className="mt-1.5 flex items-center gap-1 text-[11px] text-dark-500 hover:text-indigo-400 transition-colors opacity-0 group-hover:opacity-100"
+                      >
+                        <CornerDownRight size={11} /> Reply
+                      </button>
+                    )}
                   </div>
                   {(isAdmin || c.uid === currentUser?.uid) && (
                     <button
