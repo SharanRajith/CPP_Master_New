@@ -3,10 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   collection, addDoc, deleteDoc, doc,
   onSnapshot, serverTimestamp, query, orderBy,
-  updateDoc, getDocs, where,
+  updateDoc, getDocs, where, setDoc, getDoc,
 } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
-import { Trash2, Send, CheckCircle2, Inbox, CornerDownRight, X, AtSign } from 'lucide-react';
+import { Trash2, Send, CheckCircle2, Inbox, CornerDownRight, X, AtSign, Lock, LockOpen } from 'lucide-react';
 
 function relativeTime(ts) {
   if (!ts?.toMillis) return '';
@@ -90,11 +90,24 @@ export default function DiscussionPanel({ lessonId, lessonTitle, currentUser, is
   const [sending,     setSending]     = useState(false);
   const [replyError,  setReplyError]  = useState('');
   const [quotingComment, setQuotingComment] = useState(null); // { id, displayName, text }
+  const [isLocked,    setIsLocked]    = useState(false);
   const [allUsers,    setAllUsers]    = useState([]);
   const [mentionList, setMentionList] = useState([]);
   const [showMention, setShowMention] = useState(false);
   const taRef    = useRef(null);
   const composeRef = useRef(null);
+
+  // Listen to lock status on the discussion doc
+  useEffect(() => {
+    if (!lessonId) return;
+    return onSnapshot(doc(db, 'discussions', lessonId), snap => {
+      setIsLocked(!!snap.data()?.locked);
+    }, () => {});
+  }, [lessonId]);
+
+  async function toggleLock() {
+    await setDoc(doc(db, 'discussions', lessonId), { locked: !isLocked }, { merge: true });
+  }
 
   // Load all comments (public thread, newest first)
   useEffect(() => {
@@ -238,7 +251,34 @@ export default function DiscussionPanel({ lessonId, lessonTitle, currentUser, is
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Compose box */}
+      {/* Admin lock toggle */}
+      {isAdmin && (
+        <div className="flex items-center justify-between px-3 py-2 rounded-xl"
+          style={{ background: isLocked ? 'rgba(239,68,68,0.07)' : 'rgba(255,255,255,0.03)', border: isLocked ? '1px solid rgba(239,68,68,0.2)' : '1px solid rgba(255,255,255,0.06)' }}>
+          <div className="flex items-center gap-2">
+            {isLocked ? <Lock size={13} className="text-red-400" /> : <LockOpen size={13} className="text-dark-400" />}
+            <span className="text-xs text-dark-300">{isLocked ? 'Comments are locked for students' : 'Comments are open'}</span>
+          </div>
+          <button
+            onClick={toggleLock}
+            className={`text-xs px-3 py-1.5 rounded-lg font-semibold transition-all ${isLocked ? 'bg-red-900/30 text-red-400 hover:bg-red-900/50 border border-red-700/40' : 'bg-dark-700 text-dark-300 hover:text-white border border-dark-600'}`}
+          >
+            {isLocked ? 'Unlock' : 'Lock'}
+          </button>
+        </div>
+      )}
+
+      {/* Compose box — hidden for non-admins when locked */}
+      {isLocked && !isAdmin ? (
+        <div className="flex items-center gap-3 px-4 py-4 rounded-xl"
+          style={{ background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.2)' }}>
+          <Lock size={16} className="text-red-400 shrink-0" />
+          <div>
+            <p className="text-sm font-semibold text-red-300">Comments are locked</p>
+            <p className="text-xs text-dark-400 mt-0.5">The instructor has disabled new comments for this lesson.</p>
+          </div>
+        </div>
+      ) : (
       <div className="relative" ref={composeRef}>
         <div
           className="rounded-xl overflow-visible"
@@ -321,6 +361,7 @@ export default function DiscussionPanel({ lessonId, lessonTitle, currentUser, is
           )}
         </AnimatePresence>
       </div>
+      )}
 
       {/* Sent confirmation */}
       <AnimatePresence>
