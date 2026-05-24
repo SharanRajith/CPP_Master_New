@@ -232,7 +232,7 @@ export default function Navbar({ xp, level, streak, currentUser, isAdmin, isPrem
         {currentUser && (
           <div className="relative">
             <button
-              onClick={() => { setShowBell(v => !v); if (!showBell) markAllRead(); }}
+              onClick={() => setShowBell(v => !v)}
               className="p-2 rounded-lg text-dark-300 hover:text-white hover:bg-dark-700 transition-all relative"
               title="Notifications"
             >
@@ -257,10 +257,11 @@ export default function Navbar({ xp, level, streak, currentUser, isAdmin, isPrem
                   >
                     <div className="px-4 py-3 border-b border-dark-700 flex items-center justify-between">
                       <span className="text-sm font-bold text-white">Notifications</span>
-                      {unreadCount > 0 && (
+                      {notifications.length > 0 && (
                         <button
                           onClick={markAllRead}
-                          className="text-[10px] text-indigo-400 hover:text-indigo-300 transition-colors font-medium"
+                          className="text-[10px] text-indigo-400 hover:text-indigo-300 transition-colors font-medium disabled:opacity-30 disabled:cursor-default"
+                          disabled={unreadCount === 0}
                         >
                           Mark all read
                         </button>
