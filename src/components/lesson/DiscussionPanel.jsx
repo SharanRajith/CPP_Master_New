@@ -166,8 +166,8 @@ export default function DiscussionPanel({ lessonId, lessonTitle, currentUser, is
         isAdmin:     isAdmin || false,
         ...(quotingComment ? { replyTo: { displayName: quotingComment.displayName, text: quotingComment.text.slice(0, 120) } } : {}),
       });
-      // Best-effort notification — don't block comment posting if this fails
-      addDoc(collection(db, 'notifications'), {
+      // Notify admins of new comments — skip if the poster is already an admin
+      if (!isAdmin) addDoc(collection(db, 'notifications'), {
         lessonId,
         lessonTitle:  lessonTitle || lessonId,
         uid:          currentUser.uid,
