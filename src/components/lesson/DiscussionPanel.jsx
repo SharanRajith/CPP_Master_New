@@ -196,6 +196,19 @@ export default function DiscussionPanel({ lessonId, lessonTitle, currentUser, is
         'adminReply.displayName': currentUser.displayName || 'Admin',
         'adminReply.photoURL':    currentUser.photoURL    || '',
       });
+      // Notify the comment author
+      const comment = comments.find(c => c.id === commentId);
+      if (comment?.uid) {
+        addDoc(collection(db, 'users', comment.uid, 'notifications'), {
+          lessonId,
+          lessonTitle:   lessonTitle || lessonId,
+          adminName:     currentUser.displayName || 'Admin',
+          adminPhotoURL: currentUser.photoURL    || '',
+          text:          replyText.trim(),
+          createdAt:     serverTimestamp(),
+          read:          false,
+        }).catch(() => {});
+      }
       setReplyingTo(null);
       setReplyText('');
     } catch (err) {

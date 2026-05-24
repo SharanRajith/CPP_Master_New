@@ -21,25 +21,40 @@ export default function Navbar({ xp, level, streak, currentUser, isAdmin, isPrem
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!isAdmin) return;
-    const q = query(collection(db, 'notifications'), orderBy('createdAt', 'desc'));
-    return onSnapshot(q, snap => {
-      setNotifications(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    }, () => {});
-  }, [isAdmin]);
+    if (!currentUser?.uid) return;
+    if (isAdmin) {
+      // Admins see new comment notifications
+      const q = query(collection(db, 'notifications'), orderBy('createdAt', 'desc'));
+      return onSnapshot(q, snap => {
+        setNotifications(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      }, () => {});
+    } else {
+      // Regular users see admin reply notifications
+      const q = query(collection(db, 'users', currentUser.uid, 'notifications'), orderBy('createdAt', 'desc'));
+      return onSnapshot(q, snap => {
+        setNotifications(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      }, () => {});
+    }
+  }, [isAdmin, currentUser?.uid]);
 
   const unreadCount = notifications.filter(n => !n.read).length;
+
+  function notifDocRef(id) {
+    return isAdmin
+      ? doc(db, 'notifications', id)
+      : doc(db, 'users', currentUser.uid, 'notifications', id);
+  }
 
   async function markAllRead() {
     const unread = notifications.filter(n => !n.read);
     if (!unread.length) return;
     const batch = writeBatch(db);
-    unread.forEach(n => batch.update(doc(db, 'notifications', n.id), { read: true }));
+    unread.forEach(n => batch.update(notifDocRef(n.id), { read: true }));
     await batch.commit();
   }
 
   function handleNotifClick(notif) {
-    updateDoc(doc(db, 'notifications', notif.id), { read: true }).catch(() => {});
+    updateDoc(notifDocRef(notif.id), { read: true }).catch(() => {});
     setShowBell(false);
     navigate(`/lesson/${notif.lessonId}`);
   }
@@ -213,8 +228,8 @@ export default function Navbar({ xp, level, streak, currentUser, isAdmin, isPrem
             )}
           </AnimatePresence>
         </div>
-        {/* Bell — admin only */}
-        {isAdmin && (
+        {/* Bell — all users */}
+        {currentUser && (
           <div className="relative">
             <button
               onClick={() => { setShowBell(v => !v); if (!showBell) markAllRead(); }}
@@ -250,31 +265,36 @@ export default function Navbar({ xp, level, streak, currentUser, isAdmin, isPrem
                       {notifications.length === 0 ? (
                         <p className="text-xs text-dark-500 text-center py-6">No notifications yet.</p>
                       ) : (
-                        notifications.slice(0, 20).map(n => (
-                          <button
-                            key={n.id}
-                            onClick={() => handleNotifClick(n)}
-                            className="w-full flex items-start gap-3 px-4 py-3 hover:bg-dark-700 transition-all text-left border-b border-dark-700/50 last:border-0"
-                            style={{ background: n.read ? 'transparent' : 'rgba(99,102,241,0.06)' }}
-                          >
-                            {n.photoURL ? (
-                              <img src={n.photoURL} alt="" className="w-7 h-7 rounded-full shrink-0 mt-0.5 object-cover" />
-                            ) : (
-                              <div className="w-7 h-7 rounded-full shrink-0 mt-0.5 flex items-center justify-center text-xs font-bold text-white"
-                                style={{ background: 'linear-gradient(135deg,#4f46e5,#7c3aed)' }}>
-                                {(n.displayName || 'A').charAt(0).toUpperCase()}
+                        notifications.slice(0, 20).map(n => {
+                          const avatar   = isAdmin ? n.photoURL    : n.adminPhotoURL;
+                          const name     = isAdmin ? n.displayName : n.adminName;
+                          const bodyText = isAdmin
+                            ? <><span className="text-indigo-400">{n.displayName}</span> commented on <span className="text-dark-200">{n.lessonTitle}</span></>
+                            : <><span className="text-indigo-400">{n.adminName}</span> <span className="text-[9px] px-1 py-0.5 rounded-full align-middle" style={{background:'rgba(99,102,241,0.2)',color:'#a5b4fc',border:'1px solid rgba(99,102,241,0.3)'}}>Admin</span> replied in <span className="text-dark-200">{n.lessonTitle}</span></>;
+                          return (
+                            <button
+                              key={n.id}
+                              onClick={() => handleNotifClick(n)}
+                              className="w-full flex items-start gap-3 px-4 py-3 hover:bg-dark-700 transition-all text-left border-b border-dark-700/50 last:border-0"
+                              style={{ background: n.read ? 'transparent' : 'rgba(99,102,241,0.06)' }}
+                            >
+                              {avatar ? (
+                                <img src={avatar} alt="" className="w-7 h-7 rounded-full shrink-0 mt-0.5 object-cover" />
+                              ) : (
+                                <div className="w-7 h-7 rounded-full shrink-0 mt-0.5 flex items-center justify-center text-xs font-bold text-white"
+                                  style={{ background: 'linear-gradient(135deg,#4f46e5,#7c3aed)' }}>
+                                  {(name || 'A').charAt(0).toUpperCase()}
+                                </div>
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs text-white font-medium">{bodyText}</p>
+                                <p className="text-xs text-dark-400 mt-0.5 line-clamp-2">{n.text}</p>
+                                <p className="text-[10px] text-dark-600 mt-1">{relativeTime(n.createdAt)}</p>
                               </div>
-                            )}
-                            <div className="flex-1 min-w-0">
-                              <p className="text-xs text-white font-medium truncate">
-                                <span className="text-indigo-400">{n.displayName}</span> commented on <span className="text-dark-200">{n.lessonTitle}</span>
-                              </p>
-                              <p className="text-xs text-dark-400 mt-0.5 line-clamp-2">{n.text}</p>
-                              <p className="text-[10px] text-dark-600 mt-1">{relativeTime(n.createdAt)}</p>
-                            </div>
-                            {!n.read && <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0 mt-1.5" />}
-                          </button>
-                        ))
+                              {!n.read && <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0 mt-1.5" />}
+                            </button>
+                          );
+                        })
                       )}
                     </div>
                   </motion.div>
