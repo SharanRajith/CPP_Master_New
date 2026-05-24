@@ -84,7 +84,7 @@ function LessonHeaderStrip({ lesson, isCompleted, prevLesson, nextLesson, naviga
         )}
       </div>
 
-      <LessonContent lesson={lesson} attempts={0} notes={notes} onSaveNote={onSaveNote} onDeleteNote={onDeleteNote} currentUser={currentUser} isAdmin={isAdmin} completeLeetCode={completeLeetCode} completedLeetCode={progress.completedLeetCode} />
+      <LessonContent lesson={lesson} attempts={0} notes={notes} onSaveNote={onSaveNote} onDeleteNote={onDeleteNote} currentUser={currentUser} isAdmin={isAdmin} />
 
       <div className="flex gap-2 p-3 border-t border-dark-600 shrink-0 bg-dark-900">
         {prevLesson && (
