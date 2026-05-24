@@ -153,7 +153,7 @@ export default function DiscussionPanel({ lessonId, lessonTitle, currentUser, is
     setPosting(true);
     localStorage.setItem(`cpp_reply_seen_${lessonId}`, Date.now().toString());
     try {
-      const commentData = {
+      await addDoc(collection(db, 'discussions', lessonId, 'comments'), {
         uid:         currentUser.uid,
         displayName: currentUser.displayName || 'Anonymous',
         photoURL:    currentUser.photoURL    || '',
@@ -161,9 +161,9 @@ export default function DiscussionPanel({ lessonId, lessonTitle, currentUser, is
         text:        draft.trim(),
         createdAt:   serverTimestamp(),
         read:        false,
-      };
-      await addDoc(collection(db, 'discussions', lessonId, 'comments'), commentData);
-      await addDoc(collection(db, 'notifications'), {
+      });
+      // Best-effort notification — don't block comment posting if this fails
+      addDoc(collection(db, 'notifications'), {
         lessonId,
         lessonTitle:  lessonTitle || lessonId,
         uid:          currentUser.uid,
@@ -172,7 +172,7 @@ export default function DiscussionPanel({ lessonId, lessonTitle, currentUser, is
         text:         draft.trim(),
         createdAt:    serverTimestamp(),
         read:         false,
-      });
+      }).catch(() => {});
       setDraft('');
       setSent(true);
       setTimeout(() => setSent(false), 3000);
