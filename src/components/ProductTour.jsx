@@ -23,7 +23,7 @@ const TOUR_STEPS = [
   },
 ];
 
-const TOUR_KEY = 'cpp_tour_v1';
+const TOUR_KEY = 'cpp_tour_v2';
 export function shouldShowTour() { return !localStorage.getItem(TOUR_KEY); }
 export function markTourDone()   { localStorage.setItem(TOUR_KEY, '1'); }
 

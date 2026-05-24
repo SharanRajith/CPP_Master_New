@@ -211,7 +211,7 @@ const STEPS = [
   },
 ];
 
-const ONBOARDING_KEY = 'cpp_onboarded_v2';
+const ONBOARDING_KEY = 'cpp_onboarded_v3';
 
 export function shouldShowOnboarding() {
   return !localStorage.getItem(ONBOARDING_KEY);
