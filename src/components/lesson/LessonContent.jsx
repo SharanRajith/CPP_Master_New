@@ -255,7 +255,7 @@ export default function LessonContent({ lesson, attempts = 0, notes = [], onSave
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-6 pb-24">
         {activeTab === 'discussion' ? (
-          <DiscussionPanel lessonId={lesson.id} currentUser={currentUser} isAdmin={isAdmin} />
+          <DiscussionPanel lessonId={lesson.id} lessonTitle={lesson.title} currentUser={currentUser} isAdmin={isAdmin} />
         ) : activeTab === 'notes' ? (
           <LessonNotes notes={notes} onSaveNote={onSaveNote} onDeleteNote={onDeleteNote} />
         ) : activeTab === 'lesson' ? (

@@ -80,7 +80,7 @@ export function useFeedbackBadge(lessonId, currentUser, isAdmin) {
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
-export default function DiscussionPanel({ lessonId, currentUser, isAdmin }) {
+export default function DiscussionPanel({ lessonId, lessonTitle, currentUser, isAdmin }) {
   const [comments,    setComments]    = useState([]);
   const [draft,       setDraft]       = useState('');
   const [posting,     setPosting]     = useState(false);
@@ -153,7 +153,7 @@ export default function DiscussionPanel({ lessonId, currentUser, isAdmin }) {
     setPosting(true);
     localStorage.setItem(`cpp_reply_seen_${lessonId}`, Date.now().toString());
     try {
-      await addDoc(collection(db, 'discussions', lessonId, 'comments'), {
+      const commentData = {
         uid:         currentUser.uid,
         displayName: currentUser.displayName || 'Anonymous',
         photoURL:    currentUser.photoURL    || '',
@@ -161,6 +161,17 @@ export default function DiscussionPanel({ lessonId, currentUser, isAdmin }) {
         text:        draft.trim(),
         createdAt:   serverTimestamp(),
         read:        false,
+      };
+      await addDoc(collection(db, 'discussions', lessonId, 'comments'), commentData);
+      await addDoc(collection(db, 'notifications'), {
+        lessonId,
+        lessonTitle:  lessonTitle || lessonId,
+        uid:          currentUser.uid,
+        displayName:  currentUser.displayName || 'Anonymous',
+        photoURL:     currentUser.photoURL    || '',
+        text:         draft.trim(),
+        createdAt:    serverTimestamp(),
+        read:         false,
       });
       setDraft('');
       setSent(true);

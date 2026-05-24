@@ -1,8 +1,10 @@
-import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Settings, LogOut, Flame, Trophy, Home, Menu, ChevronRight, Zap, Medal, Shield, Crown, Search, User, GitBranch, Swords, BookOpen, Headphones, Compass } from 'lucide-react';
+import { Settings, LogOut, Flame, Trophy, Home, Menu, ChevronRight, Zap, Medal, Shield, Crown, Search, User, GitBranch, Swords, BookOpen, Headphones, Compass, Bell } from 'lucide-react';
 import { LEVELS } from '../../hooks/useProgress';
+import { collection, query, orderBy, onSnapshot, updateDoc, doc, where, writeBatch } from 'firebase/firestore';
+import { db } from '../../lib/firebase';
 
 export default function Navbar({ xp, level, streak, currentUser, isAdmin, isPremium, onOpenSettings, onOpenPremium, onOpenSupport, onOpenSearch, onLogout, onToggleSidebar, photoURL: firestorePhoto }) {
   const location      = useLocation();
@@ -14,6 +16,43 @@ export default function Navbar({ xp, level, streak, currentUser, isAdmin, isPrem
   const pct           = nextLevel ? Math.min((xpInLevel / xpNeeded) * 100, 100) : 100;
   const [showUserMenu,    setShowUserMenu]    = useState(false);
   const [showExploreMenu, setShowExploreMenu] = useState(false);
+  const [showBell,        setShowBell]        = useState(false);
+  const [notifications,   setNotifications]   = useState([]);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    const q = query(collection(db, 'notifications'), orderBy('createdAt', 'desc'));
+    return onSnapshot(q, snap => {
+      setNotifications(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    }, () => {});
+  }, [isAdmin]);
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  async function markAllRead() {
+    const unread = notifications.filter(n => !n.read);
+    if (!unread.length) return;
+    const batch = writeBatch(db);
+    unread.forEach(n => batch.update(doc(db, 'notifications', n.id), { read: true }));
+    await batch.commit();
+  }
+
+  function handleNotifClick(notif) {
+    updateDoc(doc(db, 'notifications', notif.id), { read: true }).catch(() => {});
+    setShowBell(false);
+    navigate(`/lesson/${notif.lessonId}`);
+  }
+
+  function relativeTime(ts) {
+    if (!ts?.toMillis) return '';
+    const m = Math.floor((Date.now() - ts.toMillis()) / 60000);
+    if (m < 1) return 'just now';
+    if (m < 60) return `${m}m ago`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `${h}h ago`;
+    return `${Math.floor(h / 24)}d ago`;
+  }
 
   const avatarFallback = (currentUser?.displayName || 'U').charAt(0).toUpperCase();
   const avatarURL = firestorePhoto || currentUser?.photoURL;
@@ -174,6 +213,76 @@ export default function Navbar({ xp, level, streak, currentUser, isAdmin, isPrem
             )}
           </AnimatePresence>
         </div>
+        {/* Bell — admin only */}
+        {isAdmin && (
+          <div className="relative">
+            <button
+              onClick={() => { setShowBell(v => !v); if (!showBell) markAllRead(); }}
+              className="p-2 rounded-lg text-dark-300 hover:text-white hover:bg-dark-700 transition-all relative"
+              title="Notifications"
+            >
+              <Bell size={17} />
+              {unreadCount > 0 && (
+                <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-red-500 text-[9px] font-bold text-white flex items-center justify-center leading-none">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </button>
+            <AnimatePresence>
+              {showBell && (
+                <>
+                  <div className="fixed inset-0 z-30" onClick={() => setShowBell(false)} />
+                  <motion.div
+                    initial={{ opacity: 0, y: -8, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -8, scale: 0.95 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute right-0 top-full mt-2 w-80 rounded-xl shadow-2xl z-40 overflow-hidden"
+                    style={{ background: 'rgba(20,18,48,0.97)', backdropFilter: 'blur(20px)', border: '1px solid rgba(99,102,241,0.2)', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}
+                  >
+                    <div className="px-4 py-3 border-b border-dark-700 flex items-center justify-between">
+                      <span className="text-sm font-bold text-white">Notifications</span>
+                      {notifications.length > 0 && (
+                        <span className="text-[10px] text-dark-400">{notifications.length} total</span>
+                      )}
+                    </div>
+                    <div className="max-h-80 overflow-y-auto">
+                      {notifications.length === 0 ? (
+                        <p className="text-xs text-dark-500 text-center py-6">No notifications yet.</p>
+                      ) : (
+                        notifications.slice(0, 20).map(n => (
+                          <button
+                            key={n.id}
+                            onClick={() => handleNotifClick(n)}
+                            className="w-full flex items-start gap-3 px-4 py-3 hover:bg-dark-700 transition-all text-left border-b border-dark-700/50 last:border-0"
+                            style={{ background: n.read ? 'transparent' : 'rgba(99,102,241,0.06)' }}
+                          >
+                            {n.photoURL ? (
+                              <img src={n.photoURL} alt="" className="w-7 h-7 rounded-full shrink-0 mt-0.5 object-cover" />
+                            ) : (
+                              <div className="w-7 h-7 rounded-full shrink-0 mt-0.5 flex items-center justify-center text-xs font-bold text-white"
+                                style={{ background: 'linear-gradient(135deg,#4f46e5,#7c3aed)' }}>
+                                {(n.displayName || 'A').charAt(0).toUpperCase()}
+                              </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs text-white font-medium truncate">
+                                <span className="text-indigo-400">{n.displayName}</span> commented on <span className="text-dark-200">{n.lessonTitle}</span>
+                              </p>
+                              <p className="text-xs text-dark-400 mt-0.5 line-clamp-2">{n.text}</p>
+                              <p className="text-[10px] text-dark-600 mt-1">{relativeTime(n.createdAt)}</p>
+                            </div>
+                            {!n.read && <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0 mt-1.5" />}
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
+          </div>
+        )}
         {isAdmin && (
           <Link id="nav-admin" to="/admin" className="p-2 rounded-lg text-indigo-400 hover:text-indigo-300 hover:bg-indigo-900/30 transition-all" title="Admin Panel">
             <Shield size={17} />
