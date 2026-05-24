@@ -155,6 +155,7 @@ export default function Navbar({ xp, level, streak, currentUser, isAdmin, isPrem
       {/* Nav icons */}
       <div className="flex items-center gap-0.5">
         <button
+          id="nav-search"
           onClick={onOpenSearch}
           className="p-2 rounded-lg text-dark-300 hover:text-white hover:bg-dark-700 transition-all relative group"
           title="Search lessons (Ctrl+K)"
@@ -233,6 +234,7 @@ export default function Navbar({ xp, level, streak, currentUser, isAdmin, isPrem
         {currentUser && (
           <div className="relative">
             <button
+              id="nav-notifications"
               onClick={() => setShowBell(v => !v)}
               className="p-2 rounded-lg text-dark-300 hover:text-white hover:bg-dark-700 transition-all relative"
               title="Notifications"
