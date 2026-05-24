@@ -257,21 +257,20 @@ export default function Navbar({ xp, level, streak, currentUser, isAdmin, isPrem
                   >
                     <div className="px-4 py-3 border-b border-dark-700 flex items-center justify-between">
                       <span className="text-sm font-bold text-white">Notifications</span>
-                      {notifications.length > 0 && (
+                      {unreadCount > 0 && (
                         <button
                           onClick={markAllRead}
-                          className="text-[10px] text-indigo-400 hover:text-indigo-300 transition-colors font-medium disabled:opacity-30 disabled:cursor-default"
-                          disabled={unreadCount === 0}
+                          className="text-[10px] text-indigo-400 hover:text-indigo-300 transition-colors font-medium"
                         >
                           Mark all read
                         </button>
                       )}
                     </div>
                     <div className="max-h-80 overflow-y-auto">
-                      {notifications.length === 0 ? (
-                        <p className="text-xs text-dark-500 text-center py-6">No notifications yet.</p>
+                      {notifications.filter(n => !n.read).length === 0 ? (
+                        <p className="text-xs text-dark-500 text-center py-6">No new notifications.</p>
                       ) : (
-                        notifications.slice(0, 20).map(n => {
+                        notifications.filter(n => !n.read).slice(0, 20).map(n => {
                           const avatar   = isAdmin ? n.photoURL    : n.adminPhotoURL;
                           const name     = isAdmin ? n.displayName : n.adminName;
                           const bodyText = isAdmin
