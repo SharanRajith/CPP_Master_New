@@ -1,12 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { ChevronDown, ChevronRight, Lock, CheckCircle2, Circle, BookOpen, Crown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CURRICULUM, getAllLessons, getPreviousLessonId, TRACK_ENTRY_LESSONS } from '../../data/curriculum';
 
 export default function Sidebar({ progress, currentLessonId, isPremium }) {
-  const [expandedModules, setExpandedModules] = useState({ 'module-1': true });
+  const activeModule = CURRICULUM.find(m => m.lessons.some(l => l.id === currentLessonId));
+  const [expandedModules, setExpandedModules] = useState(
+    activeModule ? { [activeModule.id]: true } : { 'module-1': true }
+  );
   const allLessons = getAllLessons();
+
+  useEffect(() => {
+    if (activeModule) {
+      setExpandedModules(prev => ({ ...prev, [activeModule.id]: true }));
+    }
+  }, [currentLessonId]);
 
   function toggleModule(moduleId) {
     setExpandedModules(prev => ({ ...prev, [moduleId]: !prev[moduleId] }));
