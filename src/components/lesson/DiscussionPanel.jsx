@@ -161,6 +161,7 @@ export default function DiscussionPanel({ lessonId, lessonTitle, currentUser, is
         text:        draft.trim(),
         createdAt:   serverTimestamp(),
         read:        false,
+        isAdmin:     isAdmin || false,
       });
       // Best-effort notification — don't block comment posting if this fails
       addDoc(collection(db, 'notifications'), {
@@ -321,6 +322,12 @@ export default function DiscussionPanel({ lessonId, lessonTitle, currentUser, is
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
                       <span className="text-xs font-semibold text-white">{c.displayName}</span>
+                      {c.isAdmin && (
+                        <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold"
+                          style={{ background: 'rgba(99,102,241,0.25)', border: '1px solid rgba(99,102,241,0.5)', color: '#a5b4fc' }}>
+                          Admin
+                        </span>
+                      )}
                       {isAdmin && c.email && (
                         <span className="text-[10px] text-dark-600">{c.email}</span>
                       )}
