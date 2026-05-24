@@ -187,7 +187,20 @@ export default function DiscussionPanel({ lessonId, lessonTitle, currentUser, is
   }
 
   async function handleDelete(id) {
+    const comment = comments.find(c => c.id === id);
     await deleteDoc(doc(db, 'discussions', lessonId, 'comments', id));
+    if (comment) {
+      try {
+        const q = query(
+          collection(db, 'notifications'),
+          where('uid', '==', comment.uid),
+          where('lessonId', '==', lessonId),
+          where('text', '==', comment.text),
+        );
+        const snap = await getDocs(q);
+        snap.forEach(d => deleteDoc(d.ref).catch(() => {}));
+      } catch {}
+    }
   }
 
   async function handleReply(commentId) {
