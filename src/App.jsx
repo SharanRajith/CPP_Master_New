@@ -46,7 +46,8 @@ function AppShell({ progress, completeLesson, completeQuiz, unlockHint, saveNote
   const [showPremium,    setShowPremium]    = useState(false);
   const [showSupport,    setShowSupport]    = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(() => shouldShowOnboarding());
-  const [showTour,       setShowTour]       = useState(false);
+  // Show tour immediately if onboarding already done, otherwise wait for onboarding to finish
+  const [showTour,       setShowTour]       = useState(() => !shouldShowOnboarding() && shouldShowTour());
   const [showSearch,     setShowSearch]     = useState(false);
 
   useEffect(() => {
