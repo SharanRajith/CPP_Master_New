@@ -1,6 +1,9 @@
 // ─── curriculum.js ───────────────────────────────────────────────────────────
 // Full 12-module curriculum structure
 
+// Statically bundled lessons (avoids dynamic-import chunk issues on some hosts)
+import _m7l5 from './lessons/module7/lesson5.js';
+
 export const CURRICULUM = [
   {
     id: 'module-1',
@@ -134,7 +137,7 @@ export const CURRICULUM = [
       { id: 'm7-l2',  title: 'Binary Search Tree',                    file: () => import('./lessons/module7/lesson2.js') },
       { id: 'm7-l3',  title: 'Height, Diameter & Depth',              file: () => import('./lessons/module7/lesson3.js') },
       { id: 'm7-l4',  title: 'Lowest Common Ancestor',                file: () => import('./lessons/module7/lesson4.js') },
-      { id: 'm7-l5',  title: 'Balanced BST Check',                    file: () => import('./lessons/module7/lesson5.js') },
+      { id: 'm7-l5',  title: 'Balanced BST Check',                    file: () => Promise.resolve({ default: _m7l5 }) },
       { id: 'm7-l6',  title: 'Serialize & Deserialize',               file: () => import('./lessons/module7/lesson6.js') },
       { id: 'm7-l7',  title: 'Trie (Prefix Tree)',                    file: () => import('./lessons/module7/lesson7.js') },
       { id: 'm7-l8',  title: 'Segment Tree Basics',                   file: () => import('./lessons/module7/lesson8.js') },
