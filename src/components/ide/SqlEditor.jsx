@@ -295,6 +295,51 @@ export default function SqlEditor({
             <span className="text-[10px] text-dark-600 ml-auto">{result.rows.length} row{result.rows.length !== 1 ? 's' : ''}</span>
           )}
         </div>
+
+        {/* Test feedback — inside results panel so it's never clipped */}
+        <AnimatePresence>
+          {testStatus && (
+            <motion.div
+              key={testStatus}
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="shrink-0 border-b border-dark-600 overflow-hidden"
+            >
+              {testStatus === 'pass' ? (
+                <div className="flex items-center gap-2 px-4 py-2.5 text-xs font-semibold text-emerald-400"
+                  style={{ background: 'rgba(52,211,153,0.06)' }}>
+                  <CheckCircle2 size={13} /> All tests passed! +{lesson.xpReward || 10} XP
+                </div>
+              ) : (
+                <div style={{ background: 'rgba(239,68,68,0.06)' }}>
+                  <div className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-red-400">
+                    <XCircle size={13} /> Wrong answer
+                  </div>
+                  {testDetails && (
+                    <div className="grid grid-cols-2 divide-x divide-dark-700 text-[11px] font-mono border-t border-red-900/20">
+                      <div className="px-3 py-2">
+                        <p className="text-[10px] font-bold text-red-400 uppercase tracking-wide mb-1">Your Output</p>
+                        {testDetails.actual.split('\n').map((line, i) => (
+                          <div key={i} className="text-red-300/80 leading-5">
+                            {line || <span className="text-dark-600 italic">empty</span>}
+                          </div>
+                        ))}
+                      </div>
+                      <div className="px-3 py-2">
+                        <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-wide mb-1">Expected</p>
+                        {testDetails.expected.split('\n').map((line, i) => (
+                          <div key={i} className="text-emerald-300/80 leading-5">{line}</div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <div className="flex-1 overflow-y-auto">
           {error && (
             <div className="px-4 py-3 text-xs text-red-400 font-mono flex items-start gap-2">
@@ -314,7 +359,7 @@ export default function SqlEditor({
           {result && !error && !result.dml && result.rows.length === 0 && (
             <p className="text-xs text-dark-500 px-4 py-3">Query returned 0 rows.</p>
           )}
-          {!result && !error && (
+          {!result && !error && !testStatus && (
             <p className="text-xs text-dark-600 px-4 py-3">
               Press <span className="text-dark-400 font-mono">Run</span> to execute your query,&nbsp;
               <span className="text-dark-400 font-mono">Test</span> to check against expected output.
@@ -322,52 +367,6 @@ export default function SqlEditor({
           )}
         </div>
       </div>
-
-      {/* Test status banner */}
-      <AnimatePresence>
-        {testStatus && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="shrink-0 border-t border-dark-600 overflow-hidden"
-          >
-            {testStatus === 'pass' ? (
-              <div className="flex items-center gap-2 px-4 py-2.5 text-xs font-semibold text-emerald-400"
-                style={{ background: 'rgba(52,211,153,0.06)' }}>
-                <CheckCircle2 size={13} /> All tests passed! +{lesson.xpReward || 10} XP
-              </div>
-            ) : (
-              <div style={{ background: 'rgba(239,68,68,0.06)' }}>
-                {/* Fail header */}
-                <div className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-red-400 border-b border-red-900/30">
-                  <XCircle size={13} /> Wrong answer — see what's different below
-                </div>
-                {/* Side-by-side comparison */}
-                {testDetails && (
-                  <div className="grid grid-cols-2 divide-x divide-dark-600 text-[11px] font-mono max-h-40 overflow-y-auto">
-                    <div className="p-3">
-                      <p className="text-[10px] font-bold text-red-400 uppercase tracking-wide mb-1.5">Your Output</p>
-                      {testDetails.actual.split('\n').map((line, i) => (
-                        <div key={i} className="text-red-300/80 leading-5">{line || <span className="text-dark-600 italic">empty</span>}</div>
-                      ))}
-                    </div>
-                    <div className="p-3">
-                      <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-wide mb-1.5">Expected Output</p>
-                      {testDetails.expected.split('\n').map((line, i) => (
-                        <div key={i} className="text-emerald-300/80 leading-5">{line}</div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                <p className="text-[10px] text-dark-500 px-4 py-1.5">
-                  Values are compared as: row1col1|row1col2 per line. Check column names, order, and filters.
-                </p>
-              </div>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Hints */}
       <HintPanel hints={hints} hintIndex={hintIndex} onShowHint={onShowHint} xp={xp} />
