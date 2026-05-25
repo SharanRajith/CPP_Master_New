@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { onSnapshot, doc } from 'firebase/firestore';
@@ -221,8 +221,10 @@ function LessonShell({ progress, completeLesson, completeLeetCode, unlockHint, s
 // ─── Root App ─────────────────────────────────────────────────────────────────
 export default function App() {
   const [currentUser, setCurrentUser] = useState(undefined);
-  // Kept at App level so the suspended screen survives after signOut unmounts AuthenticatedApp
   const [isBlocked, setIsBlocked] = useState(false);
+  // watchedUid keeps the Firestore listener alive after signOut so unblock is detected instantly
+  const [watchedUid, setWatchedUid] = useState(null);
+  const isBlockedRef = useRef(false);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (firebaseUser) => {
@@ -233,24 +235,35 @@ export default function App() {
           email:       firebaseUser.email,
           photoURL:    firebaseUser.photoURL,
         });
+        setWatchedUid(firebaseUser.uid);
       } else {
         setCurrentUser(null);
+        // Only stop watching if this was a voluntary logout, not a block-triggered signOut
+        if (!isBlockedRef.current) setWatchedUid(null);
       }
     });
     return () => unsub();
   }, []);
 
-  // Real-time block listener — lives here so it persists through signOut
+  // Block/unblock listener — stays alive after signOut because it depends on watchedUid, not currentUser
   useEffect(() => {
-    if (!currentUser?.uid) return;
-    const unsub = onSnapshot(doc(db, 'users', currentUser.uid), (snap) => {
-      if (snap.exists() && snap.data().isBlocked) {
+    if (!watchedUid) return;
+    const unsub = onSnapshot(doc(db, 'users', watchedUid), (snap) => {
+      if (!snap.exists()) return;
+      const blocked = !!snap.data().isBlocked;
+      if (blocked && !isBlockedRef.current) {
+        isBlockedRef.current = true;
         setIsBlocked(true);
         signOut(auth);
+      } else if (!blocked && isBlockedRef.current) {
+        // Admin unblocked — clear screen instantly, show login
+        isBlockedRef.current = false;
+        setIsBlocked(false);
+        setWatchedUid(null);
       }
     });
     return () => unsub();
-  }, [currentUser?.uid]);
+  }, [watchedUid]);
 
   if (isBlocked) {
     return (
