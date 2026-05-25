@@ -453,6 +453,7 @@ export const CURRICULUM = [
     id: 'module-13',
     title: 'Top Tech Company Problem Bank',
     level: 'FAANG Final Round',
+    track: 'faang',
     color: '#0ea5e9',
     icon: '🏢',
     isPremium: true,

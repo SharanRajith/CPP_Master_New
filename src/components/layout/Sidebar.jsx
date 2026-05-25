@@ -65,6 +65,7 @@ export default function Sidebar({ progress, currentLessonId, isPremium }) {
           const showTrackDivider =
             (module.track === 'embedded' && (!prevModule || prevModule.track !== 'embedded')) ||
             (module.track === 'dbms'     && (!prevModule || prevModule.track !== 'dbms'))     ||
+            (module.track === 'faang'    && (!prevModule || prevModule.track !== 'faang'))    ||
             (module.track === 'service'  && (!prevModule || prevModule.track !== 'service'));
 
           return (
@@ -72,10 +73,11 @@ export default function Sidebar({ progress, currentLessonId, isPremium }) {
               {showTrackDivider && (() => {
                 const isDbms     = module.track === 'dbms';
                 const isService  = module.track === 'service';
-                const divColor   = isDbms ? 'rgba(167,139,250,0.2)' : isService ? 'rgba(249,115,22,0.3)' : 'rgba(34,211,238,0.2)';
-                const textColor  = isDbms ? '#c4b5fd' : isService ? '#fb923c' : '#67e8f9';
-                const bgColor    = isDbms ? 'rgba(167,139,250,0.05)' : isService ? 'rgba(249,115,22,0.07)' : 'rgba(34,211,238,0.05)';
-                const label      = isDbms ? 'DBMS' : isService ? 'Service Companies' : 'Embedded C';
+                const isFaang    = module.track === 'faang';
+                const divColor   = isDbms ? 'rgba(167,139,250,0.2)' : isService ? 'rgba(249,115,22,0.3)' : isFaang ? 'rgba(14,165,233,0.25)' : 'rgba(34,211,238,0.2)';
+                const textColor  = isDbms ? '#c4b5fd' : isService ? '#fb923c' : isFaang ? '#38bdf8' : '#67e8f9';
+                const bgColor    = isDbms ? 'rgba(167,139,250,0.05)' : isService ? 'rgba(249,115,22,0.07)' : isFaang ? 'rgba(14,165,233,0.06)' : 'rgba(34,211,238,0.05)';
+                const label      = isDbms ? 'DBMS' : isService ? 'Service Companies' : isFaang ? 'FAANG' : 'Embedded C';
                 return (
                   <div className="flex items-center gap-2 px-4 py-2.5 border-b border-dark-700"
                     style={{ background: bgColor }}>
