@@ -1,7 +1,8 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { auth } from './lib/firebase';
+import { onSnapshot, doc } from 'firebase/firestore';
+import { auth, db } from './lib/firebase';
 
 import Navbar        from './components/layout/Navbar';
 import Sidebar       from './components/layout/Sidebar';
@@ -269,14 +270,20 @@ function AuthenticatedApp({ currentUser, onLogout, onProfileUpdate }) {
   const isAdmin   = isAdminEmail(currentUser?.email) || !!progress?.isAdmin;
   const isPremium = isAdmin || !!progress?.isPremium;
 
-  // Real-time block check — sign out immediately if admin blocks the user
+  // Real-time block check — separate onSnapshot so it fires even mid-session
+  const [isBlocked, setIsBlocked] = useState(false);
   useEffect(() => {
-    if (progress?.isBlocked) {
-      signOut(auth);
-    }
-  }, [progress?.isBlocked]);
+    if (!currentUser?.uid) return;
+    const unsub = onSnapshot(doc(db, 'users', currentUser.uid), (snap) => {
+      if (snap.exists() && snap.data().isBlocked) {
+        setIsBlocked(true);
+        signOut(auth);
+      }
+    });
+    return () => unsub();
+  }, [currentUser?.uid]);
 
-  if (progress?.isBlocked) {
+  if (isBlocked) {
     return (
       <div className="min-h-screen bg-[#0A0F1C] flex items-center justify-center px-4">
         <div className="text-center max-w-md">
