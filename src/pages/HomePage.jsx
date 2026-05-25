@@ -285,7 +285,7 @@ export default function HomePage({ progress, onOpenPremium }) {
             {/* Highlighted pill — Scenario-Based Questions */}
             <span className="flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full"
               style={{
-                background: 'rgba(249,115,22,0.15)',
+                background: 'rgba(255,255,255,0.05)',
                 border: '1px solid rgba(249,115,22,0.5)',
                 color: '#fb923c',
               }}>
