@@ -180,7 +180,18 @@ auto [eta, driver] = pq.top(); pq.pop();
 #include <string>
 using namespace std;
 
-// Browser History — Back and Forward
+/*
+ * SCENARIO: Browser History — Back and Forward
+ * ---------------------------------------------------
+ * A browser has Back and Forward buttons.
+ * - visit(url)   : go to a new page
+ * - goBack()     : go to the previous page
+ *
+ * Data Structure: Two Stacks
+ *   back  stack → stores pages you came from
+ *   fwd   stack → stores pages you went forward through
+ */
+
 stack<string> back, fwd;
 string current = "home";
 

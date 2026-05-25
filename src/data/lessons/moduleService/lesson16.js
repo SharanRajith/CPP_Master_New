@@ -172,9 +172,27 @@ int leastInterval(vector<char>& tasks, int n) {
 #include <algorithm>
 using namespace std;
 
+/*
+ * SCENARIO: Meeting Room Scheduler
+ * ---------------------------------------------------
+ * You are given a list of meetings with start and end times.
+ * Find the minimum number of meeting rooms required so no
+ * two overlapping meetings share the same room.
+ *
+ * Example: {[0,30],[5,10],[15,20]}
+ *   Meeting [0,30] starts. Needs room 1.
+ *   Meeting [5,10] overlaps with [0,30]. Needs room 2.
+ *   Meeting [15,20] starts after [5,10] ends → reuse room 2.
+ *   Answer: 2 rooms
+ *
+ * Data Structure: Min-Heap of end times
+ */
+
 int minMeetingRooms(vector<pair<int,int>>& meetings) {
     // TODO: Return minimum number of meeting rooms needed
-    // Hint: Sort by start time, use min-heap to track end times
+    // Step 1: Sort meetings by start time
+    // Step 2: Use min-heap to track earliest room end time
+    // Step 3: If earliest end <= current start, reuse that room
     return 0;
 }
 
