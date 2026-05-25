@@ -163,8 +163,26 @@ export default function Sidebar({ progress, currentLessonId, isPremium }) {
                               : <Lock size={12} className="text-dark-400" />
                             }
                           </span>
-                          <span className="truncate leading-tight">
-                            {idx + 1}. {lesson.title}
+                          <span className="flex items-center gap-1.5 min-w-0">
+                            <span className="truncate leading-tight">
+                              {idx + 1}. {lesson.title}
+                            </span>
+                            {lesson.difficulty && (() => {
+                              const colors = {
+                                Easy:    { color: '#34d399', bg: 'rgba(52,211,153,0.1)'  },
+                                Medium:  { color: '#f59e0b', bg: 'rgba(245,158,11,0.1)'  },
+                                Hard:    { color: '#f87171', bg: 'rgba(248,113,113,0.1)' },
+                                Guide:   { color: '#818cf8', bg: 'rgba(129,140,248,0.1)' },
+                                Applied: { color: '#fb923c', bg: 'rgba(251,146,60,0.1)'  },
+                              };
+                              const s = colors[lesson.difficulty] || colors.Easy;
+                              return (
+                                <span className="shrink-0 text-[9px] font-bold px-1.5 py-0.5 rounded"
+                                  style={{ color: s.color, background: s.bg }}>
+                                  {lesson.difficulty}
+                                </span>
+                              );
+                            })()}
                           </span>
                         </NavLink>
                       );
