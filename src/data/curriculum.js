@@ -455,6 +455,10 @@ export const CURRICULUM = [
       { id: 'msvc-l14', title: 'Infosys NQT: Bit Manipulation',         file: () => import('./lessons/moduleService/lesson14.js') },
       { id: 'msvc-l15', title: 'TCS: Scenario-Based DSA',              file: () => import('./lessons/moduleService/lesson15.js') },
       { id: 'msvc-l16', title: 'Infosys: Scenario-Based DSA',          file: () => import('./lessons/moduleService/lesson16.js') },
+      { id: 'msvc-l17', title: 'TCS Interview Process Breakdown',      file: () => import('./lessons/moduleService/lesson17.js') },
+      { id: 'msvc-l18', title: 'Infosys Interview Process Breakdown',  file: () => import('./lessons/moduleService/lesson18.js') },
+      { id: 'msvc-l19', title: 'Wipro Interview Process Breakdown',    file: () => import('./lessons/moduleService/lesson19.js') },
+      { id: 'msvc-l20', title: 'Cognizant Interview Process Breakdown',file: () => import('./lessons/moduleService/lesson20.js') },
     ],
   },
   {
