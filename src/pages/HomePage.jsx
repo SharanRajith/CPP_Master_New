@@ -283,12 +283,11 @@ export default function HomePage({ progress, onOpenPremium }) {
           {/* Feature pills */}
           <div className="flex flex-wrap justify-center gap-2">
             {/* Highlighted pill — Scenario-Based Questions */}
-            <span className="flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full animate-pulse"
+            <span className="flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full"
               style={{
-                background: 'linear-gradient(135deg, rgba(249,115,22,0.25), rgba(251,146,60,0.15))',
-                border: '1px solid rgba(249,115,22,0.7)',
+                background: 'rgba(249,115,22,0.15)',
+                border: '1px solid rgba(249,115,22,0.5)',
                 color: '#fb923c',
-                boxShadow: '0 0 10px rgba(249,115,22,0.4)',
               }}>
               <BrainCircuit size={11} />Scenario-Based Questions ✦ New
             </span>
