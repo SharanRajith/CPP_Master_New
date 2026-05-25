@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { collection, getDocs, doc, updateDoc, addDoc, deleteDoc, onSnapshot, query, serverTimestamp } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, Crown, Users, Zap, BookOpen, ToggleLeft, ToggleRight, RefreshCw, UserCog, Megaphone, Plus, Trash2, Info, AlertTriangle, CheckCircle, KeyRound, ChevronDown, ChevronUp } from 'lucide-react';
+import { Shield, Crown, Users, Zap, BookOpen, ToggleLeft, ToggleRight, RefreshCw, UserCog, Megaphone, Plus, Trash2, Info, AlertTriangle, CheckCircle, KeyRound, ChevronDown, ChevronUp, UserX, UserCheck } from 'lucide-react';
 import { db } from '../lib/firebase';
 import { LEVELS } from '../hooks/useProgress';
 import { ADMIN_EMAILS } from '../config/admins';
@@ -104,6 +104,16 @@ export default function AdminPage({ currentUser }) {
         : { isAdmin: true, isPremium: true };        // grant admin → also grant premium
       await updateDoc(doc(db, 'users', uid), updates);
       setUsers(prev => prev.map(u => u.uid === uid ? { ...u, ...updates } : u));
+    } finally {
+      setUpdating(null);
+    }
+  };
+
+  const toggleBlock = async (uid, currentBlocked) => {
+    setUpdating(uid + '-block');
+    try {
+      await updateDoc(doc(db, 'users', uid), { isBlocked: !currentBlocked });
+      setUsers(prev => prev.map(u => u.uid === uid ? { ...u, isBlocked: !currentBlocked } : u));
     } finally {
       setUpdating(null);
     }
@@ -280,6 +290,8 @@ export default function AdminPage({ currentUser }) {
               const isUserAdmin      = isHardcodedAdmin || isDynamicAdmin;
               const isUpdPremium     = updating === user.uid + '-premium';
               const isUpdAdmin       = updating === user.uid + '-admin';
+              const isUpdBlock       = updating === user.uid + '-block';
+              const isBlocked        = !!user.isBlocked;
 
               const isExpanded = expandedUid === user.uid;
               const unlockedModules = user.unlockedModules || [];
@@ -313,6 +325,7 @@ export default function AdminPage({ currentUser }) {
                       {isHardcodedAdmin && !isUserSuperAdmin && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-purple-900/50 text-purple-300 border border-purple-700/50 flex items-center gap-0.5"><Shield size={9} />Admin</span>}
                       {!isHardcodedAdmin && isDynamicAdmin && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-purple-900/50 text-purple-300 border border-purple-700/50 flex items-center gap-0.5"><Shield size={9} />Admin</span>}
                       {(user.isPremium || isUserAdmin) && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-yellow-900/50 text-yellow-300 border border-yellow-700/50 flex items-center gap-0.5"><Crown size={9} />Premium</span>}
+                      {isBlocked && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-red-900/60 text-red-300 border border-red-700/60 flex items-center gap-0.5"><UserX size={9} />Blocked</span>}
                     </div>
                     <div className="flex items-center gap-3 mt-0.5 text-xs text-dark-400">
                       <span style={{ color: levelInfo.color }}>L{user.level ?? 1} {levelInfo.title}</span>
@@ -360,6 +373,27 @@ export default function AdminPage({ currentUser }) {
                           : user.isPremium
                             ? <><ToggleRight size={14} /> Premium</>
                             : <><ToggleLeft size={14} /> Free</>
+                        }
+                      </button>
+                    )}
+
+                    {/* Block / Unblock — super-admin only, not on other superadmins or self */}
+                    {isSuperAdmin && !isUserSuperAdmin && !isMe && (
+                      <button
+                        onClick={() => toggleBlock(user.uid, isBlocked)}
+                        disabled={!!updating}
+                        title={isBlocked ? 'Unblock user' : 'Block user from the platform'}
+                        className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-all disabled:opacity-50"
+                        style={isBlocked
+                          ? { background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.3)', color: '#34d399' }
+                          : { background: 'rgba(239,68,68,0.1)',   border: '1px solid rgba(239,68,68,0.3)',  color: '#f87171' }
+                        }
+                      >
+                        {isUpdBlock
+                          ? <RefreshCw size={12} className="animate-spin" />
+                          : isBlocked
+                            ? <><UserCheck size={13} /> Unblock</>
+                            : <><UserX size={13} /> Block</>
                         }
                       </button>
                     )}

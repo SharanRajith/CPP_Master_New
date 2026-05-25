@@ -269,6 +269,40 @@ function AuthenticatedApp({ currentUser, onLogout, onProfileUpdate }) {
   const isAdmin   = isAdminEmail(currentUser?.email) || !!progress?.isAdmin;
   const isPremium = isAdmin || !!progress?.isPremium;
 
+  // Real-time block check — sign out immediately if admin blocks the user
+  useEffect(() => {
+    if (progress?.isBlocked) {
+      signOut(auth);
+    }
+  }, [progress?.isBlocked]);
+
+  if (progress?.isBlocked) {
+    return (
+      <div className="min-h-screen bg-[#0A0F1C] flex items-center justify-center px-4">
+        <div className="text-center max-w-md">
+          <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5"
+            style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)' }}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
+              stroke="#f87171" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+            </svg>
+          </div>
+          <h1 className="text-2xl font-black text-white mb-2">Account Suspended</h1>
+          <p className="text-dark-300 text-sm leading-relaxed mb-6">
+            Your account has been suspended due to a violation of our community guidelines.
+            If you believe this is a mistake, please contact support.
+          </p>
+          <a href="mailto:dhiwaretech@gmail.com"
+            className="inline-flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-xl transition-all"
+            style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', color: '#f87171' }}>
+            Contact Support
+          </a>
+          <p className="text-dark-600 text-xs mt-6">You will be signed out automatically.</p>
+        </div>
+      </div>
+    );
+  }
+
   // Keep Render backend alive — ping every 10 min so it never sleeps
   useEffect(() => {
     const ping = () => fetch(BACKEND_URL, { method: 'GET', mode: 'no-cors' }).catch(() => {});
