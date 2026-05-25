@@ -22,7 +22,7 @@ TCS Technical HR and MR rounds now present real-world situations and ask you to 
 
 ---
 
-## Scenario 1 — Browser History (Back / Forward)
+## Scenario 1 — Browser History (Back / Forward) 🎯 *Practice this*
 
 > "Design the Back and Forward buttons of a browser."
 

@@ -68,7 +68,7 @@ vector<int> suggestFriends(int user, vector<vector<int>>& adj) {
 
 ---
 
-## Scenario 3 — Meeting Room Scheduler
+## Scenario 3 — Meeting Room Scheduler 🎯 *Practice this*
 
 > "Given a list of meetings with start and end times, find the minimum number of meeting rooms required."
 
