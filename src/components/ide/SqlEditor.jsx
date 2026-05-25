@@ -133,6 +133,7 @@ export default function SqlEditor({
   const [loadErr, setLoadErr]     = useState(false);
   const [isRunning, setIsRunning] = useState(false);
   const [testStatus, setTestStatus] = useState(null); // null | 'pass' | 'fail'
+  const [testDetails, setTestDetails] = useState(null); // { actual, expected }
   const sqlRef = useRef(null);
 
   // Load sql.js once
@@ -188,7 +189,7 @@ export default function SqlEditor({
   }
 
   function handleTest() {
-    setIsRunning(true); setError(null);
+    setIsRunning(true); setError(null); setTestDetails(null);
     setTimeout(() => {
       const tc = lesson.testCases?.[0];
       if (!tc) { setIsRunning(false); return; }
@@ -197,6 +198,7 @@ export default function SqlEditor({
       if (!res || !res.ok) {
         setError(res?.error || 'SQL error');
         setTestStatus('fail');
+        setTestDetails({ actual: '(SQL error — see above)', expected: tc.expectedOutput.trim() });
         setIsRunning(false);
         return;
       }
@@ -213,6 +215,7 @@ export default function SqlEditor({
 
       const passed = output === tc.expectedOutput.trim();
       setTestStatus(passed ? 'pass' : 'fail');
+      if (!passed) setTestDetails({ actual: output || '(empty — no rows returned)', expected: tc.expectedOutput.trim() });
       if (passed && !isCompleted) onComplete();
       setIsRunning(false);
     }, 40);
@@ -221,7 +224,7 @@ export default function SqlEditor({
   function handleReset() {
     localStorage.removeItem(`sql_${lesson.id}`);
     setCode(lesson.starterCode || '');
-    setResult(null); setError(null); setTestStatus(null);
+    setResult(null); setError(null); setTestStatus(null); setTestDetails(null);
   }
 
   return (
@@ -329,14 +332,39 @@ export default function SqlEditor({
             exit={{ height: 0, opacity: 0 }}
             className="shrink-0 border-t border-dark-600 overflow-hidden"
           >
-            <div className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold ${
-              testStatus === 'pass' ? 'text-emerald-400' : 'text-red-400'
-            }`}
-              style={{ background: testStatus === 'pass' ? 'rgba(52,211,153,0.06)' : 'rgba(239,68,68,0.06)' }}>
-              {testStatus === 'pass'
-                ? <><CheckCircle2 size={13} /> All tests passed! +{lesson.xpReward || 10} XP</>
-                : <><XCircle size={13} /> Output doesn't match expected. Check column order &amp; values.</>}
-            </div>
+            {testStatus === 'pass' ? (
+              <div className="flex items-center gap-2 px-4 py-2.5 text-xs font-semibold text-emerald-400"
+                style={{ background: 'rgba(52,211,153,0.06)' }}>
+                <CheckCircle2 size={13} /> All tests passed! +{lesson.xpReward || 10} XP
+              </div>
+            ) : (
+              <div style={{ background: 'rgba(239,68,68,0.06)' }}>
+                {/* Fail header */}
+                <div className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-red-400 border-b border-red-900/30">
+                  <XCircle size={13} /> Wrong answer — see what's different below
+                </div>
+                {/* Side-by-side comparison */}
+                {testDetails && (
+                  <div className="grid grid-cols-2 divide-x divide-dark-600 text-[11px] font-mono max-h-40 overflow-y-auto">
+                    <div className="p-3">
+                      <p className="text-[10px] font-bold text-red-400 uppercase tracking-wide mb-1.5">Your Output</p>
+                      {testDetails.actual.split('\n').map((line, i) => (
+                        <div key={i} className="text-red-300/80 leading-5">{line || <span className="text-dark-600 italic">empty</span>}</div>
+                      ))}
+                    </div>
+                    <div className="p-3">
+                      <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-wide mb-1.5">Expected Output</p>
+                      {testDetails.expected.split('\n').map((line, i) => (
+                        <div key={i} className="text-emerald-300/80 leading-5">{line}</div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                <p className="text-[10px] text-dark-500 px-4 py-1.5">
+                  Values are compared as: row1col1|row1col2 per line. Check column names, order, and filters.
+                </p>
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
