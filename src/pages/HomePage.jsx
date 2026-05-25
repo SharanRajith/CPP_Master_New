@@ -452,45 +452,18 @@ export default function HomePage({ progress, onOpenPremium }) {
           ))}
         </div>
 
-        {/* ── FAANG track ───────────────────────────────────────────────── */}
+        {/* ── Company Interview Prep ────────────────────────────────────── */}
         <div className="flex items-center gap-3 mb-2 mt-12">
-          <h2 className="text-2xl font-bold text-white">FAANG Interview Prep</h2>
-          <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
-            style={{ background: 'rgba(14,165,233,0.12)', color: '#38bdf8', border: '1px solid rgba(14,165,233,0.3)' }}>
-            🏢 Google · Meta · Amazon · Microsoft
-          </span>
-        </div>
-        <p className="text-dark-300 mb-6">Real problems asked in FAANG final rounds — categorised by company and pattern.</p>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {CURRICULUM.filter(m => m.track === 'faang').map((module, i) => (
-            <motion.div
-              key={module.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-            >
-              <ModuleCard
-                module={module}
-                progress={progress}
-                onStart={id => navigate(`/lesson/${id}`)}
-              />
-            </motion.div>
-          ))}
-        </div>
-
-        {/* ── Service Companies track ────────────────────────────────────── */}
-        <div className="flex items-center gap-3 mb-2 mt-12">
-          <h2 className="text-2xl font-bold text-white">Service Company Interviews</h2>
+          <h2 className="text-2xl font-bold text-white">Company Interview Prep</h2>
           <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
             style={{ background: 'rgba(249,115,22,0.12)', color: '#fb923c', border: '1px solid rgba(249,115,22,0.3)' }}>
-            🏭 TCS · Infosys · Wipro · Cognizant
+            🏢 FAANG &amp; Service Companies
           </span>
         </div>
-        <p className="text-dark-300 mb-6">DSA questions specifically curated for service-based company interviews and on-campus drives.</p>
+        <p className="text-dark-300 mb-6">Real interview problems from FAANG and service-based companies — curated by company and pattern.</p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {CURRICULUM.filter(m => m.track === 'service').map((module, i) => (
+          {CURRICULUM.filter(m => m.track === 'faang' || m.track === 'service').map((module, i) => (
             <motion.div
               key={module.id}
               initial={{ opacity: 0, y: 20 }}
