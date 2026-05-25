@@ -221,6 +221,8 @@ function LessonShell({ progress, completeLesson, completeLeetCode, unlockHint, s
 // ─── Root App ─────────────────────────────────────────────────────────────────
 export default function App() {
   const [currentUser, setCurrentUser] = useState(undefined);
+  // Kept at App level so the suspended screen survives after signOut unmounts AuthenticatedApp
+  const [isBlocked, setIsBlocked] = useState(false);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (firebaseUser) => {
@@ -238,40 +240,7 @@ export default function App() {
     return () => unsub();
   }, []);
 
-  if (currentUser === undefined) {
-    return (
-      <div className="min-h-screen bg-[#0A0F1C] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-500 flex items-center justify-center">
-            <span className="text-white font-black text-lg">C+</span>
-          </div>
-          <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-        </div>
-      </div>
-    );
-  }
-
-  function refreshCurrentUser() {
-    const u = auth.currentUser;
-    if (u) setCurrentUser({ uid: u.uid, displayName: u.displayName || u.email?.split('@')[0] || 'User', email: u.email, photoURL: u.photoURL });
-  }
-
-  if (!currentUser) return <Suspense fallback={<PageLoader />}><LoginPage /></Suspense>;
-
-  return <AuthenticatedApp currentUser={currentUser} onLogout={async () => signOut(auth)} onProfileUpdate={refreshCurrentUser} />;
-}
-
-const BACKEND_URL = 'https://cpp-master.onrender.com/';
-const PING_INTERVAL = 10 * 60 * 1000; // 10 minutes
-
-function AuthenticatedApp({ currentUser, onLogout, onProfileUpdate }) {
-  const { progress, completeLesson, completeQuiz, completeLeetCode, unlockHint, saveNote, deleteNote, isLessonUnlocked, isLessonCompleted, resetProgress } = useProgress(currentUser);
-
-  const isAdmin   = isAdminEmail(currentUser?.email) || !!progress?.isAdmin;
-  const isPremium = isAdmin || !!progress?.isPremium;
-
-  // Real-time block check — separate onSnapshot so it fires even mid-session
-  const [isBlocked, setIsBlocked] = useState(false);
+  // Real-time block listener — lives here so it persists through signOut
   useEffect(() => {
     if (!currentUser?.uid) return;
     const unsub = onSnapshot(doc(db, 'users', currentUser.uid), (snap) => {
@@ -309,6 +278,38 @@ function AuthenticatedApp({ currentUser, onLogout, onProfileUpdate }) {
       </div>
     );
   }
+
+  if (currentUser === undefined) {
+    return (
+      <div className="min-h-screen bg-[#0A0F1C] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-500 flex items-center justify-center">
+            <span className="text-white font-black text-lg">C+</span>
+          </div>
+          <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+        </div>
+      </div>
+    );
+  }
+
+  function refreshCurrentUser() {
+    const u = auth.currentUser;
+    if (u) setCurrentUser({ uid: u.uid, displayName: u.displayName || u.email?.split('@')[0] || 'User', email: u.email, photoURL: u.photoURL });
+  }
+
+  if (!currentUser) return <Suspense fallback={<PageLoader />}><LoginPage /></Suspense>;
+
+  return <AuthenticatedApp currentUser={currentUser} onLogout={async () => signOut(auth)} onProfileUpdate={refreshCurrentUser} />;
+}
+
+const BACKEND_URL = 'https://cpp-master.onrender.com/';
+const PING_INTERVAL = 10 * 60 * 1000; // 10 minutes
+
+function AuthenticatedApp({ currentUser, onLogout, onProfileUpdate }) {
+  const { progress, completeLesson, completeQuiz, completeLeetCode, unlockHint, saveNote, deleteNote, isLessonUnlocked, isLessonCompleted, resetProgress } = useProgress(currentUser);
+
+  const isAdmin   = isAdminEmail(currentUser?.email) || !!progress?.isAdmin;
+  const isPremium = isAdmin || !!progress?.isPremium;
 
   // Keep Render backend alive — ping every 10 min so it never sleeps
   useEffect(() => {
