@@ -64,16 +64,18 @@ export default function Sidebar({ progress, currentLessonId, isPremium }) {
           const prevModule = CURRICULUM[moduleIdx - 1];
           const showTrackDivider =
             (module.track === 'embedded' && (!prevModule || prevModule.track !== 'embedded')) ||
-            (module.track === 'dbms'     && (!prevModule || prevModule.track !== 'dbms'));
+            (module.track === 'dbms'     && (!prevModule || prevModule.track !== 'dbms'))     ||
+            (module.track === 'service'  && (!prevModule || prevModule.track !== 'service'));
 
           return (
             <React.Fragment key={module.id}>
               {showTrackDivider && (() => {
                 const isDbms     = module.track === 'dbms';
-                const divColor   = isDbms ? 'rgba(167,139,250,0.2)' : 'rgba(34,211,238,0.2)';
-                const textColor  = isDbms ? '#c4b5fd' : '#67e8f9';
-                const bgColor    = isDbms ? 'rgba(167,139,250,0.05)' : 'rgba(34,211,238,0.05)';
-                const label      = isDbms ? 'DBMS' : 'Embedded C';
+                const isService  = module.track === 'service';
+                const divColor   = isDbms ? 'rgba(167,139,250,0.2)' : isService ? 'rgba(249,115,22,0.3)' : 'rgba(34,211,238,0.2)';
+                const textColor  = isDbms ? '#c4b5fd' : isService ? '#fb923c' : '#67e8f9';
+                const bgColor    = isDbms ? 'rgba(167,139,250,0.05)' : isService ? 'rgba(249,115,22,0.07)' : 'rgba(34,211,238,0.05)';
+                const label      = isDbms ? 'DBMS' : isService ? 'Service Companies' : 'Embedded C';
                 return (
                   <div className="flex items-center gap-2 px-4 py-2.5 border-b border-dark-700"
                     style={{ background: bgColor }}>
