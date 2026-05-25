@@ -268,7 +268,7 @@ export default function App() {
             Your account has been suspended due to a violation of our community guidelines.
             If you believe this is a mistake, please contact support.
           </p>
-          <a href="mailto:dhiwaretech@gmail.com"
+          <a href="mailto:sharanrajithk@gmail.com"
             className="inline-flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-xl transition-all"
             style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', color: '#f87171' }}>
             Contact Support
