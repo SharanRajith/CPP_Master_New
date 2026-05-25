@@ -453,6 +453,8 @@ export const CURRICULUM = [
       { id: 'msvc-l12', title: 'Cognizant: Hashing & Frequency',        file: () => import('./lessons/moduleService/lesson12.js') },
       { id: 'msvc-l13', title: 'TCS CodeVita: Matrix Problems',         file: () => import('./lessons/moduleService/lesson13.js') },
       { id: 'msvc-l14', title: 'Infosys NQT: Bit Manipulation',         file: () => import('./lessons/moduleService/lesson14.js') },
+      { id: 'msvc-l15', title: 'TCS: Scenario-Based DSA',              file: () => import('./lessons/moduleService/lesson15.js') },
+      { id: 'msvc-l16', title: 'Infosys: Scenario-Based DSA',          file: () => import('./lessons/moduleService/lesson16.js') },
     ],
   },
   {
