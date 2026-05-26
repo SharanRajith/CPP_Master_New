@@ -313,7 +313,7 @@ export default function AdminPage({ currentUser }) {
               return (
                 <motion.div key={user.uid}
                   initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}
-                  className="rounded-xl overflow-hidden"
+                  className="rounded-xl"
                   style={{
                     background: isMe ? 'rgba(99,102,241,0.1)' : 'rgba(17,17,24,0.8)',
                     border: isMe ? '1px solid rgba(99,102,241,0.3)' : '1px solid rgba(255,255,255,0.05)',

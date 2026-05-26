@@ -228,6 +228,13 @@ export default function HomePage({ progress, onOpenPremium }) {
   // Find first uncompleted lesson
   const firstUncompleted = allLessons.find(l => !progress.completedLessons[l.id]);
 
+  // ── DSA branch completion check ───────────────────────────────────────────
+  const userIsPremium = progress.isPremium || progress.isAdmin;
+  const dsaLessons = CURRICULUM
+    .filter(m => !m.track && (!m.isPremium || userIsPremium))
+    .flatMap(m => m.lessons);
+  const isDsaComplete = dsaLessons.length > 0 && dsaLessons.every(l => !!progress.completedLessons[l.id]);
+
   function handleStart() {
     navigate(`/lesson/${firstUncompleted?.id || 'm1-l1'}`);
   }
@@ -471,22 +478,42 @@ export default function HomePage({ progress, onOpenPremium }) {
         </div>
         <p className="text-dark-300 mb-6">Real interview problems from FAANG and service-based companies — curated by company and pattern.</p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {CURRICULUM.filter(m => m.track === 'faang' || m.track === 'service').map((module, i) => (
-            <motion.div
-              key={module.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-            >
-              <ModuleCard
-                module={module}
-                progress={progress}
-                onStart={id => navigate(`/lesson/${id}`)}
-              />
-            </motion.div>
-          ))}
-        </div>
+        {!isDsaComplete ? (
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+            className="rounded-2xl p-8 text-center"
+            style={{ background: 'rgba(17,17,24,0.8)', border: '1px solid rgba(255,255,255,0.07)' }}>
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
+              style={{ background: 'rgba(249,115,22,0.1)', border: '1px solid rgba(249,115,22,0.25)' }}>
+              <Lock size={22} className="text-orange-400" />
+            </div>
+            <h3 className="text-lg font-black text-white mb-2">Complete the DSA Branch First</h3>
+            <p className="text-dark-400 text-sm leading-relaxed max-w-sm mx-auto mb-5">
+              Finish all {userIsPremium ? '' : 'free '}DSA modules to unlock Company Interview Prep. This ensures you have the foundations to tackle real interview problems.
+            </p>
+            <button onClick={handleStart}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90"
+              style={{ background: 'linear-gradient(135deg,#f97316,#fb923c)' }}>
+              Continue DSA <ArrowRight size={14} />
+            </button>
+          </motion.div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {CURRICULUM.filter(m => m.track === 'faang' || m.track === 'service').map((module, i) => (
+              <motion.div
+                key={module.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}
+              >
+                <ModuleCard
+                  module={module}
+                  progress={progress}
+                  onStart={id => navigate(`/lesson/${id}`)}
+                />
+              </motion.div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Premium banner */}
