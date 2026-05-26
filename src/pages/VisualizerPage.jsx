@@ -701,6 +701,107 @@ int main() {
     return 0;
 }`,
   },
+  'Topo Sort': {
+    summary: "Topological Sort (Kahn's algorithm) orders the nodes of a Directed Acyclic Graph (DAG) so that every edge u→v has u appearing before v. It repeatedly removes nodes whose in-degree is 0, updating neighbors' in-degrees until all nodes are ordered.",
+    bullets: [
+      'Only works on DAGs — a cycle makes topological ordering impossible',
+      'If the result has fewer nodes than the graph, a cycle exists',
+      'Common use-cases: build systems, task scheduling, course prerequisites',
+    ],
+    time: 'O(V + E)', space: 'O(V)',
+    code: `#include <bits/stdc++.h>
+using namespace std;
+
+vector<int> topoSort(int V, vector<vector<int>>& adj) {
+    // Step 1: count incoming edges for each node
+    vector<int> inDegree(V, 0);
+    for (int u = 0; u < V; u++)
+        for (int v : adj[u])
+            inDegree[v]++;
+
+    // Step 2: start with all nodes that have no prerequisites
+    queue<int> q;
+    for (int i = 0; i < V; i++)
+        if (inDegree[i] == 0) q.push(i);
+
+    vector<int> order;
+    while (!q.empty()) {
+        int u = q.front(); q.pop();
+        order.push_back(u);
+
+        // Remove u: reduce in-degree of its neighbors
+        for (int v : adj[u]) {
+            inDegree[v]--;
+            if (inDegree[v] == 0) // prerequisite fulfilled
+                q.push(v);
+        }
+    }
+    // if order.size() != V, a cycle was detected
+    return order;
+}
+
+int main() {
+    int V = 7;
+    vector<vector<int>> adj(V);
+    adj[0] = {1, 2};
+    adj[1] = {3, 4};
+    adj[2] = {4, 5};
+    adj[3] = {6};
+    adj[4] = {6};
+    adj[5] = {6};
+
+    vector<int> result = topoSort(V, adj);
+    for (int node : result)
+        cout << node << " ";
+    return 0;
+}`,
+    ccode: `#include <stdio.h>
+#define V 7
+
+// Adjacency matrix (directed edges only)
+int adj[V][V] = {
+    {0,1,1,0,0,0,0},
+    {0,0,0,1,1,0,0},
+    {0,0,0,0,1,1,0},
+    {0,0,0,0,0,0,1},
+    {0,0,0,0,0,0,1},
+    {0,0,0,0,0,0,1},
+    {0,0,0,0,0,0,0},
+};
+
+void topoSort() {
+    int inDegree[V] = {0};
+    for (int u = 0; u < V; u++)
+        for (int v = 0; v < V; v++)
+            if (adj[u][v]) inDegree[v]++;
+
+    // Queue holds nodes whose in-degree reached 0
+    int queue[V], front = 0, rear = 0;
+    for (int i = 0; i < V; i++)
+        if (inDegree[i] == 0) queue[rear++] = i;
+
+    int order[V], cnt = 0;
+    while (front < rear) {
+        int u = queue[front++];
+        order[cnt++] = u;
+        for (int v = 0; v < V; v++) {
+            if (adj[u][v]) {
+                inDegree[v]--;
+                if (inDegree[v] == 0)
+                    queue[rear++] = v;
+            }
+        }
+    }
+
+    for (int i = 0; i < cnt; i++)
+        printf("%d ", order[i]);
+}
+
+int main() {
+    topoSort();
+    return 0;
+}`,
+  },
   Dijkstra: {
     summary: "Greedily finds the shortest path from a source to every other node in a weighted graph with non-negative edges. Each round it picks the unsettled node with the smallest known distance, permanently finalises it, then relaxes its neighbors' distances.",
     bullets: [
@@ -1480,6 +1581,77 @@ function TreeSection() {
   );
 }
 
+// ─── Topological Sort graph data (directed acyclic graph) ────────────────────
+const TOPO_NODES = [
+  { id: 0, x: 220, y: 55  },
+  { id: 1, x: 95,  y: 170 },
+  { id: 2, x: 345, y: 170 },
+  { id: 3, x: 55,  y: 290 },
+  { id: 4, x: 220, y: 290 },
+  { id: 5, x: 385, y: 290 },
+  { id: 6, x: 220, y: 400 },
+];
+// Directed edges [from, to]
+const TOPO_EDGES = [
+  [0,1],[0,2],[1,3],[1,4],[2,4],[2,5],[3,6],[4,6],[5,6],
+];
+
+// Returns the two adjusted endpoints for a directed edge (stops before circle boundary)
+function tEdgePts(a, b) {
+  const na = TOPO_NODES[a], nb = TOPO_NODES[b];
+  const dx = nb.x - na.x, dy = nb.y - na.y;
+  const len = Math.sqrt(dx * dx + dy * dy) || 1;
+  return {
+    x1: na.x + (dx / len) * 23,
+    y1: na.y + (dy / len) * 23,
+    x2: nb.x - (dx / len) * 27,
+    y2: nb.y - (dy / len) * 27,
+  };
+}
+
+function topoSteps() {
+  const inDeg = {}, adj = {};
+  TOPO_NODES.forEach(n => { inDeg[n.id] = 0; adj[n.id] = []; });
+  TOPO_EDGES.forEach(([u, v]) => { adj[u].push(v); inDeg[v]++; });
+
+  const processed = new Set(), inQueue = new Set(), order = [];
+  const steps = [];
+
+  function snap(current, activeEdge, info) {
+    return { current, processed: new Set(processed), inQueue: new Set(inQueue), inDeg: { ...inDeg }, order: [...order], activeEdge, info };
+  }
+
+  // Init: enqueue all zero-in-degree nodes
+  const queue = [];
+  TOPO_NODES.forEach(n => { if (inDeg[n.id] === 0) { queue.push(n.id); inQueue.add(n.id); } });
+  steps.push(snap(null, null,
+    `Compute in-degrees. Nodes with in-degree 0: [${queue.join(', ')}] → enqueue them.`));
+
+  while (queue.length) {
+    const u = queue.shift();
+    inQueue.delete(u);
+    steps.push(snap(u, null,
+      `Dequeue node ${u} → append to order.  Order so far: [${[...order, u].join(' → ')}]`));
+    order.push(u);
+    processed.add(u);
+
+    for (const v of adj[u]) {
+      steps.push(snap(u, [u, v],
+        `Edge ${u}→${v}: in-degree[${v}]  ${inDeg[v]} − 1 = ${inDeg[v] - 1}`));
+      inDeg[v]--;
+      if (inDeg[v] === 0) {
+        inQueue.add(v); queue.push(v);
+        steps.push(snap(u, [u, v],
+          `in-degree[${v}] reached 0 → enqueue ${v}.  Queue: [${queue.join(', ')}]`));
+      }
+    }
+  }
+
+  steps.push(snap(null, null,
+    `✓ Topological order: ${order.join(' → ')}`));
+  return steps;
+}
+
 // ─── Graph section ────────────────────────────────────────────────────────────
 function GraphSection() {
   const [algo,  setAlgo]  = useState('BFS');
@@ -1487,50 +1659,67 @@ function GraphSection() {
   const [speed, setSpeed] = useState('Normal');
 
   const isDijkstra = algo === 'Dijkstra';
+  const isTopo     = algo === 'Topo Sort';
 
   const steps = useMemo(() => {
-    if (algo === 'BFS')      return graphBFS(start);
-    if (algo === 'DFS')      return graphDFS(start);
+    if (algo === 'BFS')       return graphBFS(start);
+    if (algo === 'DFS')       return graphDFS(start);
+    if (algo === 'Topo Sort') return topoSteps();
     return dijkstraSteps(start);
   }, [algo, start]);
 
   const player = usePlayer(steps, speed);
   const step = steps[player.stepIdx] || {};
 
-  // Node colour — works for both BFS/DFS and Dijkstra step shapes
   function nc(id) {
-    const cur = step.current === id;
-    const vis = isDijkstra ? step.settled?.has(id) : step.visited?.has(id);
-    if (cur) return NODE.current;
-    if (vis) return NODE.visited;
+    if (isTopo) {
+      if (step.current === id)        return NODE.current;
+      if (step.processed?.has(id))    return NODE.visited;
+      if (step.inQueue?.has(id))      return { fill: '#1e1b4b', stroke: '#818cf8', text: '#a5b4fc' };
+      return NODE.default;
+    }
+    if (isDijkstra) {
+      if (step.current === id)        return NODE.current;
+      if (step.settled?.has(id))      return NODE.visited;
+      return NODE.default;
+    }
+    if (step.current === id)          return NODE.current;
+    if (step.visited?.has(id))        return NODE.visited;
     return NODE.default;
   }
 
-  // BFS/DFS edge colour
   function bfsEdgeLit(a, b) {
     return step.edges?.has([Math.min(a, b), Math.max(a, b)].join('-'));
   }
 
-  // Dijkstra edge colour
   function djEdgeStyle(a, b) {
     const key = [Math.min(a, b), Math.max(a, b)].join('-');
     const ae  = step.activeEdge;
     if (ae && ((ae[0] === a && ae[1] === b) || (ae[0] === b && ae[1] === a)))
       return { stroke: '#fbbf24', width: 3 };
-    if (step.treeEdges?.has(key))
-      return { stroke: '#34d399', width: 2.5 };
+    if (step.treeEdges?.has(key)) return { stroke: '#34d399', width: 2.5 };
     return { stroke: '#1e293b', width: 2 };
   }
 
-  const bfsLegend = [['Processing', NODE.current.stroke], ['Visited', NODE.visited.stroke], ['Tree edge', '#6366f1']];
-  const djLegend  = [['Settling', NODE.current.stroke], ['Settled', NODE.visited.stroke], ['Relaxing', '#fbbf24'], ['Shortest tree', '#34d399']];
+  function topoEdgeColor(u, v) {
+    const ae = step.activeEdge;
+    if (ae && ae[0] === u && ae[1] === v) return '#fbbf24';
+    if (step.processed?.has(u))           return '#34d399';
+    return '#1e293b';
+  }
+
+  const legends = {
+    BFS:        [['Processing', NODE.current.stroke], ['Visited', NODE.visited.stroke], ['Tree edge', '#6366f1']],
+    DFS:        [['Processing', NODE.current.stroke], ['Visited', NODE.visited.stroke], ['Tree edge', '#6366f1']],
+    Dijkstra:   [['Settling', NODE.current.stroke], ['Settled', NODE.visited.stroke], ['Relaxing edge', '#fbbf24'], ['Shortest tree', '#34d399']],
+    'Topo Sort':[['Dequeuing', NODE.current.stroke], ['In queue', '#818cf8'], ['Done', NODE.visited.stroke], ['Active edge', '#fbbf24']],
+  };
 
   return (
     <div>
-      {/* Algorithm picker */}
-      <div className="flex items-center gap-4 mb-5 flex-wrap">
-        <div className="flex gap-2">
-          {['BFS', 'DFS', 'Dijkstra'].map(a => (
+      <div className="flex items-center gap-3 mb-5 flex-wrap">
+        <div className="flex gap-2 flex-wrap">
+          {['BFS', 'DFS', 'Dijkstra', 'Topo Sort'].map(a => (
             <button key={a} onClick={() => setAlgo(a)}
               className="px-4 py-1.5 rounded-lg text-xs font-bold transition-all"
               style={algo === a
@@ -1540,25 +1729,67 @@ function GraphSection() {
             </button>
           ))}
         </div>
-        <div className="flex items-center gap-2 text-xs text-dark-500">
-          Start:
-          {(isDijkstra ? DJ_NODES : G_NODES).map(n => (
-            <button key={n.id} onClick={() => setStart(n.id)}
-              className="w-6 h-6 rounded-full text-[10px] font-bold transition-all"
-              style={start === n.id
-                ? { background: 'rgba(99,102,241,0.3)', border: '1px solid #818cf8', color: '#a5b4fc' }
-                : { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#6b7280' }}>
-              {n.id}
-            </button>
-          ))}
-        </div>
+        {!isTopo && (
+          <div className="flex items-center gap-2 text-xs text-dark-500">
+            Start:
+            {(isDijkstra ? DJ_NODES : G_NODES).map(n => (
+              <button key={n.id} onClick={() => setStart(n.id)}
+                className="w-6 h-6 rounded-full text-[10px] font-bold transition-all"
+                style={start === n.id
+                  ? { background: 'rgba(99,102,241,0.3)', border: '1px solid #818cf8', color: '#a5b4fc' }
+                  : { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#6b7280' }}>
+                {n.id}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="rounded-2xl p-5" style={{ background: 'rgba(17,17,24,0.8)', border: '1px solid rgba(255,255,255,0.06)' }}>
         <div className="flex justify-center overflow-x-auto">
 
-          {isDijkstra ? (
-            /* ── Dijkstra: weighted graph with distance badges ── */
+          {isTopo ? (
+            /* ── Topological Sort: directed graph with arrowheads + in-degree badges ── */
+            <svg width={440} height={435}>
+              <defs>
+                {[['arr-d','#1e293b'],['arr-a','#fbbf24'],['arr-g','#34d399']].map(([id,fill]) => (
+                  <marker key={id} id={id} markerWidth="10" markerHeight="7"
+                    refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+                    <polygon points="0,0 10,3.5 0,7" fill={fill} />
+                  </marker>
+                ))}
+              </defs>
+              {TOPO_EDGES.map(([u, v]) => {
+                const { x1,y1,x2,y2 } = tEdgePts(u, v);
+                const col = topoEdgeColor(u, v);
+                const markerId = col === '#fbbf24' ? 'arr-a' : col === '#34d399' ? 'arr-g' : 'arr-d';
+                return (
+                  <line key={`${u}-${v}`} x1={x1} y1={y1} x2={x2} y2={y2}
+                    stroke={col} strokeWidth={col !== '#1e293b' ? 2.5 : 1.5}
+                    markerEnd={`url(#${markerId})`}
+                    style={{ transition: 'stroke 0.3s' }} />
+                );
+              })}
+              {TOPO_NODES.map(n => {
+                const c  = nc(n.id);
+                const id = step.inDeg?.[n.id] ?? 0;
+                return (
+                  <g key={n.id}>
+                    {/* In-degree badge above node */}
+                    <text x={n.x} y={n.y - 28} textAnchor="middle"
+                      fill={id === 0 ? '#34d399' : '#64748b'} fontSize={10} fontWeight="bold">
+                      in:{id}
+                    </text>
+                    <circle cx={n.x} cy={n.y} r={22} fill={c.fill} stroke={c.stroke} strokeWidth={2.5}
+                      style={{ transition: 'fill 0.25s, stroke 0.25s' }} />
+                    <text x={n.x} y={n.y} textAnchor="middle" dominantBaseline="central"
+                      fill={c.text} fontSize={13} fontWeight="bold">{n.id}</text>
+                  </g>
+                );
+              })}
+            </svg>
+          ) : isDijkstra ? (
+            /* ── Dijkstra: weighted undirected graph with distance badges ── */
             <svg width={440} height={420}>
               {DJ_EDGES.map(([a, b, w]) => {
                 const na = DJ_NODES[a], nb = DJ_NODES[b];
@@ -1567,8 +1798,8 @@ function GraphSection() {
                 return (
                   <g key={`${a}-${b}`}>
                     <line x1={na.x} y1={na.y} x2={nb.x} y2={nb.y}
-                      stroke={stroke} strokeWidth={width} style={{ transition: 'stroke 0.3s, stroke-width 0.3s' }} />
-                    <rect x={mx - 11} y={my - 9} width={22} height={18} rx={4} fill="#0a0f1c" opacity={0.92} />
+                      stroke={stroke} strokeWidth={width} style={{ transition: 'stroke 0.3s' }} />
+                    <rect x={mx-11} y={my-9} width={22} height={18} rx={4} fill="#0a0f1c" opacity={0.92} />
                     <text x={mx} y={my} textAnchor="middle" dominantBaseline="central"
                       fill="#94a3b8" fontSize={11} fontWeight="bold">{w}</text>
                   </g>
@@ -1584,8 +1815,7 @@ function GraphSection() {
                       style={{ transition: 'fill 0.25s, stroke 0.25s' }} />
                     <text x={n.x} y={n.y} textAnchor="middle" dominantBaseline="central"
                       fill={c.text} fontSize={13} fontWeight="bold">{n.id}</text>
-                    {/* Distance badge below node */}
-                    <text x={n.x} y={n.y + 34} textAnchor="middle"
+                    <text x={n.x} y={n.y+34} textAnchor="middle"
                       fill={d === undefined || d === Infinity ? '#4b5563' : '#fbbf24'}
                       fontSize={11} fontWeight="bold">{dLabel}</text>
                   </g>
@@ -1593,7 +1823,7 @@ function GraphSection() {
               })}
             </svg>
           ) : (
-            /* ── BFS / DFS: unweighted graph ── */
+            /* ── BFS / DFS: unweighted undirected graph ── */
             <svg width={440} height={400}>
               {G_EDGES.map(([a, b]) => {
                 const na = G_NODES[a], nb = G_NODES[b], lit = bfsEdgeLit(a, b);
@@ -1616,19 +1846,31 @@ function GraphSection() {
           )}
         </div>
 
+        {/* Topological order result strip */}
+        {isTopo && step.order?.length > 0 && (
+          <div className="mt-3 flex items-center gap-1.5 flex-wrap">
+            <span className="text-[10px] text-dark-500 shrink-0">Order:</span>
+            {step.order.map((id, i) => (
+              <div key={i} className="flex items-center gap-1.5">
+                {i > 0 && <span className="text-dark-600 text-xs">→</span>}
+                <div className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold"
+                  style={{ background: '#064e3b', border: '1px solid #34d399', color: '#6ee7b7' }}>
+                  {id}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Legend */}
         <div className="flex items-center gap-4 mt-2 text-[10px] text-dark-500 flex-wrap">
-          {(isDijkstra ? djLegend : bfsLegend).map(([l, c]) => (
+          {(legends[algo] || legends.BFS).map(([l, c]) => (
             <div key={l} className="flex items-center gap-1.5">
-              <div className="w-3 h-3 rounded-full border-2" style={{ borderColor: c }} />
-              {l}
+              <div className="w-3 h-3 rounded-full border-2" style={{ borderColor: c }} />{l}
             </div>
           ))}
-          {isDijkstra && (
-            <span className="ml-2 text-[10px]" style={{ color: '#fbbf24' }}>
-              Yellow numbers = current best distance
-            </span>
-          )}
+          {isDijkstra && <span style={{ color: '#fbbf24' }} className="ml-1 text-[10px]">Numbers = best distance</span>}
+          {isTopo     && <span style={{ color: '#34d399' }} className="ml-1 text-[10px]">in:0 = ready to dequeue</span>}
         </div>
 
         <InfoBox text={step.info} />
