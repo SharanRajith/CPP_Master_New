@@ -711,21 +711,30 @@ int main() {
     time: 'O((V+E) log V)', space: 'O(V)',
     code: `#include <bits/stdc++.h>
 using namespace std;
-typedef pair<int,int> pii; // {dist, node}
 
+// adj[u] holds {neighbor, weight} pairs
 vector<int> dijkstra(int src, int V,
-                     vector<vector<pii>>& adj) {
+        vector<vector<pair<int,int>>>& adj) {
+
     vector<int> dist(V, INT_MAX);
-    priority_queue<pii, vector<pii>, greater<pii>> pq;
+    // min-heap: {distance, node}
+    priority_queue<pair<int,int>,
+                   vector<pair<int,int>>,
+                   greater<pair<int,int>>> pq;
 
     dist[src] = 0;
     pq.push({0, src});
 
     while (!pq.empty()) {
-        auto [d, u] = pq.top(); pq.pop();
-        if (d > dist[u]) continue; // stale entry
+        int d = pq.top().first;
+        int u = pq.top().second;
+        pq.pop();
 
-        for (auto [w, v] : adj[u]) {
+        if (d > dist[u]) continue; // outdated entry
+
+        for (int i = 0; i < adj[u].size(); i++) {
+            int v = adj[u][i].first;
+            int w = adj[u][i].second;
             if (dist[u] + w < dist[v]) {
                 dist[v] = dist[u] + w;
                 pq.push({dist[v], v});
@@ -737,17 +746,21 @@ vector<int> dijkstra(int src, int V,
 
 int main() {
     int V = 7;
-    vector<vector<pii>> adj(V);
-    // {weight, neighbor}
-    adj[0] = {{3,1},{4,2}};
-    adj[1] = {{3,0},{5,3},{2,4}};
-    adj[2] = {{4,0},{8,4},{3,5}};
-    adj[3] = {{5,1},{6,4},{7,6}};
-    adj[4] = {{2,1},{8,2},{6,3},{1,5},{4,6}};
-    adj[5] = {{3,2},{1,4},{5,6}};
-    adj[6] = {{7,3},{4,4},{5,5}};
+    vector<vector<pair<int,int>>> adj(V);
+    // add edge u -- v with weight w (undirected)
+    adj[0].push_back({1, 3}); adj[1].push_back({0, 3});
+    adj[0].push_back({2, 4}); adj[2].push_back({0, 4});
+    adj[1].push_back({3, 5}); adj[3].push_back({1, 5});
+    adj[1].push_back({4, 2}); adj[4].push_back({1, 2});
+    adj[2].push_back({4, 8}); adj[4].push_back({2, 8});
+    adj[2].push_back({5, 3}); adj[5].push_back({2, 3});
+    adj[3].push_back({4, 6}); adj[4].push_back({3, 6});
+    adj[3].push_back({6, 7}); adj[6].push_back({3, 7});
+    adj[4].push_back({5, 1}); adj[5].push_back({4, 1});
+    adj[4].push_back({6, 4}); adj[6].push_back({4, 4});
+    adj[5].push_back({6, 5}); adj[6].push_back({5, 5});
 
-    auto d = dijkstra(0, V, adj);
+    vector<int> d = dijkstra(0, V, adj);
     for (int i = 0; i < V; i++)
         cout << "Node " << i << ": " << d[i] << "\\n";
     return 0;
@@ -877,21 +890,62 @@ function AlgoInfo({ info }) {
 
 // Minimal syntax highlighter — numbers run first so later span injections don't get re-matched
 function highlight(code) {
-  const keywords = ['void', 'int', 'bool', 'for', 'while', 'if', 'return', 'true', 'false', 'nullptr', 'struct', 'class', 'auto', 'break'];
-  const types    = ['vector', 'queue', 'stack', 'deque', 'set', 'map', 'TreeNode', 'string'];
-  // Escape HTML entities first
+  const keywords = ['void', 'int', 'bool', 'for', 'while', 'if', 'else', 'return', 'true', 'false', 'nullptr', 'struct', 'class', 'auto', 'break', 'continue', 'new', 'delete', 'const', 'static', 'include', 'define', 'typedef', 'sizeof', 'malloc', 'free'];
+  const types    = ['vector', 'queue', 'priority_queue', 'stack', 'deque', 'set', 'map', 'pair', 'TreeNode', 'string', 'INT_MAX'];
+
+  // Escape HTML entities first so injected spans aren't re-escaped
   let out = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  // Numbers before any HTML is injected — avoids matching digits inside style attributes
-  out = out.replace(/\b(\d+)\b/g, '<span style="color:pink">$1</span>');
-  // Comments, strings, keywords, types — all use named colors (no hex digits)
-  out = out.replace(/\/\/.*/g, m => `<span style="color:slategray;font-style:italic">${m}</span>`);
-  out = out.replace(/(".*?")/g, '<span style="color:lightgreen">$1</span>');
+
+  // Tokenise in one pass: collect [start, end, html] replacements for non-overlapping regions.
+  // Order: comments → string literals → numbers. Keywords/types run after and only match \w tokens.
+  const regions = [];   // { start, end }
+
+  // 1. Line comments
+  out = out.replace(/\/\/.*/g, (m, offset) => {
+    regions.push({ start: offset, end: offset + m.length });
+    return `\x00COM${regions.length - 1}\x00`;
+  });
+  const commentTokens = regions.map(r => out); // save for restore below — handled inline
+
+  // Simpler: build the output sequentially using a replacer that records occupied spans
+  // Reset and use a cleaner two-phase approach:
+  out = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  // Phase 1: mark literal regions (comments + strings) with placeholders so later
+  //          regexes don't corrupt them.
+  const slots = [];
+  function protect(str, color, italic = false) {
+    const style = italic
+      ? `color:${color};font-style:italic`
+      : `color:${color}`;
+    slots.push(`<span style='${style}'>${str}</span>`);
+    return `\x00${slots.length - 1}\x00`;
+  }
+
+  // Comments first (greedy to end of line)
+  out = out.replace(/\/\/.*/g, m => protect(m, 'slategray', true));
+  // String literals (lazy, double-quoted only — safe now because injected spans use single quotes)
+  out = out.replace(/"[^"\n]*"/g, m => protect(m, 'lightgreen'));
+
+  // Phase 2: highlight numbers, keywords, types in the remaining plain text
+  out = out.replace(/\b(\d+)\b/g, "<span style='color:#f9a8d4'>$1</span>");
+
   keywords.forEach(k => {
-    out = out.replace(new RegExp(`\\b(${k})\\b`, 'g'), '<span style="color:violet;font-weight:bold">$1</span>');
+    out = out.replace(
+      new RegExp(`\\b(${k})\\b`, 'g'),
+      "<span style='color:#c084fc;font-weight:bold'>$1</span>",
+    );
   });
   types.forEach(t => {
-    out = out.replace(new RegExp(`\\b(${t})\\b`, 'g'), '<span style="color:cyan">$1</span>');
+    out = out.replace(
+      new RegExp(`\\b(${t})\\b`, 'g'),
+      "<span style='color:#67e8f9'>$1</span>",
+    );
   });
+
+  // Phase 3: restore protected slots
+  out = out.replace(/\x00(\d+)\x00/g, (_, i) => slots[Number(i)]);
+
   return out;
 }
 
