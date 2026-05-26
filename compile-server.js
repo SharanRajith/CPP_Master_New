@@ -20,8 +20,7 @@ app.use(cors());
 app.use(express.json({ limit: '1mb' }));
 
 // ── Email / OTP setup ────────────────────────────────────────────────────────
-const RESEND_API_KEY = process.env.RESEND_API_KEY;
-const FROM_EMAIL     = 'CppMaster <onboarding@resend.dev>'; // change to your domain once verified
+const BREVO_API_KEY = process.env.BREVO_API_KEY;
 
 // email → { otp, expiry, name }
 const otpStore = new Map();
@@ -133,23 +132,23 @@ app.post('/api/send-otp', async (req, res) => {
   otpStore.set(email.toLowerCase(), { otp, expiry, name });
 
   try {
-    const r = await fetch('https://api.resend.com/emails', {
+    const r = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${RESEND_API_KEY}`,
-        'Content-Type':  'application/json',
+        'api-key':      BREVO_API_KEY,
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from:    FROM_EMAIL,
-        to:      [email],
-        subject: `${otp} is your CppMaster verification code`,
-        html:    otpEmail(name, otp),
+        sender:      { name: 'CppMaster', email: 'sharanrajithk@gmail.com' },
+        to:          [{ email }],
+        subject:     `${otp} is your CppMaster verification code`,
+        htmlContent: otpEmail(name, otp),
       }),
     });
     if (!r.ok) {
       const e = await r.json().catch(() => ({}));
-      const msg = e.message || e.name || `Resend HTTP ${r.status}`;
-      console.error('Resend error:', r.status, JSON.stringify(e));
+      const msg = e.message || `Brevo HTTP ${r.status}`;
+      console.error('Brevo error:', r.status, JSON.stringify(e));
       throw new Error(msg);
     }
     res.json({ success: true });
