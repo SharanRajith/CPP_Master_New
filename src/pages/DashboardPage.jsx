@@ -269,7 +269,7 @@ export default function DashboardPage({ progress, resetProgress, completeQuiz, c
               className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:opacity-90 active:scale-95"
               style={{ background: 'linear-gradient(135deg,#4f46e5,#7c3aed)', color: 'white', boxShadow: '0 4px 16px rgba(79,70,229,0.3)' }}
             >
-              <Share2 size={14} /> Share Progress
+              <Share2 size={14} /><span className="hidden sm:inline"> Share Progress</span><span className="sm:hidden"> Share</span>
             </button>
           </div>
         </motion.div>
@@ -280,7 +280,7 @@ export default function DashboardPage({ progress, resetProgress, completeQuiz, c
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.02 }}
-            className="mb-5 rounded-2xl p-5 flex items-center gap-4"
+            className="mb-5 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4"
             style={{
               background: 'linear-gradient(135deg, rgba(99,102,241,0.18) 0%, rgba(124,58,237,0.12) 100%)',
               border: '1px solid rgba(99,102,241,0.4)',
@@ -297,10 +297,10 @@ export default function DashboardPage({ progress, resetProgress, completeQuiz, c
                 const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
                 downloadCertificate(name, totalLessons, date);
               }}
-              className="shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm text-white transition-all hover:opacity-90 active:scale-95"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm text-white transition-all hover:opacity-90 active:scale-95"
               style={{ background: 'linear-gradient(135deg,#6366f1,#7c3aed)' }}
             >
-              <Download size={15} /> Download Certificate
+              <Download size={15} /> Download<span className="hidden sm:inline"> Certificate</span>
             </button>
           </motion.div>
         )}

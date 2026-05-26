@@ -169,7 +169,7 @@ export default function AdminPage({ currentUser }) {
         </motion.div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-3 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-8">
           {[
             { icon: <Users size={16} className="text-indigo-400" />,  label: 'Total Users',     value: totalUsers,             bg: 'rgba(99,102,241,0.1)',  border: 'rgba(99,102,241,0.2)' },
             { icon: <Crown size={16} className="text-yellow-400" />,  label: 'Premium Users',   value: premiumUsers,           bg: 'rgba(251,191,36,0.1)',  border: 'rgba(251,191,36,0.2)' },
@@ -327,23 +327,23 @@ export default function AdminPage({ currentUser }) {
                       {(user.isPremium || isUserAdmin) && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-yellow-900/50 text-yellow-300 border border-yellow-700/50 flex items-center gap-0.5"><Crown size={9} />Premium</span>}
                       {isBlocked && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-red-900/60 text-red-300 border border-red-700/60 flex items-center gap-0.5"><UserX size={9} />Blocked</span>}
                     </div>
-                    <div className="flex items-center gap-3 mt-0.5 text-xs text-dark-400">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5 text-xs text-dark-400">
                       <span style={{ color: levelInfo.color }}>L{user.level ?? 1} {levelInfo.title}</span>
                       <span className="flex items-center gap-0.5"><Zap size={10} className="text-yellow-400" />{user.xp ?? 0} XP</span>
-                      <span className="flex items-center gap-0.5"><BookOpen size={10} />{Object.keys(user.completedLessons || {}).length} lessons</span>
-                      {user.email && <span className="text-dark-600 truncate hidden sm:block">{user.email}</span>}
+                      <span className="hidden sm:flex items-center gap-0.5"><BookOpen size={10} />{Object.keys(user.completedLessons || {}).length} lessons</span>
+                      {user.email && <span className="text-dark-600 truncate hidden md:block">{user.email}</span>}
                     </div>
                   </div>
 
-                  {/* Action buttons */}
-                  <div className="flex items-center gap-2 shrink-0">
+                  {/* Action buttons — icon-only on mobile, icon+label on sm+ */}
+                  <div className="flex items-center gap-1 sm:gap-2 shrink-0">
                     {/* Admin toggle — super-admin only, not for hardcoded/super admins or self */}
                     {isSuperAdmin && !isHardcodedAdmin && !isUserSuperAdmin && !isMe && (
                       <button
                         onClick={() => toggleAdmin(user.uid, isDynamicAdmin)}
                         disabled={!!updating}
                         title={isDynamicAdmin ? 'Revoke Admin' : 'Grant Admin (also grants Premium)'}
-                        className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-all disabled:opacity-50"
+                        className="flex items-center gap-1 sm:gap-1.5 text-xs px-2 sm:px-3 py-1.5 rounded-lg transition-all disabled:opacity-50"
                         style={isDynamicAdmin
                           ? { background: 'rgba(168,85,247,0.15)', border: '1px solid rgba(168,85,247,0.3)', color: '#c084fc' }
                           : { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#6b7280' }
@@ -351,7 +351,7 @@ export default function AdminPage({ currentUser }) {
                       >
                         {isUpdAdmin
                           ? <RefreshCw size={12} className="animate-spin" />
-                          : <><UserCog size={13} /> {isDynamicAdmin ? 'Admin' : 'Make Admin'}</>
+                          : <><UserCog size={13} /><span className="hidden sm:inline"> {isDynamicAdmin ? 'Admin' : 'Make Admin'}</span></>
                         }
                       </button>
                     )}
@@ -362,7 +362,7 @@ export default function AdminPage({ currentUser }) {
                         onClick={() => togglePremium(user.uid, !!user.isPremium)}
                         disabled={!!updating}
                         title={user.isPremium ? 'Revoke Premium' : 'Grant Premium'}
-                        className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-all disabled:opacity-50"
+                        className="flex items-center gap-1 sm:gap-1.5 text-xs px-2 sm:px-3 py-1.5 rounded-lg transition-all disabled:opacity-50"
                         style={user.isPremium
                           ? { background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.3)', color: '#fbbf24' }
                           : { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#6b7280' }
@@ -371,8 +371,8 @@ export default function AdminPage({ currentUser }) {
                         {isUpdPremium
                           ? <RefreshCw size={12} className="animate-spin" />
                           : user.isPremium
-                            ? <><ToggleRight size={14} /> Premium</>
-                            : <><ToggleLeft size={14} /> Free</>
+                            ? <><ToggleRight size={14} /><span className="hidden sm:inline"> Premium</span></>
+                            : <><ToggleLeft size={14} /><span className="hidden sm:inline"> Free</span></>
                         }
                       </button>
                     )}
@@ -383,7 +383,7 @@ export default function AdminPage({ currentUser }) {
                         onClick={() => toggleBlock(user.uid, isBlocked)}
                         disabled={!!updating}
                         title={isBlocked ? 'Unblock user' : 'Block user from the platform'}
-                        className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-all disabled:opacity-50"
+                        className="flex items-center gap-1 sm:gap-1.5 text-xs px-2 sm:px-3 py-1.5 rounded-lg transition-all disabled:opacity-50"
                         style={isBlocked
                           ? { background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.3)', color: '#34d399' }
                           : { background: 'rgba(239,68,68,0.1)',   border: '1px solid rgba(239,68,68,0.3)',  color: '#f87171' }
@@ -392,8 +392,8 @@ export default function AdminPage({ currentUser }) {
                         {isUpdBlock
                           ? <RefreshCw size={12} className="animate-spin" />
                           : isBlocked
-                            ? <><UserCheck size={13} /> Unblock</>
-                            : <><UserX size={13} /> Block</>
+                            ? <><UserCheck size={13} /><span className="hidden sm:inline"> Unblock</span></>
+                            : <><UserX size={13} /><span className="hidden sm:inline"> Block</span></>
                         }
                       </button>
                     )}
@@ -403,7 +403,7 @@ export default function AdminPage({ currentUser }) {
                       <button
                         onClick={() => setExpandedUid(isExpanded ? null : user.uid)}
                         title="Unlock modules for this user"
-                        className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-all"
+                        className="flex items-center gap-1 sm:gap-1.5 text-xs px-2 sm:px-3 py-1.5 rounded-lg transition-all"
                         style={unlockedModules.length > 0
                           ? { background: 'rgba(52,211,153,0.15)', border: '1px solid rgba(52,211,153,0.3)', color: '#34d399' }
                           : { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#6b7280' }
