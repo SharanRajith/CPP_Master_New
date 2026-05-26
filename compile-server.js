@@ -2,8 +2,9 @@
 // Universal C++ compilation server.
 // Runs locally via WSL on Windows, or natively on Linux (Render / Railway).
 
-import express from 'express';
-import cors    from 'cors';
+import express    from 'express';
+import cors       from 'cors';
+import nodemailer from 'nodemailer';
 import { exec } from 'child_process';
 import { writeFile, unlink, mkdir } from 'fs/promises';
 import { existsSync }              from 'fs';
@@ -18,6 +19,153 @@ const isWindows = platform() === 'win32';
 
 app.use(cors());
 app.use(express.json({ limit: '1mb' }));
+
+// ── Email / OTP setup ────────────────────────────────────────────────────────
+const mailer = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_APP_PASSWORD,
+  },
+});
+
+// email → { otp, expiry, name }
+const otpStore = new Map();
+
+function makeOtp() {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+function otpEmail(name, otp) {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>CppMaster — Verify your email</title>
+</head>
+<body style="margin:0;padding:0;background:#06080f;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#06080f;">
+    <tr>
+      <td align="center" style="padding:48px 16px;">
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="max-width:480px;">
+
+          <!-- Logo -->
+          <tr>
+            <td align="center" style="padding-bottom:28px;">
+              <div style="display:inline-block;width:60px;height:60px;border-radius:18px;background:linear-gradient(135deg,#4f46e5,#7c3aed);text-align:center;line-height:60px;font-size:24px;font-weight:900;color:#ffffff;letter-spacing:-1px;">
+                C+
+              </div>
+              <div style="margin-top:12px;font-size:24px;font-weight:900;color:#ffffff;letter-spacing:-0.5px;">CppMaster</div>
+              <div style="font-size:12px;color:#6366f1;margin-top:3px;letter-spacing:0.5px;">C++ &amp; DSA Learning Platform</div>
+            </td>
+          </tr>
+
+          <!-- Card -->
+          <tr>
+            <td style="background:#0c0920;border-radius:20px;border:1px solid rgba(99,102,241,0.3);padding:40px 36px;">
+
+              <p style="margin:0 0 6px;font-size:26px;font-weight:900;color:#ffffff;letter-spacing:-0.5px;">Verify your email</p>
+              <p style="margin:0 0 32px;font-size:14px;color:#64748b;line-height:1.6;">
+                Hi <strong style="color:#a5b4fc;">${name}</strong>, welcome to CppMaster!<br/>
+                Use the code below to complete your signup.
+              </p>
+
+              <!-- OTP box -->
+              <div style="background:rgba(79,70,229,0.08);border:1px solid rgba(99,102,241,0.3);border-radius:16px;padding:32px 24px;text-align:center;margin-bottom:32px;">
+                <div style="font-size:11px;font-weight:700;color:#6366f1;text-transform:uppercase;letter-spacing:3px;margin-bottom:20px;">
+                  Your verification code
+                </div>
+                <div style="display:inline-block;">
+                  <table cellpadding="0" cellspacing="6" role="presentation" style="margin:0 auto;">
+                    <tr>
+                      ${otp.split('').map(d => `
+                      <td style="background:rgba(99,102,241,0.18);border:1px solid rgba(99,102,241,0.4);border-radius:10px;width:50px;height:58px;text-align:center;vertical-align:middle;">
+                        <span style="font-size:32px;font-weight:900;color:#ffffff;font-family:'Courier New',Courier,monospace;">${d}</span>
+                      </td>`).join('')}
+                    </tr>
+                  </table>
+                </div>
+                <div style="font-size:12px;color:#475569;margin-top:20px;">
+                  &#x23F0;&nbsp; Expires in <strong style="color:#94a3b8;">10 minutes</strong>
+                </div>
+              </div>
+
+              <!-- Security note -->
+              <div style="background:rgba(251,191,36,0.06);border:1px solid rgba(251,191,36,0.2);border-radius:12px;padding:14px 18px;margin-bottom:28px;">
+                <p style="margin:0;font-size:12px;color:#92400e;line-height:1.6;">
+                  <strong style="color:#fbbf24;">&#x26A0;&nbsp; Security tip:</strong>&nbsp;
+                  CppMaster will never ask for this code via phone or chat.
+                  If you didn't request this, ignore this email — your account is safe.
+                </p>
+              </div>
+
+              <!-- Footer -->
+              <div style="border-top:1px solid rgba(255,255,255,0.06);padding-top:24px;text-align:center;">
+                <p style="margin:0 0 6px;font-size:12px;color:#475569;">
+                  Need help?&nbsp;
+                  <a href="mailto:sharanrajithk@gmail.com" style="color:#818cf8;text-decoration:none;font-weight:600;">sharanrajithk@gmail.com</a>
+                </p>
+                <p style="margin:0;font-size:11px;color:#1e293b;">
+                  &copy; 2025 CppMaster &middot; Secured with love &hearts;
+                </p>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Bottom tag -->
+          <tr>
+            <td align="center" style="padding-top:20px;">
+              <p style="margin:0;font-size:11px;color:#1e293b;">
+                You're receiving this because you signed up at CppMaster.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
+app.post('/api/send-otp', async (req, res) => {
+  const { email, name } = req.body;
+  if (!email || !name) return res.status(400).json({ error: 'Missing email or name.' });
+
+  const otp    = makeOtp();
+  const expiry = Date.now() + 10 * 60 * 1000;
+  otpStore.set(email.toLowerCase(), { otp, expiry, name });
+
+  try {
+    await mailer.sendMail({
+      from:    `"CppMaster" <${process.env.GMAIL_USER}>`,
+      to:      email,
+      subject: `${otp} is your CppMaster verification code`,
+      html:    otpEmail(name, otp),
+    });
+    res.json({ success: true });
+  } catch (err) {
+    console.error('OTP mail error:', err.message);
+    otpStore.delete(email.toLowerCase());
+    res.status(500).json({ error: 'Failed to send email. Please try again.' });
+  }
+});
+
+app.post('/api/verify-otp', (req, res) => {
+  const { email, otp } = req.body;
+  if (!email || !otp) return res.status(400).json({ error: 'Missing fields.' });
+
+  const key    = email.toLowerCase();
+  const stored = otpStore.get(key);
+  if (!stored)                    return res.status(400).json({ error: 'No code found. Please request a new one.' });
+  if (Date.now() > stored.expiry) { otpStore.delete(key); return res.status(400).json({ error: 'Code expired. Please request a new one.' }); }
+  if (stored.otp !== otp)         return res.status(400).json({ error: 'Incorrect code. Please try again.' });
+
+  otpStore.delete(key);
+  res.json({ success: true });
+});
 
 // ── Temp directory for compile jobs ──────────────────────────────────────────
 const JOB_DIR = join(tmpdir(), 'cpp-backend');

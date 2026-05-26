@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, Zap, Trophy, BookOpen, Code2, Mail, Lock, User, Eye, EyeOff, BarChart2, MessageSquare, Layers, Swords } from 'lucide-react';
 import { auth, googleProvider } from '../lib/firebase';
@@ -7,9 +7,9 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   updateProfile,
-  sendEmailVerification,
-  signOut,
 } from 'firebase/auth';
+
+const BACKEND = 'https://cpp-master.onrender.com';
 
 const STATS = [
   { value: '3',    label: 'Tracks' },
@@ -73,17 +73,23 @@ function InputField({ icon, type, placeholder, value, onChange, right }) {
 }
 
 export default function LoginPage() {
-  const [tab,          setTab]          = useState('google'); // 'google' | 'email'
-  const [mode,         setMode]         = useState('signin'); // 'signin' | 'signup'
-  const [name,         setName]         = useState('');
-  const [email,        setEmail]        = useState('');
-  const [password,     setPassword]     = useState('');
-  const [showPwd,      setShowPwd]      = useState(false);
-  const [isLoggingIn,  setIsLoggingIn]  = useState(false);
-  const [error,        setError]        = useState('');
-  const [verifyPending, setVerifyPending] = useState(null); // { email, pwd } — waiting for email click
-  const [resending,    setResending]    = useState(false);
-  const [resendDone,   setResendDone]   = useState(false);
+  const [tab,         setTab]         = useState('google'); // 'google' | 'email'
+  const [mode,        setMode]        = useState('signin'); // 'signin' | 'signup'
+  const [name,        setName]        = useState('');
+  const [email,       setEmail]       = useState('');
+  const [password,    setPassword]    = useState('');
+  const [showPwd,     setShowPwd]     = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [error,       setError]       = useState('');
+
+  // OTP verification state: { email, name, password } or null
+  const [otpPending,  setOtpPending]  = useState(null);
+  const [otpDigits,   setOtpDigits]   = useState(['', '', '', '', '', '']);
+  const [otpError,    setOtpError]    = useState('');
+  const [otpLoading,  setOtpLoading]  = useState(false);
+  const [resending,   setResending]   = useState(false);
+  const [resendDone,  setResendDone]  = useState(false);
+  const otpRefs = useRef([]);
 
   const clearForm = () => { setName(''); setEmail(''); setPassword(''); setError(''); };
 
@@ -97,6 +103,17 @@ export default function LoginPage() {
     }
   };
 
+  const sendOtp = async (emailAddr, nameStr) => {
+    const res = await fetch(`${BACKEND}/api/send-otp`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: emailAddr, name: nameStr }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to send code.');
+    return data;
+  };
+
   const handleEmailAuth = async (e) => {
     e.preventDefault();
     if (!email || !password) { setError('Please fill in all fields.'); return; }
@@ -106,21 +123,12 @@ export default function LoginPage() {
     setIsLoggingIn(true); setError('');
     try {
       if (mode === 'signup') {
-        const cred = await createUserWithEmailAndPassword(auth, email, password);
-        await updateProfile(cred.user, { displayName: name.trim() });
-        await sendEmailVerification(cred.user);
-        await signOut(auth);
-        setVerifyPending({ email, pwd: password });
-        setIsLoggingIn(false);
-        return;
+        await sendOtp(email, name.trim());
+        setOtpPending({ email, name: name.trim(), password });
+        setOtpDigits(['', '', '', '', '', '']);
+        setOtpError('');
       } else {
-        const cred = await signInWithEmailAndPassword(auth, email, password);
-        if (!cred.user.emailVerified) {
-          await signOut(auth);
-          setError('Email not verified. Check your inbox and click the verification link.');
-          setIsLoggingIn(false);
-          return;
-        }
+        await signInWithEmailAndPassword(auth, email, password);
       }
     } catch (err) {
       const msgs = {
@@ -130,33 +138,94 @@ export default function LoginPage() {
         'auth/invalid-email':        'Invalid email address.',
         'auth/invalid-credential':   'Invalid email or password.',
       };
-      setError(msgs[err.code] || 'Something went wrong. Please try again.');
+      setError(err.message.startsWith('Failed') || err.message.startsWith('No code') || err.message.startsWith('Missing')
+        ? err.message
+        : (msgs[err.code] || 'Something went wrong. Please try again.'));
+    } finally {
       setIsLoggingIn(false);
     }
   };
 
-  const handleResend = async () => {
-    if (!verifyPending) return;
-    setResending(true); setResendDone(false);
-    try {
-      const cred = await signInWithEmailAndPassword(auth, verifyPending.email, verifyPending.pwd);
-      await sendEmailVerification(cred.user);
-      await signOut(auth);
-      setResendDone(true);
-      setTimeout(() => setResendDone(false), 8000);
-    } catch { /* silently fail */ }
-    finally { setResending(false); }
+  const handleOtpDigitChange = (i, val) => {
+    if (!/^\d*$/.test(val)) return;
+    const next = [...otpDigits];
+    next[i] = val.slice(-1);
+    setOtpDigits(next);
+    if (val && i < 5) otpRefs.current[i + 1]?.focus();
   };
 
-  if (verifyPending) {
+  const handleOtpKeyDown = (i, e) => {
+    if (e.key === 'Backspace' && !otpDigits[i] && i > 0) otpRefs.current[i - 1]?.focus();
+    if (e.key === 'ArrowLeft'  && i > 0) otpRefs.current[i - 1]?.focus();
+    if (e.key === 'ArrowRight' && i < 5) otpRefs.current[i + 1]?.focus();
+  };
+
+  const handleOtpPaste = (e) => {
+    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+    if (pasted.length === 6) {
+      setOtpDigits(pasted.split(''));
+      setTimeout(() => otpRefs.current[5]?.focus(), 0);
+    }
+    e.preventDefault();
+  };
+
+  const handleOtpSubmit = async (e) => {
+    e.preventDefault();
+    const code = otpDigits.join('');
+    if (code.length < 6) { setOtpError('Please enter the full 6-digit code.'); return; }
+
+    setOtpLoading(true); setOtpError('');
+    try {
+      // 1. Verify OTP with backend
+      const res = await fetch(`${BACKEND}/api/verify-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: otpPending.email, otp: code }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setOtpError(data.error || 'Incorrect code.'); setOtpLoading(false); return; }
+
+      // 2. Create Firebase account now that email is verified
+      const cred = await createUserWithEmailAndPassword(auth, otpPending.email, otpPending.password);
+      await updateProfile(cred.user, { displayName: otpPending.name });
+      // Firebase auth state change will log the user in automatically via App.jsx
+    } catch (err) {
+      const msgs = {
+        'auth/email-already-in-use': 'An account with this email already exists. Please sign in.',
+        'auth/invalid-email':        'Invalid email address.',
+        'auth/weak-password':        'Password is too weak.',
+      };
+      setOtpError(msgs[err.code] || err.message || 'Something went wrong. Please try again.');
+      setOtpLoading(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    if (!otpPending || resending) return;
+    setResending(true); setResendDone(false); setOtpError('');
+    try {
+      await sendOtp(otpPending.email, otpPending.name);
+      setOtpDigits(['', '', '', '', '', '']);
+      setResendDone(true);
+      setTimeout(() => setResendDone(false), 8000);
+      setTimeout(() => otpRefs.current[0]?.focus(), 50);
+    } catch (err) {
+      setOtpError(err.message || 'Failed to resend. Please try again.');
+    } finally {
+      setResending(false);
+    }
+  };
+
+  // ─── OTP entry screen ──────────────────────────────────────────────────────
+  if (otpPending) {
     return (
       <div className="h-screen flex items-center justify-center px-4" style={{ background: '#06080f' }}>
         <div className="absolute inset-0 pointer-events-none"
-          style={{ background: 'radial-gradient(ellipse at 50% 30%, rgba(79,70,229,0.15) 0%, transparent 65%)' }} />
+          style={{ background: 'radial-gradient(ellipse at 50% 30%, rgba(79,70,229,0.18) 0%, transparent 65%)' }} />
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
           className="w-full max-w-sm relative z-10">
           <div className="rounded-2xl p-8 text-center"
-            style={{ background: 'rgba(12,9,28,0.95)', backdropFilter: 'blur(24px)', border: '1px solid rgba(99,102,241,0.2)', boxShadow: '0 40px 80px rgba(0,0,0,0.7)' }}>
+            style={{ background: 'rgba(12,9,28,0.95)', backdropFilter: 'blur(24px)', border: '1px solid rgba(99,102,241,0.25)', boxShadow: '0 40px 80px rgba(0,0,0,0.7)' }}>
 
             {/* Icon */}
             <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5"
@@ -165,29 +234,88 @@ export default function LoginPage() {
             </div>
 
             <h2 className="text-xl font-black text-white mb-2">Check your inbox</h2>
-            <p className="text-sm text-slate-400 mb-1">We sent a verification link to</p>
-            <p className="text-sm font-bold text-indigo-300 mb-5 break-all">{verifyPending.email}</p>
-            <p className="text-xs text-slate-500 leading-relaxed mb-7">
-              Click the link in the email to activate your account.
-              If you don't see it, check your spam folder.
-            </p>
+            <p className="text-sm text-slate-400 mb-1">We sent a 6-digit code to</p>
+            <p className="text-sm font-bold text-indigo-300 mb-6 break-all">{otpPending.email}</p>
+
+            <form onSubmit={handleOtpSubmit}>
+              {/* OTP digit boxes */}
+              <div className="flex items-center justify-center gap-2 mb-5">
+                {otpDigits.map((d, i) => (
+                  <input
+                    key={i}
+                    ref={el => otpRefs.current[i] = el}
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={1}
+                    value={d}
+                    onChange={e => handleOtpDigitChange(i, e.target.value)}
+                    onKeyDown={e => handleOtpKeyDown(i, e)}
+                    onPaste={i === 0 ? handleOtpPaste : undefined}
+                    autoFocus={i === 0}
+                    style={{
+                      width: 44, height: 52,
+                      borderRadius: 10,
+                      background: d ? 'rgba(99,102,241,0.18)' : 'rgba(255,255,255,0.04)',
+                      border: `1.5px solid ${d ? 'rgba(99,102,241,0.6)' : 'rgba(255,255,255,0.1)'}`,
+                      color: '#ffffff',
+                      fontSize: 22,
+                      fontWeight: 900,
+                      textAlign: 'center',
+                      outline: 'none',
+                      fontFamily: "'Courier New', monospace",
+                      transition: 'border-color 0.15s, background 0.15s',
+                    }}
+                  />
+                ))}
+              </div>
+
+              <p className="text-xs text-slate-600 mb-5">
+                If you don't see it, check your spam folder.
+              </p>
+
+              {/* Error */}
+              <AnimatePresence>
+                {otpError && (
+                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+                    className="mb-4 p-3 rounded-xl text-sm text-red-400 text-center"
+                    style={{ background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.2)' }}>
+                    {otpError}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <motion.button
+                type="submit"
+                disabled={otpLoading || otpDigits.join('').length < 6}
+                whileTap={{ scale: 0.97 }}
+                className="w-full py-3 rounded-xl text-sm font-bold text-white mb-3 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                style={{ background: 'linear-gradient(135deg,#4f46e5,#7c3aed)', boxShadow: '0 4px 20px rgba(79,70,229,0.3)' }}
+              >
+                {otpLoading
+                  ? <span className="flex items-center justify-center gap-2"><div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Verifying…</span>
+                  : 'Verify & Create Account'
+                }
+              </motion.button>
+            </form>
 
             {/* Resend */}
             <motion.button
-              onClick={handleResend}
+              type="button"
+              onClick={handleResendOtp}
               disabled={resending || resendDone}
               whileTap={{ scale: 0.97 }}
               className="w-full py-2.5 rounded-xl text-sm font-semibold transition-all mb-3 disabled:opacity-60"
-              style={{ background: resendDone ? 'rgba(52,211,153,0.12)' : 'rgba(99,102,241,0.15)', border: `1px solid ${resendDone ? 'rgba(52,211,153,0.3)' : 'rgba(99,102,241,0.3)'}`, color: resendDone ? '#34d399' : '#a5b4fc' }}
+              style={{ background: resendDone ? 'rgba(52,211,153,0.10)' : 'rgba(255,255,255,0.04)', border: `1px solid ${resendDone ? 'rgba(52,211,153,0.3)' : 'rgba(255,255,255,0.08)'}`, color: resendDone ? '#34d399' : '#64748b' }}
             >
-              {resending ? 'Sending…' : resendDone ? '✓ Verification email sent!' : 'Resend verification email'}
+              {resending ? 'Sending…' : resendDone ? '✓ New code sent!' : 'Resend code'}
             </motion.button>
 
             <button
-              onClick={() => { setVerifyPending(null); setMode('signin'); clearForm(); }}
+              type="button"
+              onClick={() => { setOtpPending(null); clearForm(); setMode('signup'); }}
               className="w-full text-xs text-slate-600 hover:text-slate-400 transition-colors py-1"
             >
-              ← Back to sign in
+              ← Back to sign up
             </button>
           </div>
 
