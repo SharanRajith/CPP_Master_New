@@ -2,9 +2,8 @@
 // Universal C++ compilation server.
 // Runs locally via WSL on Windows, or natively on Linux (Render / Railway).
 
-import express    from 'express';
-import cors       from 'cors';
-import nodemailer from 'nodemailer';
+import express from 'express';
+import cors    from 'cors';
 import { exec } from 'child_process';
 import { writeFile, unlink, mkdir } from 'fs/promises';
 import { existsSync }              from 'fs';
@@ -21,13 +20,8 @@ app.use(cors());
 app.use(express.json({ limit: '1mb' }));
 
 // ── Email / OTP setup ────────────────────────────────────────────────────────
-const mailer = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_APP_PASSWORD,
-  },
-});
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const FROM_EMAIL     = 'CppMaster <onboarding@resend.dev>'; // change to your domain once verified
 
 // email → { otp, expiry, name }
 const otpStore = new Map();
@@ -139,12 +133,23 @@ app.post('/api/send-otp', async (req, res) => {
   otpStore.set(email.toLowerCase(), { otp, expiry, name });
 
   try {
-    await mailer.sendMail({
-      from:    `"CppMaster" <${process.env.GMAIL_USER}>`,
-      to:      email,
-      subject: `${otp} is your CppMaster verification code`,
-      html:    otpEmail(name, otp),
+    const r = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${RESEND_API_KEY}`,
+        'Content-Type':  'application/json',
+      },
+      body: JSON.stringify({
+        from:    FROM_EMAIL,
+        to:      [email],
+        subject: `${otp} is your CppMaster verification code`,
+        html:    otpEmail(name, otp),
+      }),
     });
+    if (!r.ok) {
+      const e = await r.json().catch(() => ({}));
+      throw new Error(e.message || `Resend error ${r.status}`);
+    }
     res.json({ success: true });
   } catch (err) {
     console.error('OTP mail error:', err.message);
