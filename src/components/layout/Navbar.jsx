@@ -165,13 +165,13 @@ export default function Navbar({ xp, level, streak, currentUser, isAdmin, isPrem
             <kbd className="text-dark-300">Ctrl K</kbd>
           </span>
         </button>
-        <Link id="nav-home" to="/" className="p-2 rounded-lg text-dark-300 hover:text-white hover:bg-dark-700 transition-all" title="Home">
+        <Link id="nav-home" to="/" className="hidden sm:block p-2 rounded-lg text-dark-300 hover:text-white hover:bg-dark-700 transition-all" title="Home">
           <Home size={17} />
         </Link>
-        <Link id="nav-dashboard" to="/dashboard" className="p-2 rounded-lg text-dark-300 hover:text-white hover:bg-dark-700 transition-all" title="Dashboard">
+        <Link id="nav-dashboard" to="/dashboard" className="hidden sm:block p-2 rounded-lg text-dark-300 hover:text-white hover:bg-dark-700 transition-all" title="Dashboard">
           <Trophy size={17} />
         </Link>
-        <Link id="nav-leaderboard" to="/leaderboard" className="p-2 rounded-lg text-dark-300 hover:text-white hover:bg-dark-700 transition-all" title="Leaderboard">
+        <Link id="nav-leaderboard" to="/leaderboard" className="hidden sm:block p-2 rounded-lg text-dark-300 hover:text-white hover:bg-dark-700 transition-all" title="Leaderboard">
           <Medal size={17} />
         </Link>
         {/* Explore dropdown */}
@@ -203,15 +203,16 @@ export default function Navbar({ xp, level, streak, currentUser, isAdmin, isPrem
                 >
                   <div className="p-1.5">
                     {[
-                      { to: '/visualizer', icon: <GitBranch size={14} className="text-indigo-400" />, label: 'Algorithm Visualizer', sub: 'Sorting, Trees, Graphs' },
-                      { to: '/problems',   icon: <BookOpen  size={14} className="text-emerald-400" />, label: 'FAANG Problems',        sub: '15 company-tagged sets' },
-                      { to: '/interview',  icon: <Swords    size={14} className="text-yellow-400" />,  label: 'Mock Interview',         sub: '10 questions · timed' },
+                      { to: '/visualizer',  icon: <GitBranch size={14} className="text-indigo-400" />, label: 'Algorithm Visualizer', sub: 'Sorting, Trees, Graphs',  mobileOnly: false },
+                      { to: '/problems',    icon: <BookOpen  size={14} className="text-emerald-400" />, label: 'FAANG Problems',        sub: '15 company-tagged sets', mobileOnly: false },
+                      { to: '/interview',   icon: <Swords    size={14} className="text-yellow-400" />,  label: 'Mock Interview',         sub: '10 questions · timed',   mobileOnly: false },
+                      { to: '/leaderboard', icon: <Medal     size={14} className="text-amber-400"  />,  label: 'Leaderboard',            sub: 'Top learners by XP',     mobileOnly: true  },
                     ].map(item => (
                       <Link
                         key={item.to}
                         to={item.to}
                         onClick={() => setShowExploreMenu(false)}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-dark-700 transition-all group"
+                        className={`flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-dark-700 transition-all group${item.mobileOnly ? ' sm:hidden' : ''}`}
                       >
                         <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
                           style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
