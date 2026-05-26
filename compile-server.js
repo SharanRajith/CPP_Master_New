@@ -101,7 +101,7 @@ function otpEmail(name, otp) {
                   <a href="mailto:sharanrajithk@gmail.com" style="color:#818cf8;text-decoration:none;font-weight:600;">sharanrajithk@gmail.com</a>
                 </p>
                 <p style="margin:0;font-size:11px;color:#1e293b;">
-                  &copy; 2025 CppMaster &middot; Secured with love &hearts;
+                  &copy; 2026 CppMaster &middot; Secured with love &hearts;
                 </p>
               </div>
             </td>
