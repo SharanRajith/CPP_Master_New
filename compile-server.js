@@ -148,13 +148,15 @@ app.post('/api/send-otp', async (req, res) => {
     });
     if (!r.ok) {
       const e = await r.json().catch(() => ({}));
-      throw new Error(e.message || `Resend error ${r.status}`);
+      const msg = e.message || e.name || `Resend HTTP ${r.status}`;
+      console.error('Resend error:', r.status, JSON.stringify(e));
+      throw new Error(msg);
     }
     res.json({ success: true });
   } catch (err) {
     console.error('OTP mail error:', err.message);
     otpStore.delete(email.toLowerCase());
-    res.status(500).json({ error: 'Failed to send email. Please try again.' });
+    res.status(500).json({ error: err.message || 'Failed to send email. Please try again.' });
   }
 });
 
