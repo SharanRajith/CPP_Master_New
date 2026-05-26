@@ -83,7 +83,7 @@ function AppShell({ progress, completeLesson, completeQuiz, completeLeetCode, un
       <div className="flex flex-1 overflow-hidden relative">
         <Suspense fallback={<PageLoader />}>
         <Routes>
-          <Route path="/" element={<HomePage progress={progress} onOpenPremium={() => setShowPremium(true)} />} />
+          <Route path="/" element={<HomePage progress={progress} onOpenPremium={() => setShowPremium(true)} isPremium={isPremium} />} />
           <Route
             path="/lesson/:lessonId"
             element={
