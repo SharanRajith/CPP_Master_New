@@ -229,11 +229,11 @@ export default function HomePage({ progress, onOpenPremium, isPremium }) {
   const firstUncompleted = allLessons.find(l => !progress.completedLessons[l.id]);
 
   // ── DSA branch completion check ───────────────────────────────────────────
-  const userIsPremium = isPremium || progress.isPremium || progress.isAdmin;
+  const userIsAdmin = isPremium && (progress.isSuperAdmin || progress.isHardcodedAdmin || progress.isAdmin);
   const dsaLessons = CURRICULUM
-    .filter(m => !m.track && (!m.isPremium || userIsPremium))
+    .filter(m => !m.track && (!m.isPremium || isPremium))
     .flatMap(m => m.lessons);
-  const isDsaComplete = dsaLessons.length > 0 && dsaLessons.every(l => !!progress.completedLessons[l.id]);
+  const isDsaComplete = userIsAdmin || (dsaLessons.length > 0 && dsaLessons.every(l => !!progress.completedLessons[l.id]));
 
   function handleStart() {
     navigate(`/lesson/${firstUncompleted?.id || 'm1-l1'}`);

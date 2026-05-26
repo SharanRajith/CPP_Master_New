@@ -5,7 +5,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { TRACK_ENTRY_LESSONS } from '../data/curriculum';
-import { isSuperAdminEmail } from '../config/admins';
+import { isSuperAdminEmail, isAdminEmail } from '../config/admins';
 
 const STORAGE_KEY = 'cpp_dsa_progress';
 
@@ -63,7 +63,7 @@ export function useProgress(user) {
           data = { ...data, ...patch };
         }
 
-        setProgress({ ...data, isSuperAdmin: isSuperAdminEmail(user?.email) });
+        setProgress({ ...data, isSuperAdmin: isSuperAdminEmail(user?.email), isHardcodedAdmin: isAdminEmail(user?.email) });
       } catch (err) {
         console.error("Firebase sync error", err);
       } finally {
@@ -204,11 +204,13 @@ export function useProgress(user) {
 
   /** Check if a lesson is unlocked (first lesson always unlocked) */
   const isLessonUnlocked = useCallback((lessonId, prevLessonId) => {
+    // Admins (hardcoded or dynamic) bypass sequential order entirely
+    if (progress.isSuperAdmin || progress.isHardcodedAdmin || progress.isAdmin) return true;
     if (progress.completedLessons[lessonId]) return true;
     if (TRACK_ENTRY_LESSONS.has(lessonId)) return true;
     if (!prevLessonId) return true;
     return !!progress.completedLessons[prevLessonId];
-  }, [progress.completedLessons]);
+  }, [progress.completedLessons, progress.isSuperAdmin, progress.isHardcodedAdmin, progress.isAdmin]);
 
   /** Check if a lesson is completed */
   const isLessonCompleted = useCallback((lessonId) => {
