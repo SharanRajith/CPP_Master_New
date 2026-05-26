@@ -700,6 +700,106 @@ int main() {
     return 0;
 }`,
   },
+  Dijkstra: {
+    summary: "Greedily finds the shortest path from a source to every other node in a weighted graph with non-negative edges. Each round it picks the unsettled node with the smallest known distance, permanently finalises it, then relaxes its neighbors' distances.",
+    bullets: [
+      'Greedy guarantee: once a node is settled its distance is optimal',
+      'Requires non-negative weights — use Bellman-Ford for negative edges',
+      'O((V+E) log V) with a min-heap priority queue; O(V²) with a simple array',
+    ],
+    time: 'O((V+E) log V)', space: 'O(V)',
+    code: `#include <bits/stdc++.h>
+using namespace std;
+typedef pair<int,int> pii; // {dist, node}
+
+vector<int> dijkstra(int src, int V,
+                     vector<vector<pii>>& adj) {
+    vector<int> dist(V, INT_MAX);
+    priority_queue<pii, vector<pii>, greater<pii>> pq;
+
+    dist[src] = 0;
+    pq.push({0, src});
+
+    while (!pq.empty()) {
+        auto [d, u] = pq.top(); pq.pop();
+        if (d > dist[u]) continue; // stale entry
+
+        for (auto [w, v] : adj[u]) {
+            if (dist[u] + w < dist[v]) {
+                dist[v] = dist[u] + w;
+                pq.push({dist[v], v});
+            }
+        }
+    }
+    return dist;
+}
+
+int main() {
+    int V = 7;
+    vector<vector<pii>> adj(V);
+    // {weight, neighbor}
+    adj[0] = {{3,1},{4,2}};
+    adj[1] = {{3,0},{5,3},{2,4}};
+    adj[2] = {{4,0},{8,4},{3,5}};
+    adj[3] = {{5,1},{6,4},{7,6}};
+    adj[4] = {{2,1},{8,2},{6,3},{1,5},{4,6}};
+    adj[5] = {{3,2},{1,4},{5,6}};
+    adj[6] = {{7,3},{4,4},{5,5}};
+
+    auto d = dijkstra(0, V, adj);
+    for (int i = 0; i < V; i++)
+        cout << "Node " << i << ": " << d[i] << "\\n";
+    return 0;
+}`,
+    ccode: `#include <stdio.h>
+#include <limits.h>
+#include <stdbool.h>
+#define V 7
+
+int minDist(int dist[], bool done[]) {
+    int min = INT_MAX, idx = -1;
+    for (int v = 0; v < V; v++)
+        if (!done[v] && dist[v] < min)
+            min = dist[v], idx = v;
+    return idx;
+}
+
+void dijkstra(int g[V][V], int src) {
+    int  dist[V];
+    bool done[V];
+    for (int i = 0; i < V; i++)
+        dist[i] = INT_MAX, done[i] = false;
+    dist[src] = 0;
+
+    for (int c = 0; c < V - 1; c++) {
+        int u = minDist(dist, done);
+        if (u == -1) break;
+        done[u] = true;
+        for (int v = 0; v < V; v++) {
+            if (!done[v] && g[u][v] &&
+                dist[u] != INT_MAX &&
+                dist[u] + g[u][v] < dist[v])
+                dist[v] = dist[u] + g[u][v];
+        }
+    }
+    for (int i = 0; i < V; i++)
+        printf("Node %d: %d\\n", i, dist[i]);
+}
+
+int main() {
+    int g[V][V] = {
+        {0,3,4,0,0,0,0},
+        {3,0,0,5,2,0,0},
+        {4,0,0,0,8,3,0},
+        {0,5,0,0,6,0,7},
+        {0,2,8,6,0,1,4},
+        {0,0,3,0,1,0,5},
+        {0,0,0,7,4,5,0},
+    };
+    dijkstra(g, 0);
+    return 0;
+}`,
+  },
 };
 
 // ─── AlgoInfo panel ───────────────────────────────────────────────────────────
@@ -1048,6 +1148,78 @@ function graphDFS(start) {
   return steps;
 }
 
+// ─── Dijkstra graph data ──────────────────────────────────────────────────────
+// Hexagonal layout — 7 nodes, all edges have non-negative weights
+const DJ_NODES = [
+  { id: 0, x: 220, y: 50  },
+  { id: 1, x: 80,  y: 155 },
+  { id: 2, x: 360, y: 155 },
+  { id: 3, x: 80,  y: 275 },
+  { id: 4, x: 220, y: 205 },
+  { id: 5, x: 360, y: 275 },
+  { id: 6, x: 220, y: 355 },
+];
+const DJ_EDGES = [
+  [0, 1, 3], [0, 2, 4],
+  [1, 3, 5], [1, 4, 2],
+  [2, 4, 8], [2, 5, 3],
+  [3, 4, 6], [3, 6, 7],
+  [4, 5, 1], [4, 6, 4],
+  [5, 6, 5],
+];
+const DJ_ADJ = {};
+DJ_NODES.forEach(n => { DJ_ADJ[n.id] = []; });
+DJ_EDGES.forEach(([a, b, w]) => { DJ_ADJ[a].push({ node: b, w }); DJ_ADJ[b].push({ node: a, w }); });
+
+function dijkstraSteps(source) {
+  const INF = Infinity;
+  const dist = {}, prev = {};
+  DJ_NODES.forEach(n => { dist[n.id] = INF; prev[n.id] = null; });
+  dist[source] = 0;
+  const settled = new Set();
+
+  function snap(current, activeEdge, info) {
+    const te = new Set();
+    DJ_NODES.forEach(n => {
+      if (prev[n.id] !== null)
+        te.add([Math.min(n.id, prev[n.id]), Math.max(n.id, prev[n.id])].join('-'));
+    });
+    return { current, settled: new Set(settled), dist: { ...dist }, activeEdge, treeEdges: te, info };
+  }
+
+  const steps = [snap(null, null, `Initialize: dist[${source}] = 0, all other nodes = ∞. Each round picks the nearest unsettled node.`)];
+
+  while (settled.size < DJ_NODES.length) {
+    let u = -1;
+    for (const n of DJ_NODES) {
+      if (!settled.has(n.id) && dist[n.id] < INF)
+        if (u === -1 || dist[n.id] < dist[u]) u = n.id;
+    }
+    if (u === -1) break;
+
+    settled.add(u);
+    steps.push(snap(u, null, `Settle node ${u} — shortest distance confirmed: ${dist[u]}. Now relax its neighbors.`));
+
+    for (const { node: v, w } of DJ_ADJ[u]) {
+      if (settled.has(v)) continue;
+      const dv = dist[v] === INF ? '∞' : dist[v];
+      const nd = dist[u] + w;
+      steps.push(snap(u, [u, v], `Relax ${u}→${v}  (weight ${w}):  ${dist[u]} + ${w} = ${nd}  vs  dist[${v}] = ${dv}`));
+      if (nd < dist[v]) {
+        dist[v] = nd;
+        prev[v] = u;
+        steps.push(snap(u, [u, v], `✓ Update dist[${v}] = ${nd}  (shorter path found via node ${u})`));
+      }
+    }
+  }
+
+  steps.push(snap(null, null,
+    `✓ Done!  Shortest distances from ${source}: ` +
+    DJ_NODES.map(n => `${n.id}→${dist[n.id] === INF ? '∞' : dist[n.id]}`).join('  ')
+  ));
+  return steps;
+}
+
 // ─── Shared controls ──────────────────────────────────────────────────────────
 function Controls({ stepIdx, total, playing, onToggle, onPrev, onNext, onReset, speed, onSpeed, onShuffle }) {
   return (
@@ -1251,24 +1423,51 @@ function GraphSection() {
   const [start, setStart] = useState(0);
   const [speed, setSpeed] = useState('Normal');
 
-  const steps = useMemo(() => algo === 'BFS' ? graphBFS(start) : graphDFS(start), [algo, start]);
-  const player = usePlayer(steps, speed);
-  const step = steps[player.stepIdx] || { current: null, visited: new Set(), edges: new Set() };
+  const isDijkstra = algo === 'Dijkstra';
 
+  const steps = useMemo(() => {
+    if (algo === 'BFS')      return graphBFS(start);
+    if (algo === 'DFS')      return graphDFS(start);
+    return dijkstraSteps(start);
+  }, [algo, start]);
+
+  const player = usePlayer(steps, speed);
+  const step = steps[player.stepIdx] || {};
+
+  // Node colour — works for both BFS/DFS and Dijkstra step shapes
   function nc(id) {
-    if (step.current === id)     return NODE.current;
-    if (step.visited?.has(id))   return NODE.visited;
+    const cur = step.current === id;
+    const vis = isDijkstra ? step.settled?.has(id) : step.visited?.has(id);
+    if (cur) return NODE.current;
+    if (vis) return NODE.visited;
     return NODE.default;
   }
-  function edgeHighlighted(a, b) {
+
+  // BFS/DFS edge colour
+  function bfsEdgeLit(a, b) {
     return step.edges?.has([Math.min(a, b), Math.max(a, b)].join('-'));
   }
 
+  // Dijkstra edge colour
+  function djEdgeStyle(a, b) {
+    const key = [Math.min(a, b), Math.max(a, b)].join('-');
+    const ae  = step.activeEdge;
+    if (ae && ((ae[0] === a && ae[1] === b) || (ae[0] === b && ae[1] === a)))
+      return { stroke: '#fbbf24', width: 3 };
+    if (step.treeEdges?.has(key))
+      return { stroke: '#34d399', width: 2.5 };
+    return { stroke: '#1e293b', width: 2 };
+  }
+
+  const bfsLegend = [['Processing', NODE.current.stroke], ['Visited', NODE.visited.stroke], ['Tree edge', '#6366f1']];
+  const djLegend  = [['Settling', NODE.current.stroke], ['Settled', NODE.visited.stroke], ['Relaxing', '#fbbf24'], ['Shortest tree', '#34d399']];
+
   return (
     <div>
+      {/* Algorithm picker */}
       <div className="flex items-center gap-4 mb-5 flex-wrap">
         <div className="flex gap-2">
-          {['BFS', 'DFS'].map(a => (
+          {['BFS', 'DFS', 'Dijkstra'].map(a => (
             <button key={a} onClick={() => setAlgo(a)}
               className="px-4 py-1.5 rounded-lg text-xs font-bold transition-all"
               style={algo === a
@@ -1279,8 +1478,8 @@ function GraphSection() {
           ))}
         </div>
         <div className="flex items-center gap-2 text-xs text-dark-500">
-          Start node:
-          {G_NODES.map(n => (
+          Start:
+          {(isDijkstra ? DJ_NODES : G_NODES).map(n => (
             <button key={n.id} onClick={() => setStart(n.id)}
               className="w-6 h-6 rounded-full text-[10px] font-bold transition-all"
               style={start === n.id
@@ -1291,33 +1490,88 @@ function GraphSection() {
           ))}
         </div>
       </div>
+
       <div className="rounded-2xl p-5" style={{ background: 'rgba(17,17,24,0.8)', border: '1px solid rgba(255,255,255,0.06)' }}>
         <div className="flex justify-center overflow-x-auto">
-          <svg width={440} height={400}>
-            {G_EDGES.map(([a, b]) => {
-              const na = G_NODES[a], nb = G_NODES[b], lit = edgeHighlighted(a, b);
-              return <line key={`${a}-${b}`} x1={na.x} y1={na.y} x2={nb.x} y2={nb.y}
-                stroke={lit ? '#6366f1' : '#1e293b'} strokeWidth={lit ? 3 : 2} style={{ transition: 'stroke 0.3s' }} />;
-            })}
-            {G_NODES.map(n => {
-              const c = nc(n.id);
-              return (
-                <g key={n.id}>
-                  <circle cx={n.x} cy={n.y} r={22} fill={c.fill} stroke={c.stroke} strokeWidth={2.5} style={{ transition: 'fill 0.25s, stroke 0.25s' }} />
-                  <text x={n.x} y={n.y} textAnchor="middle" dominantBaseline="central" fill={c.text} fontSize={13} fontWeight="bold">{n.id}</text>
-                </g>
-              );
-            })}
-          </svg>
+
+          {isDijkstra ? (
+            /* ── Dijkstra: weighted graph with distance badges ── */
+            <svg width={440} height={420}>
+              {DJ_EDGES.map(([a, b, w]) => {
+                const na = DJ_NODES[a], nb = DJ_NODES[b];
+                const { stroke, width } = djEdgeStyle(a, b);
+                const mx = (na.x + nb.x) / 2, my = (na.y + nb.y) / 2;
+                return (
+                  <g key={`${a}-${b}`}>
+                    <line x1={na.x} y1={na.y} x2={nb.x} y2={nb.y}
+                      stroke={stroke} strokeWidth={width} style={{ transition: 'stroke 0.3s, stroke-width 0.3s' }} />
+                    <rect x={mx - 11} y={my - 9} width={22} height={18} rx={4} fill="#0a0f1c" opacity={0.92} />
+                    <text x={mx} y={my} textAnchor="middle" dominantBaseline="central"
+                      fill="#94a3b8" fontSize={11} fontWeight="bold">{w}</text>
+                  </g>
+                );
+              })}
+              {DJ_NODES.map(n => {
+                const c = nc(n.id);
+                const d = step.dist?.[n.id];
+                const dLabel = d === undefined ? '' : d === Infinity ? '∞' : String(d);
+                return (
+                  <g key={n.id}>
+                    <circle cx={n.x} cy={n.y} r={22} fill={c.fill} stroke={c.stroke} strokeWidth={2.5}
+                      style={{ transition: 'fill 0.25s, stroke 0.25s' }} />
+                    <text x={n.x} y={n.y} textAnchor="middle" dominantBaseline="central"
+                      fill={c.text} fontSize={13} fontWeight="bold">{n.id}</text>
+                    {/* Distance badge below node */}
+                    <text x={n.x} y={n.y + 34} textAnchor="middle"
+                      fill={d === undefined || d === Infinity ? '#4b5563' : '#fbbf24'}
+                      fontSize={11} fontWeight="bold">{dLabel}</text>
+                  </g>
+                );
+              })}
+            </svg>
+          ) : (
+            /* ── BFS / DFS: unweighted graph ── */
+            <svg width={440} height={400}>
+              {G_EDGES.map(([a, b]) => {
+                const na = G_NODES[a], nb = G_NODES[b], lit = bfsEdgeLit(a, b);
+                return <line key={`${a}-${b}`} x1={na.x} y1={na.y} x2={nb.x} y2={nb.y}
+                  stroke={lit ? '#6366f1' : '#1e293b'} strokeWidth={lit ? 3 : 2}
+                  style={{ transition: 'stroke 0.3s' }} />;
+              })}
+              {G_NODES.map(n => {
+                const c = nc(n.id);
+                return (
+                  <g key={n.id}>
+                    <circle cx={n.x} cy={n.y} r={22} fill={c.fill} stroke={c.stroke} strokeWidth={2.5}
+                      style={{ transition: 'fill 0.25s, stroke 0.25s' }} />
+                    <text x={n.x} y={n.y} textAnchor="middle" dominantBaseline="central"
+                      fill={c.text} fontSize={13} fontWeight="bold">{n.id}</text>
+                  </g>
+                );
+              })}
+            </svg>
+          )}
         </div>
-        <div className="flex items-center gap-4 mt-1 text-[10px] text-dark-500">
-          {[['Current', NODE.current.stroke], ['Visited', NODE.visited.stroke], ['Traversed edge', '#6366f1']].map(([l, c]) => (
-            <div key={l} className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full border-2" style={{ borderColor: c }} />{l}</div>
+
+        {/* Legend */}
+        <div className="flex items-center gap-4 mt-2 text-[10px] text-dark-500 flex-wrap">
+          {(isDijkstra ? djLegend : bfsLegend).map(([l, c]) => (
+            <div key={l} className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded-full border-2" style={{ borderColor: c }} />
+              {l}
+            </div>
           ))}
+          {isDijkstra && (
+            <span className="ml-2 text-[10px]" style={{ color: '#fbbf24' }}>
+              Yellow numbers = current best distance
+            </span>
+          )}
         </div>
+
         <InfoBox text={step.info} />
         <Controls {...player} total={steps.length} speed={speed} onSpeed={setSpeed} />
       </div>
+
       <AlgoInfo info={GRAPH_INFO[algo]} />
     </div>
   );
