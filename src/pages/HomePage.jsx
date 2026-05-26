@@ -488,7 +488,7 @@ export default function HomePage({ progress, onOpenPremium, isPremium }) {
             </div>
             <h3 className="text-lg font-black text-white mb-2">Complete the DSA Branch First</h3>
             <p className="text-dark-400 text-sm leading-relaxed max-w-sm mx-auto mb-5">
-              Finish all {userIsPremium ? '' : 'free '}DSA modules to unlock Company Interview Prep. This ensures you have the foundations to tackle real interview problems.
+              Finish all {isPremium ? '' : 'free '}DSA modules to unlock Company Interview Prep. This ensures you have the foundations to tackle real interview problems.
             </p>
             <button onClick={handleStart}
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90"
