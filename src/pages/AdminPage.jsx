@@ -16,10 +16,12 @@ const ANN_TYPES = [
 ];
 
 export default function AdminPage({ currentUser }) {
-  const [users,        setUsers]        = useState([]);
-  const [loading,      setLoading]      = useState(true);
-  const [updating,     setUpdating]     = useState(null);
-  const [expandedUid,  setExpandedUid]  = useState(null); // uid with unlock panel open
+  const [users,          setUsers]          = useState([]);
+  const [loading,        setLoading]        = useState(true);
+  const [updating,       setUpdating]       = useState(null);
+  const [expandedUid,    setExpandedUid]    = useState(null);
+  const [openDropUid,    setOpenDropUid]    = useState(null); // uid with actions dropdown open
+  const [confirmDelUid,  setConfirmDelUid]  = useState(null); // uid awaiting delete confirm
 
   // Announcements state
   const [announcements,  setAnnouncements]  = useState([]);
@@ -114,6 +116,18 @@ export default function AdminPage({ currentUser }) {
     try {
       await updateDoc(doc(db, 'users', uid), { isBlocked: !currentBlocked });
       setUsers(prev => prev.map(u => u.uid === uid ? { ...u, isBlocked: !currentBlocked } : u));
+    } finally {
+      setUpdating(null);
+    }
+  };
+
+  const deleteUser = async (uid) => {
+    setUpdating(uid + '-delete');
+    try {
+      await deleteDoc(doc(db, 'users', uid));
+      setUsers(prev => prev.filter(u => u.uid !== uid));
+      setOpenDropUid(null);
+      setConfirmDelUid(null);
     } finally {
       setUpdating(null);
     }
@@ -377,25 +391,89 @@ export default function AdminPage({ currentUser }) {
                       </button>
                     )}
 
-                    {/* Block / Unblock — super-admin only, not on other superadmins or self */}
+                    {/* Block / Unblock + Delete dropdown — super-admin only */}
                     {isSuperAdmin && !isUserSuperAdmin && !isMe && (
-                      <button
-                        onClick={() => toggleBlock(user.uid, isBlocked)}
-                        disabled={!!updating}
-                        title={isBlocked ? 'Unblock user' : 'Block user from the platform'}
-                        className="flex items-center gap-1 sm:gap-1.5 text-xs px-2 sm:px-3 py-1.5 rounded-lg transition-all disabled:opacity-50"
-                        style={isBlocked
-                          ? { background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.3)', color: '#34d399' }
-                          : { background: 'rgba(239,68,68,0.1)',   border: '1px solid rgba(239,68,68,0.3)',  color: '#f87171' }
-                        }
-                      >
-                        {isUpdBlock
-                          ? <RefreshCw size={12} className="animate-spin" />
-                          : isBlocked
-                            ? <><UserCheck size={13} /><span className="hidden sm:inline"> Unblock</span></>
-                            : <><UserX size={13} /><span className="hidden sm:inline"> Block</span></>
-                        }
-                      </button>
+                      <div className="relative flex items-center">
+                        {/* Block / Unblock button */}
+                        <button
+                          onClick={() => toggleBlock(user.uid, isBlocked)}
+                          disabled={!!updating}
+                          title={isBlocked ? 'Unblock user' : 'Block user'}
+                          className="flex items-center gap-1 sm:gap-1.5 text-xs px-2 sm:px-3 py-1.5 rounded-l-lg transition-all disabled:opacity-50"
+                          style={isBlocked
+                            ? { background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.3)', borderRight: 'none', color: '#34d399' }
+                            : { background: 'rgba(239,68,68,0.1)',   border: '1px solid rgba(239,68,68,0.3)',  borderRight: 'none', color: '#f87171' }
+                          }
+                        >
+                          {isUpdBlock
+                            ? <RefreshCw size={12} className="animate-spin" />
+                            : isBlocked
+                              ? <><UserCheck size={13} /><span className="hidden sm:inline"> Unblock</span></>
+                              : <><UserX size={13} /><span className="hidden sm:inline"> Block</span></>
+                          }
+                        </button>
+
+                        {/* Dropdown toggle */}
+                        <button
+                          onClick={() => { setOpenDropUid(openDropUid === user.uid ? null : user.uid); setConfirmDelUid(null); }}
+                          disabled={!!updating}
+                          className="flex items-center px-1.5 py-1.5 rounded-r-lg transition-all disabled:opacity-50"
+                          style={isBlocked
+                            ? { background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.3)', borderLeft: '1px solid rgba(52,211,153,0.2)', color: '#34d399' }
+                            : { background: 'rgba(239,68,68,0.1)',   border: '1px solid rgba(239,68,68,0.3)',  borderLeft: '1px solid rgba(239,68,68,0.2)',  color: '#f87171' }
+                          }
+                        >
+                          <ChevronDown size={11} />
+                        </button>
+
+                        {/* Dropdown menu */}
+                        <AnimatePresence>
+                          {openDropUid === user.uid && (
+                            <motion.div
+                              initial={{ opacity: 0, y: -4, scale: 0.97 }}
+                              animate={{ opacity: 1, y: 0,  scale: 1    }}
+                              exit={{    opacity: 0, y: -4, scale: 0.97 }}
+                              transition={{ duration: 0.12 }}
+                              className="absolute right-0 top-full mt-1.5 z-50 rounded-xl overflow-hidden"
+                              style={{ background: '#111118', border: '1px solid rgba(239,68,68,0.25)', boxShadow: '0 8px 32px rgba(0,0,0,0.6)', minWidth: 160 }}
+                            >
+                              {confirmDelUid === user.uid ? (
+                                <div className="px-3 py-3">
+                                  <p className="text-xs text-red-300 font-semibold mb-2">Delete this account?</p>
+                                  <p className="text-[11px] text-dark-400 mb-3 leading-relaxed">This removes all their data. Cannot be undone.</p>
+                                  <div className="flex gap-2">
+                                    <button
+                                      onClick={() => deleteUser(user.uid)}
+                                      disabled={updating === user.uid + '-delete'}
+                                      className="flex-1 flex items-center justify-center gap-1 text-xs py-1.5 rounded-lg font-semibold transition-all disabled:opacity-50"
+                                      style={{ background: 'rgba(239,68,68,0.18)', border: '1px solid rgba(239,68,68,0.4)', color: '#f87171' }}
+                                    >
+                                      {updating === user.uid + '-delete'
+                                        ? <RefreshCw size={11} className="animate-spin" />
+                                        : <><Trash2 size={11} /> Delete</>
+                                      }
+                                    </button>
+                                    <button
+                                      onClick={() => { setConfirmDelUid(null); setOpenDropUid(null); }}
+                                      className="flex-1 text-xs py-1.5 rounded-lg transition-all"
+                                      style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#6b7280' }}
+                                    >
+                                      Cancel
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <button
+                                  onClick={() => setConfirmDelUid(user.uid)}
+                                  className="w-full flex items-center gap-2 px-3 py-2.5 text-xs text-red-400 hover:bg-red-900/20 transition-all"
+                                >
+                                  <Trash2 size={13} /> Delete Account
+                                </button>
+                              )}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
                     )}
 
                     {/* Unlock modules — hidden for super admins (they have everything) */}
