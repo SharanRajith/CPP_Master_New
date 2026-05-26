@@ -10,6 +10,7 @@ const BAR = {
   comparing: '#fbbf24',
   swapped:   '#f87171',
   done:      '#34d399',
+  range2:    '#a78bfa',   // right-half range for merge sort
 };
 const NODE = {
   default: { fill: '#0f172a', stroke: '#334155', text: '#94a3b8' },
@@ -992,35 +993,40 @@ function quickSteps(orig) {
 function mergeSteps(orig) {
   const steps = [], a = [...orig];
 
+  // hi  = left-half indices  (yellow)
+  // hi2 = right-half indices (violet)
+  // swap=true + hi=[k]       = element being placed (red)
+  function push(hi, hi2, swap, info) {
+    steps.push({ a: [...a], hi, hi2, swap, done: new Set(), info });
+  }
+
+  function lRange(lo, mid)       { return Array.from({ length: mid - lo + 1 },  (_, x) => lo + x); }
+  function rRange(mid1, hi)      { return Array.from({ length: hi - mid1 + 1 }, (_, x) => mid1 + x); }
+
   function merge(lo, mid, hi) {
     const left  = a.slice(lo, mid + 1);
     const right = a.slice(mid + 1, hi + 1);
-    const range = Array.from({ length: hi - lo + 1 }, (_, x) => lo + x);
 
-    steps.push({
-      a: [...a], hi: range, swap: false, done: new Set(),
-      info: `Merge a[${lo}..${mid}] with a[${mid+1}..${hi}]`,
-    });
+    // Show the two halves before merging — yellow left, violet right
+    push(lRange(lo, mid), rRange(mid + 1, hi), false,
+      `Merge: yellow=left a[${lo}..${mid}]  violet=right a[${mid+1}..${hi}]`);
 
     let i = 0, j = 0, k = lo;
     while (i < left.length && j < right.length) {
       const li = left[i], rj = right[j];
       const picked = li <= rj ? left[i++] : right[j++];
       a[k] = picked;
-      steps.push({
-        a: [...a], hi: [k], swap: true, done: new Set(),
-        info: `${li} ${li <= rj ? '≤' : '>'} ${rj} → place ${picked} at index ${k}`,
-      });
+      push([k], [], true, `${li} ${li <= rj ? '≤' : '>'} ${rj}  →  place ${picked} at index ${k}`);
       k++;
     }
     while (i < left.length) {
       a[k] = left[i++];
-      steps.push({ a: [...a], hi: [k], swap: true, done: new Set(), info: `Copy remaining ${a[k]} → index ${k}` });
+      push([k], [], true, `Copy remaining left element ${a[k]} → index ${k}`);
       k++;
     }
     while (j < right.length) {
       a[k] = right[j++];
-      steps.push({ a: [...a], hi: [k], swap: true, done: new Set(), info: `Copy remaining ${a[k]} → index ${k}` });
+      push([k], [], true, `Copy remaining right element ${a[k]} → index ${k}`);
       k++;
     }
   }
@@ -1028,12 +1034,9 @@ function mergeSteps(orig) {
   function ms(lo, hi) {
     if (lo >= hi) return;
     const mid = Math.floor((lo + hi) / 2);
-    steps.push({
-      a: [...a],
-      hi: Array.from({ length: hi - lo + 1 }, (_, x) => lo + x),
-      swap: false, done: new Set(),
-      info: `Split a[${lo}..${hi}] → left a[${lo}..${mid}]  |  right a[${mid+1}..${hi}]`,
-    });
+    // Split step: left half yellow, right half violet
+    push(lRange(lo, mid), rRange(mid + 1, hi), false,
+      `Split a[${lo}..${hi}]  →  yellow left a[${lo}..${mid}]  |  violet right a[${mid+1}..${hi}]`);
     ms(lo, mid);
     ms(mid + 1, hi);
     merge(lo, mid, hi);
@@ -1041,7 +1044,7 @@ function mergeSteps(orig) {
 
   ms(0, a.length - 1);
   steps.push({
-    a: [...a], hi: [], swap: false,
+    a: [...a], hi: [], hi2: [], swap: false,
     done: new Set(Array.from({ length: a.length }, (_, i) => i)),
     info: '✓ Sorted! Merge Sort recursively divided then merged every subarray.',
   });
@@ -1312,9 +1315,15 @@ function SortingSection() {
 
   function barColor(i) {
     if (step.done.has(i)) return BAR.done;
+    if (step.hi2?.includes(i)) return BAR.range2;
     if (step.hi.includes(i)) return step.swap ? BAR.swapped : BAR.comparing;
     return BAR.default;
   }
+
+  const isMerge = algo === 'Merge';
+  const legend = isMerge
+    ? [['Left half', BAR.comparing], ['Right half', BAR.range2], ['Placing', BAR.swapped], ['Sorted', BAR.done]]
+    : [['Comparing', BAR.comparing], ['Swapping', BAR.swapped], ['Sorted', BAR.done], ['Unsorted', BAR.default]];
 
   return (
     <div>
@@ -1337,8 +1346,8 @@ function SortingSection() {
               title={String(val)} />
           ))}
         </div>
-        <div className="flex items-center gap-4 mt-3 text-[10px] text-dark-500">
-          {[['Comparing', BAR.comparing], ['Swapping', BAR.swapped], ['Sorted', BAR.done], ['Unsorted', BAR.default]].map(([l, c]) => (
+        <div className="flex items-center gap-4 mt-3 text-[10px] text-dark-500 flex-wrap">
+          {legend.map(([l, c]) => (
             <div key={l} className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-sm" style={{ background: c }} />{l}</div>
           ))}
         </div>
