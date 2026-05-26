@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  ChevronLeft, ChevronRight, Star, Zap,
+  ChevronLeft, ChevronRight, Star, Zap, Home,
   BookOpen, Code2, FlaskConical, CheckCircle2, Terminal, BookMarked,
 } from 'lucide-react';
 
@@ -317,6 +317,11 @@ export default function LessonPage({ progress, completeLesson, completeLeetCode,
           <AnimatePresence>{showXPToast && <XPToast xp={xpEarned} onDone={() => setShowXPToast(false)} />}</AnimatePresence>
           <AnimatePresence>{moduleComplete && <ModuleCompleteModal moduleId={moduleComplete} completedLessons={progress.completedLessons} onClose={() => setModuleComplete(null)} />}</AnimatePresence>
           <div className="flex shrink-0" style={{ background: '#111118', borderBottom: '1px solid #22222f' }}>
+            <button onClick={() => navigate('/')} className="flex flex-col items-center justify-center gap-1 py-2.5 px-3.5" title="Home">
+              <Home size={17} style={{ color: '#6b7280' }} />
+              <span className="text-[10px] font-semibold" style={{ color: '#6b7280' }}>Home</span>
+            </button>
+            <div style={{ width: 1, background: '#22222f', margin: '8px 0' }} />
             {[{ id: 'lesson', label: 'Lesson', Icon: BookOpen }, { id: 'editor', label: 'SQL', Icon: Code2 }].map(({ id, label, Icon }) => (
               <button key={id} onClick={() => setMobileTab(id)} className="flex-1 flex flex-col items-center justify-center gap-1 py-2.5">
                 <Icon size={17} style={{ color: mobileTab === id ? '#818cf8' : '#6b7280' }} />
@@ -444,46 +449,60 @@ export default function LessonPage({ progress, completeLesson, completeLeetCode,
 
         {/* Tab Bar */}
         <div
-          className="flex shrink-0 relative"
+          className="flex shrink-0"
           style={{ background: '#111118', borderBottom: '1px solid #22222f' }}
         >
-          {/* Animated sliding pill */}
-          <motion.div
-            className="absolute bottom-0 h-0.5 rounded-t-full"
-            style={{ background: 'linear-gradient(90deg, #6366f1, #818cf8)' }}
-            animate={{ left: `${tabIndex * (100 / 3)}%`, width: `${100 / 3}%` }}
-            transition={{ type: 'spring', stiffness: 380, damping: 34 }}
-          />
+          {/* Home button */}
+          <button
+            onClick={() => navigate('/')}
+            className="flex flex-col items-center justify-center gap-1 py-2.5 px-3.5 shrink-0"
+            title="Home"
+          >
+            <Home size={17} style={{ color: '#6b7280' }} />
+            <span className="text-[10px] font-semibold" style={{ color: '#6b7280' }}>Home</span>
+          </button>
+          <div style={{ width: 1, background: '#22222f', margin: '8px 0' }} />
 
-          {MOBILE_TABS.map(({ id, label, icon: Icon }) => {
-            const active = mobileTab === id;
-            const hasResult = id === 'tests' && compilerResult;
-            return (
-              <button
-                key={id}
-                id={`mobile-tab-${id}`}
-                onClick={() => setMobileTab(id)}
-                className="flex-1 flex flex-col items-center justify-center gap-1 py-2.5 transition-colors relative"
-              >
-                <div className="relative">
-                  <Icon
-                    size={17}
-                    style={{ color: active ? '#818cf8' : '#6b7280', transition: 'color 0.2s' }}
-                  />
-                  {/* Green dot when tests pass */}
-                  {hasResult && compilerResult.allPassed && id === 'tests' && (
-                    <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-dark-900" />
-                  )}
-                </div>
-                <span
-                  className="text-[10px] font-semibold tracking-wide"
-                  style={{ color: active ? '#a5b4fc' : '#6b7280', transition: 'color 0.2s' }}
+          {/* Animated tabs */}
+          <div className="flex flex-1 relative">
+            {/* Animated sliding pill */}
+            <motion.div
+              className="absolute bottom-0 h-0.5 rounded-t-full"
+              style={{ background: 'linear-gradient(90deg, #6366f1, #818cf8)' }}
+              animate={{ left: `${tabIndex * (100 / 3)}%`, width: `${100 / 3}%` }}
+              transition={{ type: 'spring', stiffness: 380, damping: 34 }}
+            />
+
+            {MOBILE_TABS.map(({ id, label, icon: Icon }) => {
+              const active = mobileTab === id;
+              const hasResult = id === 'tests' && compilerResult;
+              return (
+                <button
+                  key={id}
+                  id={`mobile-tab-${id}`}
+                  onClick={() => setMobileTab(id)}
+                  className="flex-1 flex flex-col items-center justify-center gap-1 py-2.5 transition-colors relative"
                 >
-                  {label}
-                </span>
-              </button>
-            );
-          })}
+                  <div className="relative">
+                    <Icon
+                      size={17}
+                      style={{ color: active ? '#818cf8' : '#6b7280', transition: 'color 0.2s' }}
+                    />
+                    {/* Green dot when tests pass */}
+                    {hasResult && compilerResult.allPassed && id === 'tests' && (
+                      <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-dark-900" />
+                    )}
+                  </div>
+                  <span
+                    className="text-[10px] font-semibold tracking-wide"
+                    style={{ color: active ? '#a5b4fc' : '#6b7280', transition: 'color 0.2s' }}
+                  >
+                    {label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Tab Content — animated slide */}
