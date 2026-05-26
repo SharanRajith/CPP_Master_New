@@ -219,7 +219,7 @@ function VisualizerBanner() {
   );
 }
 
-export default function HomePage({ progress, onOpenPremium }) {
+export default function HomePage({ progress, onOpenPremium, isPremium }) {
   const navigate = useNavigate();
   const allLessons = getAllLessons();
   const totalCompleted = Object.keys(progress.completedLessons).length;
@@ -229,7 +229,7 @@ export default function HomePage({ progress, onOpenPremium }) {
   const firstUncompleted = allLessons.find(l => !progress.completedLessons[l.id]);
 
   // ── DSA branch completion check ───────────────────────────────────────────
-  const userIsPremium = progress.isPremium || progress.isAdmin;
+  const userIsPremium = isPremium || progress.isPremium || progress.isAdmin;
   const dsaLessons = CURRICULUM
     .filter(m => !m.track && (!m.isPremium || userIsPremium))
     .flatMap(m => m.lessons);
