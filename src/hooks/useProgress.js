@@ -33,7 +33,11 @@ export function useProgress(user) {
           await setDoc(docRef, patch, { merge: true });
           data = { ...firestoreData, ...patch };
         } else {
-          // New user — attempt migration from local legacy data
+          // New user — clear any stale onboarding/tour keys left by a previous user on this browser
+          localStorage.removeItem('cpp_onboarded_v3');
+          localStorage.removeItem('cpp_tour_v2');
+
+          // Attempt migration from local legacy data
           const legacyRaw = localStorage.getItem('cpp_dsa_progress');
           let legacyData = getDefaultProgress();
           if (legacyRaw) { try { legacyData = JSON.parse(legacyRaw); } catch (_) {} }
