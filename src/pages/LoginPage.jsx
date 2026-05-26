@@ -7,6 +7,8 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   updateProfile,
+  sendEmailVerification,
+  signOut,
 } from 'firebase/auth';
 
 const STATS = [
@@ -79,6 +81,9 @@ export default function LoginPage() {
   const [showPwd,      setShowPwd]      = useState(false);
   const [isLoggingIn,  setIsLoggingIn]  = useState(false);
   const [error,        setError]        = useState('');
+  const [verifyPending, setVerifyPending] = useState(null); // { email, pwd } — waiting for email click
+  const [resending,    setResending]    = useState(false);
+  const [resendDone,   setResendDone]   = useState(false);
 
   const clearForm = () => { setName(''); setEmail(''); setPassword(''); setError(''); };
 
@@ -103,21 +108,94 @@ export default function LoginPage() {
       if (mode === 'signup') {
         const cred = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(cred.user, { displayName: name.trim() });
+        await sendEmailVerification(cred.user);
+        await signOut(auth);
+        setVerifyPending({ email, pwd: password });
+        setIsLoggingIn(false);
+        return;
       } else {
-        await signInWithEmailAndPassword(auth, email, password);
+        const cred = await signInWithEmailAndPassword(auth, email, password);
+        if (!cred.user.emailVerified) {
+          await signOut(auth);
+          setError('Email not verified. Check your inbox and click the verification link.');
+          setIsLoggingIn(false);
+          return;
+        }
       }
     } catch (err) {
       const msgs = {
-        'auth/user-not-found':    'No account found with this email.',
-        'auth/wrong-password':    'Incorrect password.',
+        'auth/user-not-found':       'No account found with this email.',
+        'auth/wrong-password':       'Incorrect password.',
         'auth/email-already-in-use': 'An account with this email already exists.',
-        'auth/invalid-email':     'Invalid email address.',
-        'auth/invalid-credential': 'Invalid email or password.',
+        'auth/invalid-email':        'Invalid email address.',
+        'auth/invalid-credential':   'Invalid email or password.',
       };
       setError(msgs[err.code] || 'Something went wrong. Please try again.');
       setIsLoggingIn(false);
     }
   };
+
+  const handleResend = async () => {
+    if (!verifyPending) return;
+    setResending(true); setResendDone(false);
+    try {
+      const cred = await signInWithEmailAndPassword(auth, verifyPending.email, verifyPending.pwd);
+      await sendEmailVerification(cred.user);
+      await signOut(auth);
+      setResendDone(true);
+      setTimeout(() => setResendDone(false), 8000);
+    } catch { /* silently fail */ }
+    finally { setResending(false); }
+  };
+
+  if (verifyPending) {
+    return (
+      <div className="h-screen flex items-center justify-center px-4" style={{ background: '#06080f' }}>
+        <div className="absolute inset-0 pointer-events-none"
+          style={{ background: 'radial-gradient(ellipse at 50% 30%, rgba(79,70,229,0.15) 0%, transparent 65%)' }} />
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+          className="w-full max-w-sm relative z-10">
+          <div className="rounded-2xl p-8 text-center"
+            style={{ background: 'rgba(12,9,28,0.95)', backdropFilter: 'blur(24px)', border: '1px solid rgba(99,102,241,0.2)', boxShadow: '0 40px 80px rgba(0,0,0,0.7)' }}>
+
+            {/* Icon */}
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5"
+              style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.2), rgba(124,58,237,0.15))', border: '1px solid rgba(99,102,241,0.35)' }}>
+              <Mail size={28} className="text-indigo-400" />
+            </div>
+
+            <h2 className="text-xl font-black text-white mb-2">Check your inbox</h2>
+            <p className="text-sm text-slate-400 mb-1">We sent a verification link to</p>
+            <p className="text-sm font-bold text-indigo-300 mb-5 break-all">{verifyPending.email}</p>
+            <p className="text-xs text-slate-500 leading-relaxed mb-7">
+              Click the link in the email to activate your account.
+              If you don't see it, check your spam folder.
+            </p>
+
+            {/* Resend */}
+            <motion.button
+              onClick={handleResend}
+              disabled={resending || resendDone}
+              whileTap={{ scale: 0.97 }}
+              className="w-full py-2.5 rounded-xl text-sm font-semibold transition-all mb-3 disabled:opacity-60"
+              style={{ background: resendDone ? 'rgba(52,211,153,0.12)' : 'rgba(99,102,241,0.15)', border: `1px solid ${resendDone ? 'rgba(52,211,153,0.3)' : 'rgba(99,102,241,0.3)'}`, color: resendDone ? '#34d399' : '#a5b4fc' }}
+            >
+              {resending ? 'Sending…' : resendDone ? '✓ Verification email sent!' : 'Resend verification email'}
+            </motion.button>
+
+            <button
+              onClick={() => { setVerifyPending(null); setMode('signin'); clearForm(); }}
+              className="w-full text-xs text-slate-600 hover:text-slate-400 transition-colors py-1"
+            >
+              ← Back to sign in
+            </button>
+          </div>
+
+          <p className="text-center text-[11px] text-slate-700 mt-4">CppMaster · Secured by Firebase</p>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen flex overflow-hidden" style={{ background: '#06080f' }}>
