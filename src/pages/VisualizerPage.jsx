@@ -294,6 +294,70 @@ int main() {
     return 0;
 }`,
   },
+  Merge: {
+    summary: 'Recursively splits the array in half until every subarray has one element (trivially sorted), then merges pairs of sorted subarrays back together — each merge step takes two sorted halves and produces one larger sorted array.',
+    bullets: ['Guaranteed O(n log n) in all cases — no worst-case like Quick Sort', 'Stable — equal elements keep their relative order', 'Requires O(n) extra space for the temporary left/right buffers'],
+    time: 'O(n log n)', best: 'O(n log n)', space: 'O(n)',
+    code: `#include <bits/stdc++.h>
+using namespace std;
+
+void merge(vector<int>& arr, int lo, int mid, int hi) {
+    vector<int> L(arr.begin() + lo,      arr.begin() + mid + 1);
+    vector<int> R(arr.begin() + mid + 1, arr.begin() + hi + 1);
+    int i = 0, j = 0, k = lo;
+    while (i < (int)L.size() && j < (int)R.size())
+        arr[k++] = (L[i] <= R[j]) ? L[i++] : R[j++];
+    while (i < (int)L.size())  arr[k++] = L[i++];
+    while (j < (int)R.size())  arr[k++] = R[j++];
+}
+
+void mergeSort(vector<int>& arr, int lo, int hi) {
+    if (lo >= hi) return;
+    int mid = lo + (hi - lo) / 2;
+    mergeSort(arr, lo, mid);
+    mergeSort(arr, mid + 1, hi);
+    merge(arr, lo, mid, hi);
+}
+
+int main() {
+    vector<int> arr = { 38, 27, 43, 3, 9, 82, 10 };
+    mergeSort(arr, 0, arr.size() - 1);
+    for (int x : arr) cout << x << " ";
+    return 0;
+}`,
+    ccode: `#include <stdio.h>
+#include <stdlib.h>
+
+void merge(int arr[], int lo, int mid, int hi) {
+    int nl = mid - lo + 1, nr = hi - mid;
+    int* L = malloc(nl * sizeof(int));
+    int* R = malloc(nr * sizeof(int));
+    for (int i = 0; i < nl; i++) L[i] = arr[lo + i];
+    for (int j = 0; j < nr; j++) R[j] = arr[mid + 1 + j];
+    int i = 0, j = 0, k = lo;
+    while (i < nl && j < nr)
+        arr[k++] = (L[i] <= R[j]) ? L[i++] : R[j++];
+    while (i < nl) arr[k++] = L[i++];
+    while (j < nr) arr[k++] = R[j++];
+    free(L); free(R);
+}
+
+void mergeSort(int arr[], int lo, int hi) {
+    if (lo >= hi) return;
+    int mid = lo + (hi - lo) / 2;
+    mergeSort(arr, lo, mid);
+    mergeSort(arr, mid + 1, hi);
+    merge(arr, lo, mid, hi);
+}
+
+int main() {
+    int arr[] = { 38, 27, 43, 3, 9, 82, 10 };
+    int n = sizeof(arr) / sizeof(arr[0]);
+    mergeSort(arr, 0, n - 1);
+    for (int i = 0; i < n; i++) printf("%d ", arr[i]);
+    return 0;
+}`,
+  },
 };
 
 const TREE_INFO = {
@@ -825,7 +889,66 @@ function quickSteps(orig) {
   return steps;
 }
 
-const SORT_GEN = { 'Bubble': bubbleSteps, 'Selection': selectionSteps, 'Insertion': insertionSteps, 'Quick': quickSteps };
+function mergeSteps(orig) {
+  const steps = [], a = [...orig];
+
+  function merge(lo, mid, hi) {
+    const left  = a.slice(lo, mid + 1);
+    const right = a.slice(mid + 1, hi + 1);
+    const range = Array.from({ length: hi - lo + 1 }, (_, x) => lo + x);
+
+    steps.push({
+      a: [...a], hi: range, swap: false, done: new Set(),
+      info: `Merge a[${lo}..${mid}] with a[${mid+1}..${hi}]`,
+    });
+
+    let i = 0, j = 0, k = lo;
+    while (i < left.length && j < right.length) {
+      const li = left[i], rj = right[j];
+      const picked = li <= rj ? left[i++] : right[j++];
+      a[k] = picked;
+      steps.push({
+        a: [...a], hi: [k], swap: true, done: new Set(),
+        info: `${li} ${li <= rj ? '≤' : '>'} ${rj} → place ${picked} at index ${k}`,
+      });
+      k++;
+    }
+    while (i < left.length) {
+      a[k] = left[i++];
+      steps.push({ a: [...a], hi: [k], swap: true, done: new Set(), info: `Copy remaining ${a[k]} → index ${k}` });
+      k++;
+    }
+    while (j < right.length) {
+      a[k] = right[j++];
+      steps.push({ a: [...a], hi: [k], swap: true, done: new Set(), info: `Copy remaining ${a[k]} → index ${k}` });
+      k++;
+    }
+  }
+
+  function ms(lo, hi) {
+    if (lo >= hi) return;
+    const mid = Math.floor((lo + hi) / 2);
+    steps.push({
+      a: [...a],
+      hi: Array.from({ length: hi - lo + 1 }, (_, x) => lo + x),
+      swap: false, done: new Set(),
+      info: `Split a[${lo}..${hi}] → left a[${lo}..${mid}]  |  right a[${mid+1}..${hi}]`,
+    });
+    ms(lo, mid);
+    ms(mid + 1, hi);
+    merge(lo, mid, hi);
+  }
+
+  ms(0, a.length - 1);
+  steps.push({
+    a: [...a], hi: [], swap: false,
+    done: new Set(Array.from({ length: a.length }, (_, i) => i)),
+    info: '✓ Sorted! Merge Sort recursively divided then merged every subarray.',
+  });
+  return steps;
+}
+
+const SORT_GEN = { 'Bubble': bubbleSteps, 'Selection': selectionSteps, 'Insertion': insertionSteps, 'Quick': quickSteps, 'Merge': mergeSteps };
 
 // ─── BST helpers ──────────────────────────────────────────────────────────────
 function insertBST(root, val) {
