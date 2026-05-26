@@ -131,16 +131,19 @@ export default function LoginPage() {
         await signInWithEmailAndPassword(auth, email, password);
       }
     } catch (err) {
-      const msgs = {
-        'auth/user-not-found':       'No account found with this email.',
-        'auth/wrong-password':       'Incorrect password.',
-        'auth/email-already-in-use': 'An account with this email already exists.',
-        'auth/invalid-email':        'Invalid email address.',
-        'auth/invalid-credential':   'Invalid email or password.',
-      };
-      setError(err.message.startsWith('Failed') || err.message.startsWith('No code') || err.message.startsWith('Missing')
-        ? err.message
-        : (msgs[err.code] || 'Something went wrong. Please try again.'));
+      if (mode === 'signup') {
+        // error comes from our backend — show it directly
+        setError(err.message || 'Failed to send verification code. Please try again.');
+      } else {
+        const msgs = {
+          'auth/user-not-found':     'No account found with this email.',
+          'auth/wrong-password':     'Incorrect password.',
+          'auth/email-already-in-use': 'An account with this email already exists.',
+          'auth/invalid-email':      'Invalid email address.',
+          'auth/invalid-credential': 'Invalid email or password.',
+        };
+        setError(msgs[err.code] || 'Something went wrong. Please try again.');
+      }
     } finally {
       setIsLoggingIn(false);
     }
