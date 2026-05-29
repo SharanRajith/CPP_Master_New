@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Play, Pause, ChevronRight, ChevronLeft, Shuffle, RotateCcw, BarChart2, GitBranch, Share2, BookOpen, Code2, Clock, Database } from 'lucide-react';
+import { Play, Pause, ChevronRight, ChevronLeft, Shuffle, RotateCcw, BarChart2, GitBranch, Share2, BookOpen, Code2, Clock, Database, Volume2, VolumeX } from 'lucide-react';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const SPEEDS = { Slow: 1800, Normal: 700, Fast: 200 };
@@ -1379,7 +1379,7 @@ function dijkstraSteps(source) {
 }
 
 // ─── Shared controls ──────────────────────────────────────────────────────────
-function Controls({ stepIdx, total, playing, onToggle, onPrev, onNext, onReset, speed, onSpeed, onShuffle }) {
+function Controls({ stepIdx, total, playing, onToggle, onPrev, onNext, onReset, speed, onSpeed, onShuffle, narrating, onNarrate }) {
   return (
     <div className="flex items-center gap-2 flex-wrap mt-4 pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
       <div className="flex items-center gap-1">
@@ -1407,6 +1407,13 @@ function Controls({ stepIdx, total, playing, onToggle, onPrev, onNext, onReset, 
       </div>
       <div className="flex-1" />
       <span className="text-[11px] text-dark-600">{stepIdx + 1} / {total}</span>
+      <button onClick={onNarrate} title={narrating ? 'Mute narration' : 'Read steps aloud'}
+        className="p-2 rounded-lg transition-all"
+        style={narrating
+          ? { background: 'rgba(99,102,241,0.15)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.3)' }
+          : { color: '#374151' }}>
+        {narrating ? <Volume2 size={14} /> : <VolumeX size={14} />}
+      </button>
       <div className="flex rounded-lg overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
         {Object.keys(SPEEDS).map(s => (
           <button key={s} onClick={() => onSpeed(s)}
@@ -1457,15 +1464,45 @@ function usePlayer(steps, speed) {
   };
 }
 
+// ─── TTS narration ────────────────────────────────────────────────────────────
+function toSpeech(text) {
+  if (!text) return '';
+  return text
+    .replace(/✓/g, '')
+    .replace(/→/g, ' to ')
+    .replace(/≤/g, ' is less than or equal to ')
+    .replace(/≥/g, ' is greater than or equal to ')
+    .replace(/\.\./g, ' to ')
+    .replace(/\[|\]/g, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
+function useNarration(text, enabled) {
+  const synthRef = useRef(window.speechSynthesis);
+  useEffect(() => {
+    if (!enabled || !text) return;
+    const synth = synthRef.current;
+    synth.cancel();
+    const utt = new SpeechSynthesisUtterance(toSpeech(text));
+    utt.rate = 0.92;
+    utt.pitch = 1.0;
+    synth.speak(utt);
+    return () => synth.cancel();
+  }, [text, enabled]);
+}
+
 // ─── Sorting section ──────────────────────────────────────────────────────────
 function SortingSection() {
-  const [algo, setAlgo]   = useState('Bubble');
-  const [arr,  setArr]    = useState(() => randArray());
-  const [speed, setSpeed] = useState('Normal');
+  const [algo, setAlgo]     = useState('Bubble');
+  const [arr,  setArr]      = useState(() => randArray());
+  const [speed, setSpeed]   = useState('Normal');
+  const [narrate, setNarrate] = useState(false);
 
   const steps = useMemo(() => SORT_GEN[algo](arr), [algo, arr]);
   const player = usePlayer(steps, speed);
   const step = steps[player.stepIdx] || { a: arr, hi: [], swap: false, done: new Set() };
+  useNarration(step.info, narrate);
   const maxVal = Math.max(...step.a, 1);
 
   function barColor(i) {
@@ -1507,7 +1544,7 @@ function SortingSection() {
           ))}
         </div>
         <InfoBox text={step.info} />
-        <Controls {...player} total={steps.length} speed={speed} onSpeed={setSpeed} onShuffle={() => setArr(randArray())} />
+        <Controls {...player} total={steps.length} speed={speed} onSpeed={setSpeed} onShuffle={() => setArr(randArray())} narrating={narrate} onNarrate={() => setNarrate(v => !v)} />
       </div>
       <AlgoInfo info={SORT_INFO[algo]} />
     </div>
@@ -1516,9 +1553,10 @@ function SortingSection() {
 
 // ─── Tree section ─────────────────────────────────────────────────────────────
 function TreeSection() {
-  const [algo,   setAlgo]   = useState('Inorder');
-  const [vals,   setVals]   = useState(DEFAULT_BST);
-  const [speed,  setSpeed]  = useState('Normal');
+  const [algo,   setAlgo]     = useState('Inorder');
+  const [vals,   setVals]     = useState(DEFAULT_BST);
+  const [speed,  setSpeed]    = useState('Normal');
+  const [narrate, setNarrate] = useState(false);
 
   const { root, pos, edges, width, height } = useMemo(() => {
     const root = buildBST(vals);
@@ -1530,6 +1568,7 @@ function TreeSection() {
   const player = usePlayer(steps, speed);
   const step = steps[player.stepIdx] || { current: null, visited: [] };
   const visitedSet = new Set(step.visited || []);
+  useNarration(step.info, narrate);
 
   function nc(id) {
     if (step.current === id) return NODE.current;
@@ -1574,7 +1613,7 @@ function TreeSection() {
           ))}
         </div>
         <InfoBox text={step.info} />
-        <Controls {...player} total={steps.length} speed={speed} onSpeed={setSpeed} onShuffle={() => setVals(randBST())} />
+        <Controls {...player} total={steps.length} speed={speed} onSpeed={setSpeed} onShuffle={() => setVals(randBST())} narrating={narrate} onNarrate={() => setNarrate(v => !v)} />
       </div>
       <AlgoInfo info={TREE_INFO[algo]} />
     </div>
@@ -1656,7 +1695,8 @@ function topoSteps() {
 function GraphSection() {
   const [algo,  setAlgo]  = useState('BFS');
   const [start, setStart] = useState(0);
-  const [speed, setSpeed] = useState('Normal');
+  const [speed, setSpeed]     = useState('Normal');
+  const [narrate, setNarrate] = useState(false);
 
   const isDijkstra = algo === 'Dijkstra';
   const isTopo     = algo === 'Topo Sort';
@@ -1670,6 +1710,7 @@ function GraphSection() {
 
   const player = usePlayer(steps, speed);
   const step = steps[player.stepIdx] || {};
+  useNarration(step.info, narrate);
 
   function nc(id) {
     if (isTopo) {
@@ -1874,7 +1915,7 @@ function GraphSection() {
         </div>
 
         <InfoBox text={step.info} />
-        <Controls {...player} total={steps.length} speed={speed} onSpeed={setSpeed} />
+        <Controls {...player} total={steps.length} speed={speed} onSpeed={setSpeed} narrating={narrate} onNarrate={() => setNarrate(v => !v)} />
       </div>
 
       <AlgoInfo info={GRAPH_INFO[algo]} />
