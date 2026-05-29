@@ -1095,16 +1095,20 @@ function bubbleSteps(orig) {
   const steps = [], a = [...orig], n = a.length, done = new Set();
   for (let i = 0; i < n - 1; i++) {
     for (let j = 0; j < n - i - 1; j++) {
-      steps.push({ a: [...a], hi: [j, j + 1], swap: false, done: new Set(done), info: `Compare a[${j}]=${a[j]} and a[${j+1}]=${a[j+1]}` });
-      if (a[j] > a[j + 1]) {
+      const needsSwap = a[j] > a[j + 1];
+      steps.push({ a: [...a], hi: [j, j + 1], swap: false, done: new Set(done),
+        info: `Comparing ${a[j]} and ${a[j+1]}. ${needsSwap ? `${a[j]} is greater, so they need to swap.` : `They are already in order — no swap needed.`}` });
+      if (needsSwap) {
         [a[j], a[j + 1]] = [a[j + 1], a[j]];
-        steps.push({ a: [...a], hi: [j, j + 1], swap: true, done: new Set(done), info: `Swap — ${a[j+1]} > ${a[j]}, larger element bubbles right` });
+        steps.push({ a: [...a], hi: [j, j + 1], swap: true, done: new Set(done),
+          info: `Swapping them. The larger value bubbles one step to the right, like a bubble rising in water.` });
       }
     }
     done.add(n - 1 - i);
   }
   done.add(0);
-  steps.push({ a: [...a], hi: [], swap: false, done: new Set(done), info: '✓ Sorted! Every pass moved the largest unsorted element to its correct position.' });
+  steps.push({ a: [...a], hi: [], swap: false, done: new Set(done),
+    info: `All done! Every pass moved the largest unsorted element to its final position at the right end.` });
   return steps;
 }
 
@@ -1112,22 +1116,28 @@ function selectionSteps(orig) {
   const steps = [], a = [...orig], n = a.length, done = new Set();
   for (let i = 0; i < n - 1; i++) {
     let minIdx = i;
-    steps.push({ a: [...a], hi: [minIdx], swap: false, done: new Set(done), info: `Pass ${i+1}: finding minimum in a[${i}..${n-1}]` });
+    steps.push({ a: [...a], hi: [minIdx], swap: false, done: new Set(done),
+      info: `Pass ${i+1}: scanning the unsorted portion to find the smallest remaining element.` });
     for (let j = i + 1; j < n; j++) {
-      steps.push({ a: [...a], hi: [minIdx, j], swap: false, done: new Set(done), info: `Compare current min ${a[minIdx]} with a[${j}]=${a[j]}` });
-      if (a[j] < a[minIdx]) {
+      const isSmaller = a[j] < a[minIdx];
+      steps.push({ a: [...a], hi: [minIdx, j], swap: false, done: new Set(done),
+        info: `Is ${a[j]} smaller than the current minimum ${a[minIdx]}? ${isSmaller ? 'Yes — we have a new minimum!' : 'No — keep searching.'}` });
+      if (isSmaller) {
         minIdx = j;
-        steps.push({ a: [...a], hi: [minIdx], swap: false, done: new Set(done), info: `New minimum: ${a[minIdx]} at index ${minIdx}` });
+        steps.push({ a: [...a], hi: [minIdx], swap: false, done: new Set(done),
+          info: `New minimum found: ${a[minIdx]} at position ${minIdx}.` });
       }
     }
     if (minIdx !== i) {
       [a[i], a[minIdx]] = [a[minIdx], a[i]];
-      steps.push({ a: [...a], hi: [i, minIdx], swap: true, done: new Set(done), info: `Swap minimum ${a[i]} into position ${i}` });
+      steps.push({ a: [...a], hi: [i, minIdx], swap: true, done: new Set(done),
+        info: `Placing the minimum ${a[i]} into position ${i}. It is now locked into its final sorted spot.` });
     }
     done.add(i);
   }
   done.add(n - 1);
-  steps.push({ a: [...a], hi: [], swap: false, done: new Set(done), info: '✓ Sorted! Each pass selected the minimum and placed it at the front.' });
+  steps.push({ a: [...a], hi: [], swap: false, done: new Set(done),
+    info: `All done! Each pass selected the smallest remaining element and placed it at the front of the unsorted section.` });
   return steps;
 }
 
@@ -1135,17 +1145,21 @@ function insertionSteps(orig) {
   const steps = [], a = [...orig], n = a.length;
   for (let i = 1; i < n; i++) {
     const key = a[i];
-    steps.push({ a: [...a], hi: [i], swap: false, done: new Set(), info: `Insert a[${i}]=${key} into sorted portion a[0..${i-1}]` });
+    steps.push({ a: [...a], hi: [i], swap: false, done: new Set(),
+      info: `Picking up ${key}. We will slide it left into the correct spot in the already-sorted portion.` });
     let j = i - 1;
     while (j >= 0 && a[j] > key) {
       a[j + 1] = a[j];
-      steps.push({ a: [...a], hi: [j, j + 1], swap: true, done: new Set(), info: `Shift ${a[j]} right — ${a[j]} > ${key}` });
+      steps.push({ a: [...a], hi: [j, j + 1], swap: true, done: new Set(),
+        info: `${a[j]} is larger than ${key}, so we shift it one position to the right to make room.` });
       j--;
     }
     a[j + 1] = key;
-    steps.push({ a: [...a], hi: [j + 1], swap: false, done: new Set(), info: `Place ${key} at index ${j + 1}` });
+    steps.push({ a: [...a], hi: [j + 1], swap: false, done: new Set(),
+      info: `${key} drops into position ${j + 1}. The sorted left section now grows by one.` });
   }
-  steps.push({ a: [...a], hi: [], swap: false, done: new Set(Array.from({ length: a.length }, (_, i) => i)), info: '✓ Sorted! Built the sorted array one insertion at a time.' });
+  steps.push({ a: [...a], hi: [], swap: false, done: new Set(Array.from({ length: a.length }, (_, i) => i)),
+    info: `All done! Insertion sort built the array one element at a time — just like sorting playing cards in your hand.` });
   return steps;
 }
 
@@ -1153,21 +1167,27 @@ function quickSteps(orig) {
   const steps = [], a = [...orig], done = new Set();
   function partition(lo, hi) {
     const pivot = a[hi];
-    steps.push({ a: [...a], hi: [hi], swap: false, done: new Set(done), info: `Pivot = ${pivot} (index ${hi})` });
+    steps.push({ a: [...a], hi: [hi], swap: false, done: new Set(done),
+      info: `Pivot chosen: ${pivot}. Elements smaller than ${pivot} go left, larger go right.` });
     let i = lo - 1;
     for (let j = lo; j < hi; j++) {
-      steps.push({ a: [...a], hi: [j, hi], swap: false, done: new Set(done), info: `a[${j}]=${a[j]} vs pivot=${pivot} — ${a[j] <= pivot ? 'move to left partition' : 'skip'}` });
-      if (a[j] <= pivot) {
+      const goesLeft = a[j] <= pivot;
+      steps.push({ a: [...a], hi: [j, hi], swap: false, done: new Set(done),
+        info: `${a[j]} is ${goesLeft ? `not greater than pivot ${pivot} — it belongs on the left side.` : `greater than pivot ${pivot} — it stays on the right side.`}` });
+      if (goesLeft) {
         i++;
         if (i !== j) {
+          const vi = a[i], vj = a[j];
           [a[i], a[j]] = [a[j], a[i]];
-          steps.push({ a: [...a], hi: [i, j], swap: true, done: new Set(done), info: `Swap a[${i}] and a[${j}]` });
+          steps.push({ a: [...a], hi: [i, j], swap: true, done: new Set(done),
+            info: `Swapping ${vi} and ${vj} to move ${vj} into the left partition.` });
         }
       }
     }
     [a[i + 1], a[hi]] = [a[hi], a[i + 1]];
     done.add(i + 1);
-    steps.push({ a: [...a], hi: [i + 1], swap: false, done: new Set(done), info: `Pivot ${pivot} placed at final position ${i + 1} ✓` });
+    steps.push({ a: [...a], hi: [i + 1], swap: false, done: new Set(done),
+      info: `Pivot ${pivot} is now in its final sorted position. Every element to its left is smaller, every element to its right is larger.` });
     return i + 1;
   }
   function qs(lo, hi) {
@@ -1177,7 +1197,8 @@ function quickSteps(orig) {
     qs(pi + 1, hi);
   }
   qs(0, a.length - 1);
-  steps.push({ a: [...a], hi: [], swap: false, done: new Set(Array.from({ length: a.length }, (_, i) => i)), info: '✓ Sorted! Each pivot was placed in its correct position recursively.' });
+  steps.push({ a: [...a], hi: [], swap: false, done: new Set(Array.from({ length: a.length }, (_, i) => i)),
+    info: `All done! Quick sort recursively partitioned the array around pivots until every element landed in its correct place.` });
   return steps;
 }
 
@@ -1200,24 +1221,24 @@ function mergeSteps(orig) {
 
     // Show the two halves before merging — yellow left, violet right
     push(lRange(lo, mid), rRange(mid + 1, hi), false,
-      `Merge: yellow=left a[${lo}..${mid}]  violet=right a[${mid+1}..${hi}]`);
+      `Now merging the yellow left half and violet right half back together in sorted order.`);
 
     let i = 0, j = 0, k = lo;
     while (i < left.length && j < right.length) {
       const li = left[i], rj = right[j];
       const picked = li <= rj ? left[i++] : right[j++];
       a[k] = picked;
-      push([k], [], true, `${li} ${li <= rj ? '≤' : '>'} ${rj}  →  place ${picked} at index ${k}`);
+      push([k], [], true, `Comparing ${li} and ${rj}. Taking ${picked} — the smaller value — and placing it next.`);
       k++;
     }
     while (i < left.length) {
       a[k] = left[i++];
-      push([k], [], true, `Copy remaining left element ${a[k]} → index ${k}`);
+      push([k], [], true, `The right half is exhausted. Copying ${a[k]} from the remaining left half.`);
       k++;
     }
     while (j < right.length) {
       a[k] = right[j++];
-      push([k], [], true, `Copy remaining right element ${a[k]} → index ${k}`);
+      push([k], [], true, `The left half is exhausted. Copying ${a[k]} from the remaining right half.`);
       k++;
     }
   }
@@ -1227,7 +1248,7 @@ function mergeSteps(orig) {
     const mid = Math.floor((lo + hi) / 2);
     // Split step: left half yellow, right half violet
     push(lRange(lo, mid), rRange(mid + 1, hi), false,
-      `Split a[${lo}..${hi}]  →  yellow left a[${lo}..${mid}]  |  violet right a[${mid+1}..${hi}]`);
+      `Splitting into two halves — yellow left (positions ${lo} to ${mid}) and violet right (positions ${mid+1} to ${hi}).`);
     ms(lo, mid);
     ms(mid + 1, hi);
     merge(lo, mid, hi);
@@ -1237,7 +1258,7 @@ function mergeSteps(orig) {
   steps.push({
     a: [...a], hi: [], hi2: [], swap: false,
     done: new Set(Array.from({ length: a.length }, (_, i) => i)),
-    info: '✓ Sorted! Merge Sort recursively divided then merged every subarray.',
+    info: `All done! Merge sort split the array all the way down to individual elements, then merged everything back in sorted order.`,
   });
   return steps;
 }
@@ -1288,14 +1309,37 @@ function treeSteps(root, algo, pos) {
       const node = queue.shift();
       if (!node) continue;
       visited.push(node.id);
-      steps.push({ current: node.id, visited: [...visited], info: `Visit ${node.val}   queue: [${queue.filter(Boolean).map(n => n.val).join(', ')}]   path: ${path()}` });
+      const waiting = queue.filter(Boolean).map(n => n.val);
+      steps.push({ current: node.id, visited: [...visited],
+        info: `Visiting ${node.val}. ${waiting.length > 0 ? `Still waiting in the queue: ${waiting.join(', ')}.` : 'Queue is now empty — all nodes visited.'} Path so far: ${path()}.` });
       if (node.left)  queue.push(node.left);
       if (node.right) queue.push(node.right);
     }
   } else {
-    function inorder(n)   { if (!n) return; inorder(n.left); visited.push(n.id); steps.push({ current: n.id, visited: [...visited], info: `Visit ${n.val}   path: ${path()}` }); inorder(n.right); }
-    function preorder(n)  { if (!n) return; visited.push(n.id); steps.push({ current: n.id, visited: [...visited], info: `Visit ${n.val}   path: ${path()}` }); preorder(n.left); preorder(n.right); }
-    function postorder(n) { if (!n) return; postorder(n.left); postorder(n.right); visited.push(n.id); steps.push({ current: n.id, visited: [...visited], info: `Visit ${n.val}   path: ${path()}` }); }
+    function inorder(n)   {
+      if (!n) return;
+      inorder(n.left);
+      visited.push(n.id);
+      steps.push({ current: n.id, visited: [...visited],
+        info: `Visiting ${n.val}. Inorder goes left subtree first, then the node, then right. Path so far: ${path()}.` });
+      inorder(n.right);
+    }
+    function preorder(n)  {
+      if (!n) return;
+      visited.push(n.id);
+      steps.push({ current: n.id, visited: [...visited],
+        info: `Visiting ${n.val} first, before its children. Preorder: node first, then left, then right. Path so far: ${path()}.` });
+      preorder(n.left);
+      preorder(n.right);
+    }
+    function postorder(n) {
+      if (!n) return;
+      postorder(n.left);
+      postorder(n.right);
+      visited.push(n.id);
+      steps.push({ current: n.id, visited: [...visited],
+        info: `Visiting ${n.val} after both its children. Postorder processes children before their parent. Path so far: ${path()}.` });
+    }
     if (algo === 'Inorder')   inorder(root);
     if (algo === 'Preorder')  preorder(root);
     if (algo === 'Postorder') postorder(root);
@@ -1319,13 +1363,16 @@ function graphBFS(start) {
   const steps = [], visited = new Set([start]), queue = [start], tEdges = new Set();
   while (queue.length) {
     const node = queue.shift();
-    steps.push({ current: node, visited: new Set(visited), edges: new Set(tEdges), info: `Visit node ${node}   queue: [${queue.join(', ')}]` });
+    const unvisitedNeighbors = G_ADJ[node].filter(nb => !visited.has(nb));
+    steps.push({ current: node, visited: new Set(visited), edges: new Set(tEdges),
+      info: `Processing node ${node}. BFS explores level by level. ${queue.length > 0 ? `Next in queue: ${queue.join(', ')}.` : 'Queue is now empty — all reachable nodes have been visited.'}` });
     for (const nb of G_ADJ[node]) {
       if (!visited.has(nb)) {
         visited.add(nb); queue.push(nb);
         tEdges.add([Math.min(node, nb), Math.max(node, nb)].join('-'));
       }
     }
+    void unvisitedNeighbors;
   }
   return steps;
 }
@@ -1333,7 +1380,8 @@ function graphDFS(start) {
   const steps = [], visited = new Set(), tEdges = new Set();
   function dfs(node) {
     visited.add(node);
-    steps.push({ current: node, visited: new Set(visited), edges: new Set(tEdges), info: `Visit node ${node}   neighbors: [${G_ADJ[node].join(', ')}]` });
+    steps.push({ current: node, visited: new Set(visited), edges: new Set(tEdges),
+      info: `Visiting node ${node}. DFS goes as deep as possible before backtracking. Its neighbors are: ${G_ADJ[node].join(', ')}.` });
     for (const nb of G_ADJ[node]) {
       if (!visited.has(nb)) { tEdges.add([Math.min(node, nb), Math.max(node, nb)].join('-')); dfs(nb); }
     }
@@ -1381,7 +1429,7 @@ function dijkstraSteps(source) {
     return { current, settled: new Set(settled), dist: { ...dist }, activeEdge, treeEdges: te, info };
   }
 
-  const steps = [snap(null, null, `Initialize: dist[${source}] = 0, all other nodes = ∞. Each round picks the nearest unsettled node.`)];
+  const steps = [snap(null, null, `Starting Dijkstra from node ${source}. Its distance is 0. All other nodes start at infinity — we have not found a path to them yet.`)];
 
   while (settled.size < DJ_NODES.length) {
     let u = -1;
@@ -1392,24 +1440,24 @@ function dijkstraSteps(source) {
     if (u === -1) break;
 
     settled.add(u);
-    steps.push(snap(u, null, `Settle node ${u} — shortest distance confirmed: ${dist[u]}. Now relax its neighbors.`));
+    steps.push(snap(u, null, `Node ${u}'s shortest distance is confirmed at ${dist[u]}. Now we check if going through node ${u} gives shorter paths to its neighbors.`));
 
     for (const { node: v, w } of DJ_ADJ[u]) {
       if (settled.has(v)) continue;
       const dv = dist[v] === INF ? '∞' : dist[v];
       const nd = dist[u] + w;
-      steps.push(snap(u, [u, v], `Relax ${u}→${v}  (weight ${w}):  ${dist[u]} + ${w} = ${nd}  vs  dist[${v}] = ${dv}`));
+      steps.push(snap(u, [u, v], `Checking edge from ${u} to ${v} with weight ${w}. Through node ${u}: ${dist[u]} plus ${w} equals ${nd}. Current best to node ${v}: ${dv}.`));
       if (nd < dist[v]) {
         dist[v] = nd;
         prev[v] = u;
-        steps.push(snap(u, [u, v], `✓ Update dist[${v}] = ${nd}  (shorter path found via node ${u})`));
+        steps.push(snap(u, [u, v], `Shorter path found! Distance to node ${v} updated to ${nd}, going through node ${u}.`));
       }
     }
   }
 
   steps.push(snap(null, null,
-    `✓ Done!  Shortest distances from ${source}: ` +
-    DJ_NODES.map(n => `${n.id}→${dist[n.id] === INF ? '∞' : dist[n.id]}`).join('  ')
+    `All done! Shortest paths from node ${source} are confirmed. ` +
+    DJ_NODES.map(n => `Node ${n.id}: ${dist[n.id] === INF ? 'unreachable' : dist[n.id]}`).join('. ')
   ));
   return steps;
 }
@@ -1787,30 +1835,30 @@ function topoSteps() {
   const queue = [];
   TOPO_NODES.forEach(n => { if (inDeg[n.id] === 0) { queue.push(n.id); inQueue.add(n.id); } });
   steps.push(snap(null, null,
-    `Compute in-degrees. Nodes with in-degree 0: [${queue.join(', ')}] → enqueue them.`));
+    `Counting prerequisites for each node. Nodes ${queue.join(' and ')} have no prerequisites — they are ready to go first.`));
 
   while (queue.length) {
     const u = queue.shift();
     inQueue.delete(u);
     steps.push(snap(u, null,
-      `Dequeue node ${u} → append to order.  Order so far: [${[...order, u].join(' → ')}]`));
+      `Processing node ${u}. Appending it to the topological order. Order so far: ${[...order, u].join(', ')}.`));
     order.push(u);
     processed.add(u);
 
     for (const v of adj[u]) {
       steps.push(snap(u, [u, v],
-        `Edge ${u}→${v}: in-degree[${v}]  ${inDeg[v]} − 1 = ${inDeg[v] - 1}`));
+        `Removing the dependency from node ${u} to node ${v}. Node ${v}'s prerequisite count drops from ${inDeg[v]} to ${inDeg[v] - 1}.`));
       inDeg[v]--;
       if (inDeg[v] === 0) {
         inQueue.add(v); queue.push(v);
         steps.push(snap(u, [u, v],
-          `in-degree[${v}] reached 0 → enqueue ${v}.  Queue: [${queue.join(', ')}]`));
+          `Node ${v} now has no remaining prerequisites. Adding it to the queue — it is ready to be processed.`));
       }
     }
   }
 
   steps.push(snap(null, null,
-    `✓ Topological order: ${order.join(' → ')}`));
+    `Topological sort complete! The final order is: ${order.join(', ')}.`));
   return steps;
 }
 
