@@ -1435,36 +1435,7 @@ function InfoBox({ text }) {
   );
 }
 
-function usePlayer(steps, speed) {
-  const [stepIdx, setStepIdx] = useState(0);
-  const [playing, setPlaying] = useState(false);
-  const ref = useRef(null);
-
-  useEffect(() => { setStepIdx(0); setPlaying(false); }, [steps]);
-
-  useEffect(() => {
-    clearInterval(ref.current);
-    if (!playing) return;
-    ref.current = setInterval(() => {
-      setStepIdx(prev => {
-        if (prev >= steps.length - 1) { setPlaying(false); return prev; }
-        return prev + 1;
-      });
-    }, SPEEDS[speed]);
-    return () => clearInterval(ref.current);
-  }, [playing, steps.length, speed]);
-
-  return {
-    stepIdx,
-    playing,
-    onToggle:  () => setPlaying(v => !v),
-    onPrev:    () => { setPlaying(false); setStepIdx(v => Math.max(0, v - 1)); },
-    onNext:    () => { setPlaying(false); setStepIdx(v => Math.min(steps.length - 1, v + 1)); },
-    onReset:   () => { setPlaying(false); setStepIdx(0); },
-  };
-}
-
-// ─── TTS narration ────────────────────────────────────────────────────────────
+// ─── TTS narration helpers ────────────────────────────────────────────────────
 function toSpeech(text) {
   if (!text) return '';
   return text
@@ -1472,24 +1443,88 @@ function toSpeech(text) {
     .replace(/→/g, ' to ')
     .replace(/≤/g, ' is less than or equal to ')
     .replace(/≥/g, ' is greater than or equal to ')
+    .replace(/−/g, ' minus ')
     .replace(/\.\./g, ' to ')
+    .replace(/in-degree/g, 'in degree')
     .replace(/\[|\]/g, '')
     .replace(/\s{2,}/g, ' ')
     .trim();
 }
 
-function useNarration(text, enabled) {
-  const synthRef = useRef(window.speechSynthesis);
+function pickVoice() {
+  const vs = window.speechSynthesis.getVoices();
+  return (
+    vs.find(v => v.name === 'Google US English') ||
+    vs.find(v => /Microsoft (Zira|David|Mark)/.test(v.name)) ||
+    vs.find(v => v.lang === 'en-US' && !v.localService) ||
+    vs.find(v => v.lang === 'en-US') ||
+    vs.find(v => v.lang.startsWith('en')) ||
+    null
+  );
+}
+
+function usePlayer(steps, speed, narrate) {
+  const [stepIdx, setStepIdx] = useState(0);
+  const [playing, setPlaying] = useState(false);
+  const intervalRef = useRef(null);
+  const synthRef    = useRef(window.speechSynthesis);
+  const voiceRef    = useRef(null);
+
+  // Load the best voice (voices load async in most browsers)
   useEffect(() => {
-    if (!enabled || !text) return;
+    voiceRef.current = pickVoice();
+    const onChanged = () => { voiceRef.current = pickVoice(); };
+    synthRef.current.onvoiceschanged = onChanged;
+    return () => { synthRef.current.onvoiceschanged = null; };
+  }, []);
+
+  useEffect(() => {
+    setStepIdx(0);
+    setPlaying(false);
+    synthRef.current.cancel();
+  }, [steps]);
+
+  // Interval-based advance — only when NOT narrating
+  useEffect(() => {
+    clearInterval(intervalRef.current);
+    if (narrate || !playing) return;
+    intervalRef.current = setInterval(() => {
+      setStepIdx(prev => {
+        if (prev >= steps.length - 1) { setPlaying(false); return prev; }
+        return prev + 1;
+      });
+    }, SPEEDS[speed]);
+    return () => clearInterval(intervalRef.current);
+  }, [playing, steps.length, speed, narrate]);
+
+  // Speech-gated advance — fires whenever narrate/playing/stepIdx changes
+  useEffect(() => {
     const synth = synthRef.current;
     synth.cancel();
+    const text = steps[stepIdx]?.info;
+    if (!narrate || !text) return;
     const utt = new SpeechSynthesisUtterance(toSpeech(text));
-    utt.rate = 0.92;
+    utt.rate = 0.93;
     utt.pitch = 1.0;
+    if (voiceRef.current) utt.voice = voiceRef.current;
+    if (playing) {
+      utt.onend = () => setStepIdx(prev => {
+        if (prev >= steps.length - 1) { setPlaying(false); return prev; }
+        return prev + 1;
+      });
+    }
     synth.speak(utt);
     return () => synth.cancel();
-  }, [text, enabled]);
+  }, [narrate, playing, stepIdx, steps]);
+
+  return {
+    stepIdx,
+    playing,
+    onToggle: () => setPlaying(v => !v),
+    onPrev:   () => { setPlaying(false); synthRef.current.cancel(); setStepIdx(v => Math.max(0, v - 1)); },
+    onNext:   () => { setPlaying(false); synthRef.current.cancel(); setStepIdx(v => Math.min(steps.length - 1, v + 1)); },
+    onReset:  () => { setPlaying(false); synthRef.current.cancel(); setStepIdx(0); },
+  };
 }
 
 // ─── Sorting section ──────────────────────────────────────────────────────────
@@ -1500,9 +1535,8 @@ function SortingSection() {
   const [narrate, setNarrate] = useState(false);
 
   const steps = useMemo(() => SORT_GEN[algo](arr), [algo, arr]);
-  const player = usePlayer(steps, speed);
+  const player = usePlayer(steps, speed, narrate);
   const step = steps[player.stepIdx] || { a: arr, hi: [], swap: false, done: new Set() };
-  useNarration(step.info, narrate);
   const maxVal = Math.max(...step.a, 1);
 
   function barColor(i) {
@@ -1565,10 +1599,9 @@ function TreeSection() {
   }, [vals]);
 
   const steps = useMemo(() => treeSteps(root, algo, pos), [root, algo, pos]);
-  const player = usePlayer(steps, speed);
+  const player = usePlayer(steps, speed, narrate);
   const step = steps[player.stepIdx] || { current: null, visited: [] };
   const visitedSet = new Set(step.visited || []);
-  useNarration(step.info, narrate);
 
   function nc(id) {
     if (step.current === id) return NODE.current;
@@ -1708,9 +1741,8 @@ function GraphSection() {
     return dijkstraSteps(start);
   }, [algo, start]);
 
-  const player = usePlayer(steps, speed);
+  const player = usePlayer(steps, speed, narrate);
   const step = steps[player.stepIdx] || {};
-  useNarration(step.info, narrate);
 
   function nc(id) {
     if (isTopo) {
