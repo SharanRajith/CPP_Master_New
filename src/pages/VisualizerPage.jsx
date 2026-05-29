@@ -2,6 +2,42 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Play, Pause, ChevronRight, ChevronLeft, Shuffle, RotateCcw, BarChart2, GitBranch, Share2, BookOpen, Code2, Clock, Database, Volume2, VolumeX } from 'lucide-react';
 
+// ─── ElevenLabs TTS ───────────────────────────────────────────────────────────
+const EL_KEY   = import.meta.env.VITE_ELEVENLABS_KEY ?? '';
+const EL_VOICE = '21m00Tcm4TlvDq8ikWAM'; // Rachel – calm, educational
+const EL_MODEL = 'eleven_turbo_v2_5';
+const _audioCache = new Map();
+
+async function elSpeak(text, signal) {
+  if (!EL_KEY || !text) return null;
+  if (_audioCache.has(text)) {
+    const a = new Audio(_audioCache.get(text));
+    a.play();
+    return a;
+  }
+  try {
+    const res = await fetch(
+      `https://api.elevenlabs.io/v1/text-to-speech/${EL_VOICE}`,
+      {
+        method: 'POST', signal,
+        headers: { 'xi-api-key': EL_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text,
+          model_id: EL_MODEL,
+          voice_settings: { stability: 0.45, similarity_boost: 0.8, style: 0.25 },
+        }),
+      }
+    );
+    if (!res.ok) return null;
+    const blob = await res.blob();
+    const url  = URL.createObjectURL(blob);
+    _audioCache.set(text, url);
+    const a = new Audio(url);
+    a.play();
+    return a;
+  } catch { return null; }
+}
+
 // ─── Constants ────────────────────────────────────────────────────────────────
 const SPEEDS = { Slow: 1800, Normal: 700, Fast: 200 };
 
@@ -1427,11 +1463,44 @@ function Controls({ stepIdx, total, playing, onToggle, onPrev, onNext, onReset, 
   );
 }
 
-function InfoBox({ text }) {
+function SoundWaves() {
   return (
-    <div className="mt-3 px-3 py-2 rounded-lg text-xs font-mono" style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.15)', color: '#a5b4fc', minHeight: 32 }}>
-      {text || 'Press Play or use arrow buttons to step through.'}
-    </div>
+    <span className="flex items-end gap-px" style={{ height: 14 }}>
+      {[0, 1, 2, 3, 4].map(i => (
+        <motion.span key={i}
+          className="block rounded-full"
+          style={{ width: 3, background: '#818cf8', originY: 1 }}
+          animate={{ scaleY: [0.3, 1, 0.3] }}
+          transition={{ duration: 0.85, repeat: Infinity, delay: i * 0.13, ease: 'easeInOut' }} />
+      ))}
+    </span>
+  );
+}
+
+function TeacherBox({ text, narrating }) {
+  return (
+    <motion.div
+      key={text}
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.28 }}
+      className="mt-3 flex items-start gap-3 px-4 py-3 rounded-xl"
+      style={{ background: 'rgba(79,70,229,0.08)', border: '1px solid rgba(99,102,241,0.2)' }}
+    >
+      <div className="shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-lg select-none"
+        style={{ background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)' }}>
+        👨‍🏫
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-[10px] font-bold tracking-widest uppercase" style={{ color: '#6366f1' }}>Instructor</span>
+          {narrating && <SoundWaves />}
+        </div>
+        <p className="text-sm leading-relaxed" style={{ color: '#c7d2fe' }}>
+          {text || 'Press Play or use the arrow buttons to step through the algorithm.'}
+        </p>
+      </div>
+    </motion.div>
   );
 }
 
@@ -1469,8 +1538,14 @@ function usePlayer(steps, speed, narrate) {
   const intervalRef = useRef(null);
   const synthRef    = useRef(window.speechSynthesis);
   const voiceRef    = useRef(null);
+  const audioRef    = useRef(null); // ElevenLabs Audio element
 
-  // Load the best voice (voices load async in most browsers)
+  function stopAll() {
+    synthRef.current.cancel();
+    if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
+  }
+
+  // Load best browser voice (fallback when no EL key)
   useEffect(() => {
     voiceRef.current = pickVoice();
     const onChanged = () => { voiceRef.current = pickVoice(); };
@@ -1479,12 +1554,10 @@ function usePlayer(steps, speed, narrate) {
   }, []);
 
   useEffect(() => {
-    setStepIdx(0);
-    setPlaying(false);
-    synthRef.current.cancel();
-  }, [steps]);
+    setStepIdx(0); setPlaying(false); stopAll();
+  }, [steps]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Interval-based advance — only when NOT narrating
+  // Interval-based advance (narration off)
   useEffect(() => {
     clearInterval(intervalRef.current);
     if (narrate || !playing) return;
@@ -1497,34 +1570,51 @@ function usePlayer(steps, speed, narrate) {
     return () => clearInterval(intervalRef.current);
   }, [playing, steps.length, speed, narrate]);
 
-  // Speech-gated advance — fires whenever narrate/playing/stepIdx changes
+  // Speech-gated advance (narration on) — re-runs on every step change
   useEffect(() => {
-    const synth = synthRef.current;
-    synth.cancel();
+    stopAll();
     const text = steps[stepIdx]?.info;
     if (!narrate || !text) return;
-    const utt = new SpeechSynthesisUtterance(toSpeech(text));
-    utt.rate = 0.93;
-    utt.pitch = 1.0;
-    if (voiceRef.current) utt.voice = voiceRef.current;
-    if (playing) {
-      utt.onend = () => setStepIdx(prev => {
+
+    const clean = toSpeech(text);
+    const ctrl  = new AbortController();
+
+    function onFinish() {
+      setStepIdx(prev => {
         if (prev >= steps.length - 1) { setPlaying(false); return prev; }
         return prev + 1;
       });
     }
-    synth.speak(utt);
-    return () => synth.cancel();
-  }, [narrate, playing, stepIdx, steps]);
+
+    if (EL_KEY) {
+      elSpeak(clean, ctrl.signal).then(audio => {
+        if (ctrl.signal.aborted) { audio?.pause(); return; }
+        if (!audio) { speakBrowser(clean, playing, onFinish, synthRef, voiceRef); return; }
+        audioRef.current = audio;
+        if (playing) audio.onended = onFinish;
+      });
+    } else {
+      speakBrowser(clean, playing, onFinish, synthRef, voiceRef);
+    }
+
+    return () => { ctrl.abort(); stopAll(); };
+  }, [narrate, playing, stepIdx, steps]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return {
-    stepIdx,
-    playing,
+    stepIdx, playing,
     onToggle: () => setPlaying(v => !v),
-    onPrev:   () => { setPlaying(false); synthRef.current.cancel(); setStepIdx(v => Math.max(0, v - 1)); },
-    onNext:   () => { setPlaying(false); synthRef.current.cancel(); setStepIdx(v => Math.min(steps.length - 1, v + 1)); },
-    onReset:  () => { setPlaying(false); synthRef.current.cancel(); setStepIdx(0); },
+    onPrev:   () => { setPlaying(false); stopAll(); setStepIdx(v => Math.max(0, v - 1)); },
+    onNext:   () => { setPlaying(false); stopAll(); setStepIdx(v => Math.min(steps.length - 1, v + 1)); },
+    onReset:  () => { setPlaying(false); stopAll(); setStepIdx(0); },
   };
+}
+
+function speakBrowser(text, playing, onFinish, synthRef, voiceRef) {
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.rate = 0.93; utt.pitch = 1.0;
+  if (voiceRef.current) utt.voice = voiceRef.current;
+  if (playing) utt.onend = onFinish;
+  synthRef.current.speak(utt);
 }
 
 // ─── Sorting section ──────────────────────────────────────────────────────────
@@ -1577,7 +1667,7 @@ function SortingSection() {
             <div key={l} className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-sm" style={{ background: c }} />{l}</div>
           ))}
         </div>
-        <InfoBox text={step.info} />
+        <TeacherBox text={step.info} narrating={narrate} />
         <Controls {...player} total={steps.length} speed={speed} onSpeed={setSpeed} onShuffle={() => setArr(randArray())} narrating={narrate} onNarrate={() => setNarrate(v => !v)} />
       </div>
       <AlgoInfo info={SORT_INFO[algo]} />
@@ -1645,7 +1735,7 @@ function TreeSection() {
             <div key={l} className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full border-2" style={{ borderColor: c }} />{l}</div>
           ))}
         </div>
-        <InfoBox text={step.info} />
+        <TeacherBox text={step.info} narrating={narrate} />
         <Controls {...player} total={steps.length} speed={speed} onSpeed={setSpeed} onShuffle={() => setVals(randBST())} narrating={narrate} onNarrate={() => setNarrate(v => !v)} />
       </div>
       <AlgoInfo info={TREE_INFO[algo]} />
@@ -1946,7 +2036,7 @@ function GraphSection() {
           {isTopo     && <span style={{ color: '#34d399' }} className="ml-1 text-[10px]">in:0 = ready to dequeue</span>}
         </div>
 
-        <InfoBox text={step.info} />
+        <TeacherBox text={step.info} narrating={narrate} />
         <Controls {...player} total={steps.length} speed={speed} onSpeed={setSpeed} narrating={narrate} onNarrate={() => setNarrate(v => !v)} />
       </div>
 
